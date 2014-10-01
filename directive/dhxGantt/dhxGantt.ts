@@ -27,10 +27,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
             gantt.init($element[0]);
 
             gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
-                console.log('onAfterTaskUpdate');
                 if ($attrs['dhxTaskUpdate']) {
-                    console.log(id);
-                    console.log(item);
                     $scope[$attrs['dhxTaskUpdate']](id, item);
                 }
             });

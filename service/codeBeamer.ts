@@ -13,7 +13,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
     var credentials = btoa(user + ':' + pass);
     var host = 'http://'+ user + ':' + pass + '@10.0.14.229:8080/cb/rest';
 
-    function get(aUrl, aParam, cb) {
+    function get(aUrl, aParam, aCb) {
         var url = host + aUrl;
         var param = aParam || {};
         console.log(url);
@@ -27,9 +27,34 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             }
         }).success(function(resp) {
             console.log(resp);
-            cb(null, resp);
+            aCb(null, resp);
         }).error(function(data, status, header, config) {
-            cb({
+            aCb({
+                data: data,
+                status: status,
+                header: header,
+                config: config
+            });
+        });
+    }
+
+    function put(aUrl, aParam, aCb) {
+        var url = host + aUrl;
+        var param = aParam || {};
+        console.log(url);
+        $http({
+            url: url,
+            method: 'PUT',
+            data: param,
+            withCredentials: true,
+            headers: {
+                'Authorization': 'Basic ' + credentials
+            }
+        }).success(function(resp) {
+            console.log(resp);
+            aCb(null, resp);
+        }).error(function(data, status, header, config) {
+            aCb({
                 data: data,
                 status: status,
                 header: header,
@@ -39,10 +64,10 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
     }
 
     var codeBeamber: ICodeBeamer = {
-        getProjectList: function(aParam: TParamGetProjectList, aCb: (err, resp: TRespGetProjectList) => void) {
+        getProjectList: function(aParam: TParamGetProjectList, aCb: (err, resp?: TRespGetProjectList) => void) {
             get('/projects/page/' + aParam.page, aParam, aCb);
         },
-        getProjectTask: function(aProjectUri: string, aCb: (err, resp: TTask[]) => void) {
+        getProjectTask: function(aProjectUri: string, aCb: (err, resp?: TTask[]) => void) {
             get(aProjectUri + '/trackers', {
                 type: 'Task'
             }, function(err, resp) {
@@ -53,6 +78,9 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
 
                 get(resp[0].uri + '/items', null, aCb);
             });
+        },
+        updateTask: function(aTask, aCb) {
+            put('/item', aTask, aCb);
         }
     };
 

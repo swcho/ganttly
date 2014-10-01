@@ -21,6 +21,8 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer/
 
     var unitDay = 1000 * 60 * 60 * 24;
 
+
+
     $scope.goProject = function(aUri) {
         console.log('goProject: ' + aUri);
         $codeBeamer.getProjectTask(aUri, function(err, resp) {
@@ -48,6 +50,15 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer/
 
     $scope.taskUpdate = function(id, item) {
         console.log('taskUpdate');
+
+        $codeBeamer.updateTask({
+            uri: item.id,
+            name: item.text,
+            startDate: item.start_date,
+            estimatedMillis: item.duration * unitDay
+        }, function(err, resp) {
+
+        });
     };
 
     $codeBeamer.getProjectList({
