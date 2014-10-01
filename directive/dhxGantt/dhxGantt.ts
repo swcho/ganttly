@@ -1,5 +1,7 @@
+
 /// <reference path="../../defs/codeBeamer.d.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
+
 // ref http://www.dhtmlx.com/blog/gantt-chart-angularjs-app-dhtmlxgantt/
 angular.module('ganttly').directive('dhxGantt', function () {
     return {
@@ -7,6 +9,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
         scope: false,
         transclude: true,
         template: '<div ng-transclude></div>',
+
         link: function ($scope, $element, $attrs, $controller) {
             //size of gantt
             $scope.$watch(function () {
@@ -15,7 +18,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
                 gantt.setSizes();
             });
 
-            $scope.$watch($attrs['data'], function (collection) {
+            $scope.$watch($attrs['data'], function(collection){
                 gantt.clearAll();
                 gantt.parse(collection, "json");
             }, true);
@@ -23,7 +26,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
             //init gantt
             gantt.init($element[0]);
 
-            gantt.attachEvent("onAfterTaskUpdate", function (id, item) {
+            gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
                 console.log('onAfterTaskUpdate');
                 if ($attrs['dhxTaskUpdate']) {
                     console.log(id);
@@ -34,4 +37,3 @@ angular.module('ganttly').directive('dhxGantt', function () {
         }
     };
 });
-//# sourceMappingURL=dhxGantt.js.map

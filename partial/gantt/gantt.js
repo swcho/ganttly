@@ -46,8 +46,9 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer 
         });
     };
 
-    $scope.$watch($scope.data, function () {
-    });
+    $scope.taskUpdate = function (id, item) {
+        console.log('taskUpdate');
+    };
 
     $codeBeamer.getProjectList({
         page: 1
