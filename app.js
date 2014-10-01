@@ -1,10 +1,17 @@
 angular.module('ganttly', ['ui.bootstrap','ui.utils','ui.router','ngAnimate']);
 
-angular.module('ganttly').config(function($stateProvider, $urlRouterProvider) {
+angular.module('ganttly').config(function($stateProvider, $urlRouterProvider, $logProvider) {
+
+
+    $stateProvider.state('gantt', {
+        url: '/gantt/:id',
+        templateUrl: 'partial/gantt/gantt.html'
+    });
 
     /* Add New States Above */
-    $urlRouterProvider.otherwise('/home');
+    $urlRouterProvider.otherwise('/gantt/');
 
+    $logProvider.debugEnabled(true);
 });
 
 angular.module('ganttly').run(function($rootScope) {
