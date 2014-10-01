@@ -10,15 +10,18 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
     var host = 'http://' + user + ':' + pass + '@10.0.14.229:8080/cb/rest';
 
     function get(aUrl, aParam, cb) {
+        var url = host + aUrl;
         var param = aParam || {};
+        console.log(url);
         $http({
-            url: host + aUrl,
+            url: url,
             method: 'GET',
             withCredentials: true,
             headers: {
                 'Authorization': 'Basic ' + credentials
             }
         }).success(function (resp) {
+            console.log(resp);
             cb(null, resp);
         }).error(function (data, status, header, config) {
             cb({

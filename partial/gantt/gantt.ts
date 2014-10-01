@@ -19,14 +19,17 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer:
             { id: 4, source: 2, target: 5, type: "2"},
         ]};
 
+    $scope.goProject = function(aUri) {
+        console.log('goProject: ' + aUri);
+    };
+
     $codeBeamer.getProjectList({
         page: 1
     }, function(err, resp) {
         if (err) {
             return;
         }
-
-        console.log(resp);
-    })
+        $scope.items = resp.projects
+    });
 
 });
