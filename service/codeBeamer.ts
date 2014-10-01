@@ -20,6 +20,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
         $http({
             url: url,
             method: 'GET',
+            params: param,
             withCredentials: true,
             headers: {
                 'Authorization': 'Basic ' + credentials
@@ -40,6 +41,18 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
     var codeBeamber: ICodeBeamer = {
         getProjectList: function(aParam: TParamGetProjectList, aCb: (err, resp: TRespGetProjectList) => void) {
             get('/projects/page/' + aParam.page, aParam, aCb);
+        },
+        getProjectTask: function(aProjectUri: string, aCb: (err, resp: TTask[]) => void) {
+            get(aProjectUri + '/trackers', {
+                type: 'Task'
+            }, function(err, resp) {
+                if (err) {
+                    aCb(err);
+                    return;
+                }
+
+                get(resp[0].uri + '/items', null, aCb);
+            });
         }
     };
 

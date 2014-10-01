@@ -26,6 +26,13 @@ interface TRespGetProjectList {
     projects: TProject[];
 }
 
+
+interface TTask {
+    uri: string;
+    name: string;
+}
+
 interface ICodeBeamer {
-    getProjectList(aParam: TParamGetProjectList, aCb: (err, resp: TRespGetProjectList) => void);
+    getProjectList(aParam: TParamGetProjectList, aCb: (err, resp?: TRespGetProjectList) => void);
+    getProjectTask(aProjectUri: string, aCb: (err, resp?: TTask[]) => void);
 }

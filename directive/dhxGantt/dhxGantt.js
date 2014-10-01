@@ -1,3 +1,5 @@
+
+// ref http://www.dhtmlx.com/blog/gantt-chart-angularjs-app-dhtmlxgantt/
 angular.module('ganttly').directive('dhxGantt', function () {
     return {
         restrict: 'A',
@@ -12,6 +14,11 @@ angular.module('ganttly').directive('dhxGantt', function () {
             }, function () {
                 gantt.setSizes();
             });
+
+            $scope.$watch($attrs.data, function(collection){
+                gantt.clearAll();
+                gantt.parse(collection, "json");
+            }, true);
 
             //init gantt
             gantt.init($element[0]);

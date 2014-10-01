@@ -1,6 +1,6 @@
 /// <reference path="../../defs/codeBeamer.d.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
-angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer) {
+angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer /*: ICodeBeamer*/ ) {
     $scope.tasks = {
         data: [
             {
@@ -20,9 +20,34 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer)
             { id: 4, source: 2, target: 5, type: "2" }
         ] };
 
+    var unitDay = 1000 * 60 * 60 * 24;
+
     $scope.goProject = function (aUri) {
         console.log('goProject: ' + aUri);
+        $codeBeamer.getProjectTask(aUri, function (err, resp) {
+            if (err) {
+                return;
+            }
+
+            var i, len = resp.length, task, data = [];
+            for (i = 0; i < len; i++) {
+                task = resp[i];
+                data.push({
+                    id: task.uri,
+                    text: task.name,
+                    start_date: new Date(task.startDate || task.modifiedAt),
+                    duration: (task.estimatedMillis || unitDay) / unitDay
+                });
+            }
+
+            $scope.tasks = {
+                data: data
+            };
+        });
     };
+
+    $scope.$watch($scope.data, function () {
+    });
 
     $codeBeamer.getProjectList({
         page: 1
