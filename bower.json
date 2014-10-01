@@ -1,0 +1,16 @@
+{
+  "name": "ganttly",
+  "version": "0.0.0",
+  "homepage": "https://github.com/swcho/ganttly",
+  "authors": [
+    "swcho"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
