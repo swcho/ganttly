@@ -7,6 +7,12 @@
   "installed": {
     "dhtmlxgantt/dhtmlxgantt.d.ts": {
       "commit": "b2171552576bc574b97a9fd2ae5f037172049d7b"
+    },
+    "angularjs/angular.d.ts": {
+      "commit": "caca8f03bbce494a9c3da09841b2735ea0472943"
+    },
+    "jquery/jquery.d.ts": {
+      "commit": "caca8f03bbce494a9c3da09841b2735ea0472943"
     }
   }
 }
