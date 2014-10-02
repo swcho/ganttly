@@ -2,90 +2,92 @@
  * Created by sungwoo on 14. 10. 1.
  */
 
-interface TParamGetProjectList {
-    page: number;
-    pagesize?: number; // default is 100
-    category?: string;
-    filter?: string;
-}
+/**
+ * codeBeamer definitions
+ */
 
-interface TProject {
-    uri: string;
-    name: string;
-    description: string;
-    descFormat: string;
-    category: string;
-    closed: boolean;
-    deleted: boolean;
-}
+declare module cb {
+    interface TItem {
+        uri: string;
+        name: string;
+    }
 
-interface TRespGetProjectList {
-    page: number;
-    size: number;
-    total: number;
-    projects: TProject[];
-}
+    interface TParamGetProjectList {
+        page: number;
+        pagesize?: number; // default is 100
+        category?: string;
+        filter?: string;
+    }
 
-interface TType {
-    name: string;
-    url: string;
-}
+    interface TProject extends TItem {
+        description: string;
+        descFormat: string;
+        category: string;
+        closed: boolean;
+        deleted: boolean;
+    }
 
-interface TTracker {
-    descFormat: string;
-    description: string;
-    keyName: string;
-    name: string;
-    type: TType;
-    uri: string;
-}
+    interface TRespGetProjectList {
+        page: number;
+        size: number;
+        total: number;
+        projects: TProject[];
+    }
 
-interface TUser {
-    uri: string;
-    name: string;
-}
+    interface TType {
+        name: string;
+        url: string;
+    }
 
-interface TPriority {
-    flags: number;
-    id: number;
-    name: string;
-}
+    interface TTracker extends TItem {
+        descFormat: string;
+        description: string;
+        keyName: string;
+        type: TType;
+    }
 
-interface TStatus {
-    flags: number;
-    id: number;
-    name: string;
-}
+    interface TUser extends TItem {
+    }
 
-interface TTask {
-    uri: string;
+    interface TPriority {
+        flags: number;
+        id: number;
+        name: string;
+    }
 
-    descFormat: string;
-    estimatedMillis: number;
-    modifiedAt: string; // Date
-    modifier: TUser;
-    name: string;
-    priority: TPriority;
-    startDate: string; // Date
-    status: TStatus;
-    submittedAt: string; // Date
-    submitter: TUser;
-    tracker: TTracker;
-    version: number;
+    interface TStatus {
+        flags: number;
+        id: number;
+        name: string;
+    }
 
-    associations?: TAssociation[];
-}
+    interface TTask extends TItem {
+        descFormat: string;
+        estimatedMillis: number;
+        modifiedAt: string; // Date
+        modifier: TUser;
+        priority: TPriority;
+        startDate: string; // Date
+        status: TStatus;
+        submittedAt: string; // Date
+        submitter: TUser;
+        tracker: TTracker;
+        version: number;
 
-interface TAssociation {
-    from: string; // uri
-    to: string; // uri
-    type: string; // uri
-    propagatingSuspects: boolean;
-    description: string;
-    descFormat: string;
-}
+        associations?: TAssociation[];
+    }
 
-interface ICodeBeamer {
-    getProjectList(aParam: TParamGetProjectList, aCb: (err, resp?: TRespGetProjectList) => void);
-    getProjectTask(aProjectUri: string, aCb: (err, resp?: TTask[]) => void);
+    interface TAssociation extends TItem {
+        from: TItem; // uri
+        to: TItem; // uri
+        type: string; // uri
+        propagatingSuspects: boolean;
+        description: string;
+        descFormat: string;
+    }
+
+    interface ICodeBeamer {
+        getProjectList(aParam:TParamGetProjectList, aCb:(err, resp?:TRespGetProjectList) => void);
+        getProjectTask(aProjectUri:string, aCb:(err, resp?:TTask[]) => void);
+    }
 }

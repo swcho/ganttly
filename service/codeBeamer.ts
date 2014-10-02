@@ -63,11 +63,11 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
         });
     }
 
-    var codeBeamber: ICodeBeamer = {
-        getProjectList: function(aParam: TParamGetProjectList, aCb: (err, resp?: TRespGetProjectList) => void) {
+    var codeBeamber: cb.ICodeBeamer = {
+        getProjectList: function(aParam: cb.TParamGetProjectList, aCb: (err, resp?: cb.TRespGetProjectList) => void) {
             get('/projects/page/' + aParam.page, aParam, aCb);
         },
-        getProjectTask: function(aProjectUri: string, aCb: (err, resp?: TTask[]) => void) {
+        getProjectTask: function(aProjectUri: string, aCb: (err, resp?: cb.TTask[]) => void) {
 
             var series = [];
 
@@ -76,7 +76,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             series.push(function(cb) {
                 get(aProjectUri + '/trackers', {
                     type: 'Task'
-                }, function(err, trackers: TTracker[]) {
+                }, function(err, trackers: cb.TTracker[]) {
                     if (trackers && trackers.length) {
                         uri = trackers[0].uri;
                     }
@@ -85,9 +85,9 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             });
 
             // get trackers all items
-            var tasks: TTask[];
+            var tasks: cb.TTask[];
             series.push(function(cb) {
-                get(uri + '/items', null, function(err, items: TTask[]) {
+                get(uri + '/items', null, function(err, items: cb.TTask[]) {
                     tasks = items;
                     cb(err);
                 });
@@ -95,19 +95,19 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
 
             // find associations for each task
             series.push(function(cb) {
-                tasks.forEach(function(task: TTask) {
-                    var paralle = [];
+                var paralle = [];
+                tasks.forEach(function(task: cb.TTask) {
                     paralle.push(function(cb) {
                         get(task.uri + '/associations', {
                             type: 'depends'
-                        }, function(err, items: TAssociation[]) {
+                        }, function(err, items: cb.TAssociation[]) {
                             task.associations = items;
                             cb();
                         });
                     });
-                    async.parallelLimit(paralle, 1, function(err) {
-                        cb();
-                    });
+                });
+                async.parallelLimit(paralle, 1, function(err) {
+                    cb();
                 });
             });
 

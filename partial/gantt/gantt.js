@@ -1,4 +1,5 @@
 /// <reference path="../../defs/codeBeamer.d.ts"/>
+/// <reference path="../../defs/dhtmlxgannt.def.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer /*: ICodeBeamer*/ ) {
     $scope.tasks = {
@@ -21,34 +22,45 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer 
         ] };
 
     var unitDay = 1000 * 60 * 60 * 24;
-
     $scope.goProject = function (aUri) {
         console.log('goProject: ' + aUri);
-        $codeBeamer.getProjectTask(aUri, function (err, resp) {
+        $codeBeamer.getProjectTask(aUri, function (err, items) {
             if (err) {
                 return;
             }
 
-            var i, len = resp.length, task, data = [];
-            for (i = 0; i < len; i++) {
-                task = resp[i];
-                data.push({
-                    id: task.uri,
-                    text: task.name,
-                    start_date: new Date(task.startDate || task.modifiedAt),
-                    duration: (task.estimatedMillis || unitDay) / unitDay
+            var taskUris = [], tasks = [], links = [];
+            items.forEach(function (item) {
+                taskUris.push(item.uri);
+                tasks.push({
+                    id: item.uri,
+                    text: item.name,
+                    start_date: new Date(item.startDate || item.modifiedAt),
+                    duration: (item.estimatedMillis || unitDay) / unitDay
                 });
-            }
+
+                if (item.associations) {
+                    item.associations.forEach(function (association) {
+                        if (taskUris.indexOf(association.to.uri) != -1) {
+                            links.push({
+                                id: association.uri,
+                                source: association.to.uri,
+                                target: item.uri,
+                                type: '0'
+                            });
+                        }
+                    });
+                }
+            });
 
             $scope.tasks = {
-                data: data
+                data: tasks,
+                links: links
             };
         });
     };
 
     $scope.taskUpdate = function (id, item) {
-        console.log('taskUpdate');
-
         $codeBeamer.updateTask({
             uri: item.id,
             name: item.text,

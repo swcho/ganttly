@@ -90,8 +90,8 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
 
             // find associations for each task
             series.push(function (cb) {
+                var paralle = [];
                 tasks.forEach(function (task) {
-                    var paralle = [];
                     paralle.push(function (cb) {
                         get(task.uri + '/associations', {
                             type: 'depends'
@@ -100,9 +100,9 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                             cb();
                         });
                     });
-                    async.parallelLimit(paralle, 1, function (err) {
-                        cb();
-                    });
+                });
+                async.parallelLimit(paralle, 1, function (err) {
+                    cb();
                 });
             });
 
