@@ -1,28 +1,45 @@
 /// <reference path="../../defs/codeBeamer.d.ts"/>
 /// <reference path="../../defs/dhtmlxgannt.def.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
-angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer /*: ICodeBeamer*/ ) {
-    $scope.tasks = {
-        data: [
-            {
-                id: 1, text: "Project #2", start_date: "01-04-2013", duration: 18, order: 10,
-                progress: 0.4, open: true },
-            {
-                id: 2, text: "Task #1", start_date: "02-04-2013", duration: 8, order: 10,
-                progress: 0.6, parent: 1 },
-            {
-                id: 3, text: "Task #2", start_date: "11-04-2013", duration: 8, order: 20,
-                progress: 0.6, parent: 1 }
-        ],
-        links: [
-            { id: 1, source: 1, target: 2, type: "1" },
-            { id: 2, source: 2, target: 3, type: "0" },
-            { id: 3, source: 3, target: 4, type: "0" },
-            { id: 4, source: 2, target: 5, type: "2" }
-        ] };
+angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $stateParams, $codeBeamer /*: ICodeBeamer*/ ) {
+    console.log($stateParams);
+
+    var projectUri = $stateParams.project;
+    var userId = $stateParams.user;
+
+    $scope.tasks = {};
 
     var unitDay = 1000 * 60 * 60 * 24;
-    $scope.goProject = function (aUri) {
+    $scope.goProject = function (uri) {
+        $state.go('gantt', {
+            project: uri
+        });
+    };
+
+    $scope.onTaskUpdated = function (id, item) {
+        $codeBeamer.updateTask({
+            uri: item.id,
+            name: item.text,
+            startDate: item.start_date,
+            estimatedMillis: item.duration * unitDay
+        }, function (err, resp) {
+        });
+    };
+
+    $scope.onLinkAdded = function (id, item) {
+        console.log(id, item);
+    };
+
+    $codeBeamer.getProjectList({
+        page: 1
+    }, function (err, resp) {
+        if (err) {
+            return;
+        }
+        $scope.items = resp.projects;
+    });
+
+    function showProject(aUri) {
         console.log('goProject: ' + aUri);
         $codeBeamer.getProjectTask(aUri, function (err, items) {
             if (err) {
@@ -58,25 +75,11 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $codeBeamer 
                 links: links
             };
         });
-    };
+    }
+    ;
 
-    $scope.taskUpdate = function (id, item) {
-        $codeBeamer.updateTask({
-            uri: item.id,
-            name: item.text,
-            startDate: item.start_date,
-            estimatedMillis: item.duration * unitDay
-        }, function (err, resp) {
-        });
-    };
-
-    $codeBeamer.getProjectList({
-        page: 1
-    }, function (err, resp) {
-        if (err) {
-            return;
-        }
-        $scope.items = resp.projects;
-    });
+    if (projectUri) {
+        showProject(projectUri);
+    }
 });
 //# sourceMappingURL=gantt.js.map

@@ -4,12 +4,12 @@ angular.module('ganttly').config(function($stateProvider, $urlRouterProvider, $l
 
 
     $stateProvider.state('gantt', {
-        url: '/gantt/:id',
+        url: '/gantt?project&user',
         templateUrl: 'partial/gantt/gantt.html'
     });
 
     /* Add New States Above */
-    $urlRouterProvider.otherwise('/gantt/');
+    $urlRouterProvider.otherwise('/gantt');
 
     $logProvider.debugEnabled(true);
 });

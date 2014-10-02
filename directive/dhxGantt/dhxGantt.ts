@@ -31,6 +31,12 @@ angular.module('ganttly').directive('dhxGantt', function () {
                     $scope[$attrs['dhxTaskUpdate']](id, item);
                 }
             });
+
+            gantt.attachEvent("onAfterLinkAdd", function(id, item) {
+                if ($attrs['dhxLinkAdd']) {
+                    $scope[$attrs['dhxLinkAdd']](id, item);
+                }
+            });
         }
     };
 });
