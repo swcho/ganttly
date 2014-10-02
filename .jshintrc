@@ -27,6 +27,7 @@
         "xdescribe": true,
         "xit": true,
         "spyOn": true,
-        "gantt": true
+        "gantt": true,
+        "async": true
     }
 }

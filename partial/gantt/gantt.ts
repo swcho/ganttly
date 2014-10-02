@@ -94,7 +94,7 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
 
                 if (item.associations) {
                     item.associations.forEach(function(association: cb.TAssociation) {
-                        if (taskUris.indexOf(association.to.uri) != -1) {
+                        if (taskUris.indexOf(association.to.uri) !== -1) {
                             links.push({
                                 id: association.uri,
                                 source: association.to.uri,
@@ -111,7 +111,7 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
                 links: links
             };
         });
-    };
+    }
 
     if (projectUri) {
         showProject(projectUri);
