@@ -26,10 +26,63 @@ interface TRespGetProjectList {
     projects: TProject[];
 }
 
+interface TType {
+    name: string;
+    url: string;
+}
+
+interface TTracker {
+    descFormat: string;
+    description: string;
+    keyName: string;
+    name: string;
+    type: TType;
+    uri: string;
+}
+
+interface TUser {
+    uri: string;
+    name: string;
+}
+
+interface TPriority {
+    flags: number;
+    id: number;
+    name: string;
+}
+
+interface TStatus {
+    flags: number;
+    id: number;
+    name: string;
+}
 
 interface TTask {
     uri: string;
+
+    descFormat: string;
+    estimatedMillis: number;
+    modifiedAt: string; // Date
+    modifier: TUser;
     name: string;
+    priority: TPriority;
+    startDate: string; // Date
+    status: TStatus;
+    submittedAt: string; // Date
+    submitter: TUser;
+    tracker: TTracker;
+    version: number;
+
+    associations?: TAssociation[];
+}
+
+interface TAssociation {
+    from: string; // uri
+    to: string; // uri
+    type: string; // uri
+    propagatingSuspects: boolean;
+    description: string;
+    descFormat: string;
 }
 
 interface ICodeBeamer {

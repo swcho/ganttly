@@ -1,0 +1,40 @@
+{
+  "name": "angular-gantt",
+  "version": "0.6.3",
+  "homepage": "https://github.com/Schweigi/angular-gantt",
+  "authors": [
+    "Schweigi"
+  ],
+  "description": "A Gantt chart directive for AngularJS without any other dependencies.",
+  "main": [
+    "./assets/angular-gantt.js",
+    "./assets/gantt.css"
+  ],
+  "keywords": [
+    "gantt",
+    "chart",
+    "angularjs"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "demo",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": ">=1.2.16"
+  },
+  "_release": "0.6.3",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.6.3",
+    "commit": "75a177dad0ace0253114f7f8e38ee7505c6f1113"
+  },
+  "_source": "git://github.com/Schweigi/angular-gantt.git",
+  "_target": "~0.6.3",
+  "_originalSource": "angular-gantt",
+  "_direct": true
+}

@@ -9,7 +9,7 @@
   ],
   "dependencies": {
     "jquery": "~2.0",
-    "underscore": "~1.5",
+    "underscore": "~1.7.0",
     "bootstrap": "~3.1",
     "angular": "~1.2",
     "angular-ui-router": "~0.2",
@@ -23,6 +23,7 @@
     "less.js": "~1.6",
     "font-awesome": "~4.0",
     "angular-gantt": "~0.6.3",
-    "gantt": "~3.0.0"
+    "gantt": "~3.0.0",
+    "async": "~0.9.0"
   }
 }

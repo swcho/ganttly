@@ -68,15 +68,51 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             get('/projects/page/' + aParam.page, aParam, aCb);
         },
         getProjectTask: function(aProjectUri: string, aCb: (err, resp?: TTask[]) => void) {
-            get(aProjectUri + '/trackers', {
-                type: 'Task'
-            }, function(err, resp) {
-                if (err) {
-                    aCb(err);
-                    return;
-                }
 
-                get(resp[0].uri + '/items', null, aCb);
+            var series = [];
+
+            // get uri for task
+            var uri;
+            series.push(function(cb) {
+                get(aProjectUri + '/trackers', {
+                    type: 'Task'
+                }, function(err, trackers: TTracker[]) {
+                    if (trackers && trackers.length) {
+                        uri = trackers[0].uri;
+                    }
+                    cb(err);
+                });
+            });
+
+            // get trackers all items
+            var tasks: TTask[];
+            series.push(function(cb) {
+                get(uri + '/items', null, function(err, items: TTask[]) {
+                    tasks = items;
+                    cb(err);
+                });
+            });
+
+            // find associations for each task
+            series.push(function(cb) {
+                tasks.forEach(function(task: TTask) {
+                    var paralle = [];
+                    paralle.push(function(cb) {
+                        get(task.uri + '/associations', {
+                            type: 'depends'
+                        }, function(err, items: TAssociation[]) {
+                            task.associations = items;
+                            cb();
+                        });
+                    });
+                    async.parallelLimit(paralle, 1, function(err) {
+                        cb();
+                    });
+                });
+            });
+
+            async.series(series, function(err) {
+                aCb(err, tasks);
             });
         },
         updateTask: function(aTask, aCb) {

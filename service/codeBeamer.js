@@ -64,15 +64,50 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
             get('/projects/page/' + aParam.page, aParam, aCb);
         },
         getProjectTask: function (aProjectUri, aCb) {
-            get(aProjectUri + '/trackers', {
-                type: 'Task'
-            }, function (err, resp) {
-                if (err) {
-                    aCb(err);
-                    return;
-                }
+            var series = [];
 
-                get(resp[0].uri + '/items', null, aCb);
+            // get uri for task
+            var uri;
+            series.push(function (cb) {
+                get(aProjectUri + '/trackers', {
+                    type: 'Task'
+                }, function (err, trackers) {
+                    if (trackers && trackers.length) {
+                        uri = trackers[0].uri;
+                    }
+                    cb(err);
+                });
+            });
+
+            // get trackers all items
+            var tasks;
+            series.push(function (cb) {
+                get(uri + '/items', null, function (err, items) {
+                    tasks = items;
+                    cb(err);
+                });
+            });
+
+            // find associations for each task
+            series.push(function (cb) {
+                tasks.forEach(function (task) {
+                    var paralle = [];
+                    paralle.push(function (cb) {
+                        get(task.uri + '/associations', {
+                            type: 'depends'
+                        }, function (err, items) {
+                            task.associations = items;
+                            cb();
+                        });
+                    });
+                    async.parallelLimit(paralle, 1, function (err) {
+                        cb();
+                    });
+                });
+            });
+
+            async.series(series, function (err) {
+                aCb(err, tasks);
             });
         },
         updateTask: function (aTask, aCb) {
