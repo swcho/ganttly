@@ -7,7 +7,10 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
     var projectUri = $stateParams.project;
     var userId = $stateParams.user;
 
-    $scope.tasks = {};
+    $scope.tasks = {
+        data: [],
+        links: []
+    };
 
     var unitDay = 1000 * 60 * 60 * 24;
     $scope.goProject = function (uri) {
@@ -28,6 +31,23 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
 
     $scope.onLinkAdded = function (id, item) {
         console.log(id, item);
+        if (item.type === '0') {
+            $codeBeamer.createAssociation({
+                from: item.target,
+                to: item.source
+            }, function (err, association) {
+                //                if (!association.to) {
+                //                    $codeBeamer.updateAssociation({
+                //                        uri: association.uri,
+                //                        to: {
+                //                            uri: item.source
+                //                        }
+                //                    }, function() {
+                //
+                //                    });
+                //                }
+            });
+        }
     };
 
     $codeBeamer.getProjectList({
@@ -51,7 +71,7 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
                 taskUris.push(item.uri);
                 tasks.push({
                     id: item.uri,
-                    text: item.name,
+                    text: item.uri,
                     start_date: new Date(item.startDate || item.modifiedAt),
                     duration: (item.estimatedMillis || unitDay) / unitDay
                 });

@@ -86,8 +86,18 @@ declare module cb {
         descFormat: string;
     }
 
+    interface TParamCreateAssociation {
+        from: string; // uri
+        to: string; // uri
+        type?: string; // ex) "/association/type/depends"
+        propagatingSuspects?: boolean;
+        description?: string;
+        descFormat?: string;
+    }
+
     interface ICodeBeamer {
         getProjectList(aParam:TParamGetProjectList, aCb:(err, resp?:TRespGetProjectList) => void);
-        getProjectTask(aProjectUri:string, aCb:(err, resp?:TTask[]) => void);
+        getProjectTask(aProjectUri:string, aCb:(err, resp?: TTask[]) => void);
+        createAssociation(aParam: TParamCreateAssociation, aCb:(err, resp?: TAssociation) => void);
     }
 }

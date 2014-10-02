@@ -26,16 +26,23 @@ angular.module('ganttly').directive('dhxGantt', function () {
             //init gantt
             gantt.init($element[0]);
 
-            gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
-                if ($attrs['dhxTaskUpdate']) {
-                    $scope[$attrs['dhxTaskUpdate']](id, item);
-                }
-            });
+            var eventAttachIds = [
+                gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
+                    if ($attrs['dhxTaskUpdate']) {
+                        $scope[$attrs['dhxTaskUpdate']](id, item);
+                    }
+                }),
+                gantt.attachEvent("onAfterLinkAdd", function(id, item) {
+                    if ($attrs['dhxLinkAdd']) {
+                        $scope[$attrs['dhxLinkAdd']](id, item);
+                    }
+                })
+            ];
 
-            gantt.attachEvent("onAfterLinkAdd", function(id, item) {
-                if ($attrs['dhxLinkAdd']) {
-                    $scope[$attrs['dhxLinkAdd']](id, item);
-                }
+            $scope.$on('$destroy', function() {
+                eventAttachIds.forEach(function(id) {
+                    gantt.detachEvent(id);
+                });
             });
         }
     };
