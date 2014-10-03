@@ -28,6 +28,7 @@
         "xit": true,
         "spyOn": true,
         "gantt": true,
-        "async": true
+        "async": true,
+        "Trello": true
     }
 }

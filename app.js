@@ -8,7 +8,7 @@ angular.module('ganttly').config(function($stateProvider, $urlRouterProvider, $l
         templateUrl: 'partial/gantt/gantt.html'
     });
     $stateProvider.state('ganttTrello', {
-        url: '/ganttTrello',
+        url: '/ganttTrello?board&user',
         templateUrl: 'partial/ganttTrello/ganttTrello.html'
     });
 
