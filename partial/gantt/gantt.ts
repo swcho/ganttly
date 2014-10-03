@@ -1,7 +1,7 @@
 
-/// <reference path="../../defs/codeBeamer.d.ts"/>
 /// <reference path="../../defs/dhtmlxgannt.def.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
+/// <reference path="../../service/codeBeamer.ts"/>
 
 angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $stateParams, $codeBeamer/*: ICodeBeamer*/) {
 

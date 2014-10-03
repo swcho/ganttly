@@ -1,5 +1,4 @@
 
-/// <reference path="../../defs/codeBeamer.d.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 
 // ref http://www.dhtmlx.com/blog/gantt-chart-angularjs-app-dhtmlxgantt/

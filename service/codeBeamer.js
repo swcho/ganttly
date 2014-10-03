@@ -1,5 +1,5 @@
-/// <reference path="../defs/codeBeamer.d.ts"/>
 /// <reference path="../typings/tsd.d.ts"/>
+
 angular.module('ganttly').factory('$codeBeamer', function ($http) {
     // /tracker/type/6
     // http://tms.humaxdigital.com/rest/project/3/trackers?type=Task&hidden=true

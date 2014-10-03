@@ -7,6 +7,10 @@ angular.module('ganttly').config(function($stateProvider, $urlRouterProvider, $l
         url: '/gantt?project&user',
         templateUrl: 'partial/gantt/gantt.html'
     });
+    $stateProvider.state('ganttTrello', {
+        url: '/ganttTrello',
+        templateUrl: 'partial/ganttTrello/ganttTrello.html'
+    });
 
     /* Add New States Above */
     $urlRouterProvider.otherwise('/gantt');
