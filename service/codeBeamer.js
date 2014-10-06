@@ -7,7 +7,9 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
     var user = 'swcho';
     var pass = 'swcho';
     var credentials = btoa(user + ':' + pass);
-    var host = 'http://' + user + ':' + pass + '@10.0.14.229:8080/cb/rest';
+
+    //var host = 'http://'+ user + ':' + pass + '@10.0.14.229:8080/cb/rest';
+    var host = 'http://' + user + ':' + pass + '@10.0.14.229/cb/rest';
 
     function get(aUrl, aParam, aCb) {
         var url = host + aUrl;
