@@ -71,7 +71,7 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
                 taskUris.push(item.uri);
                 tasks.push({
                     id: item.uri,
-                    text: item.uri,
+                    text: item.name,
                     start_date: new Date(item.startDate || item.modifiedAt),
                     duration: (item.estimatedMillis || unitDay) / unitDay
                 });
