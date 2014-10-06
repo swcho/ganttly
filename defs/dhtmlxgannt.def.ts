@@ -7,6 +7,7 @@ interface TDhxTask {
     order?: number;
     progress?: number;
     open?: boolean;
+    parent?: string;
 }
 
 interface TDhxLink {

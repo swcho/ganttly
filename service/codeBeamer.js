@@ -2,14 +2,11 @@
 
 angular.module('ganttly').factory('$codeBeamer', function ($http) {
     // /tracker/type/6
-    // http://tms.humaxdigital.com/rest/project/3/trackers?type=Task&hidden=true
-    // http://tms.humaxdigital.com/rest/tracker/3802/items/page/1
-    var user = 'swcho';
-    var pass = 'swcho';
-    var credentials = btoa(user + ':' + pass);
-
-    //var host = 'http://'+ user + ':' + pass + '@10.0.14.229:8080/cb/rest';
-    var host = 'http://' + user + ':' + pass + '@10.0.14.229/cb/rest';
+    //    var user = 'swcho';
+    //    var pass = 'swcho';
+    //    var credentials = btoa(user + ':' + pass);
+    //var host = 'http://'+ user + ':' + pass + '@10.0.14.229/cb/rest';
+    var host = 'http://10.0.14.229/cb/rest';
 
     function get(aUrl, aParam, aCb) {
         var url = host + aUrl;
@@ -18,11 +15,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
         $http({
             url: url,
             method: 'GET',
-            params: param,
-            withCredentials: true,
-            headers: {
-                'Authorization': 'Basic ' + credentials
-            }
+            params: param
         }).success(function (resp) {
             console.log(resp);
             aCb(null, resp);
@@ -43,11 +36,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
         $http({
             url: url,
             method: 'PUT',
-            data: param,
-            withCredentials: true,
-            headers: {
-                'Authorization': 'Basic ' + credentials
-            }
+            data: param
         }).success(function (resp) {
             console.log(resp);
             aCb(null, resp);
@@ -68,11 +57,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
         $http({
             url: url,
             method: 'POST',
-            data: param,
-            withCredentials: true,
-            headers: {
-                'Authorization': 'Basic ' + credentials
-            }
+            data: param
         }).success(function (resp) {
             console.log(resp);
             aCb(null, resp);
@@ -121,7 +106,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                 tasks.forEach(function (task) {
                     paralle.push(function (cb) {
                         get(task.uri + '/associations', {
-                            type: 'depends'
+                            type: 'depends,child'
                         }, function (err, items) {
                             task.associations = items;
                             cb();

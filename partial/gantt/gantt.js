@@ -75,16 +75,25 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
                     start_date: new Date(item.startDate || item.modifiedAt),
                     duration: (item.estimatedMillis || unitDay) / unitDay
                 });
+            });
 
+            items.forEach(function (item, i) {
                 if (item.associations) {
                     item.associations.forEach(function (association) {
-                        if (taskUris.indexOf(association.to.uri) !== -1) {
-                            links.push({
-                                id: association.uri,
-                                source: association.to.uri,
-                                target: item.uri,
-                                type: '0'
-                            });
+                        var index = taskUris.indexOf(association.to.uri);
+                        if (index !== -1) {
+                            if (association.type.name === 'depends') {
+                                console.log('depends');
+                                links.push({
+                                    id: association.uri,
+                                    source: association.to.uri,
+                                    target: item.uri,
+                                    type: '0'
+                                });
+                            } else if (association.type.name === 'child') {
+                                console.log('child');
+                                tasks[i].parent = association.to.uri;
+                            }
                         }
                     });
                 }

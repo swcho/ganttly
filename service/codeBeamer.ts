@@ -79,7 +79,7 @@ declare module cb {
     interface TAssociation extends TItem {
         from: TItem; // uri
         to: TItem; // uri
-        type: string; // uri
+        type: any; // uri
         propagatingSuspects: boolean;
         description: string;
         descFormat: string;
@@ -105,13 +105,11 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
 
 
     // /tracker/type/6
-    // http://tms.humaxdigital.com/rest/project/3/trackers?type=Task&hidden=true
-    // http://tms.humaxdigital.com/rest/tracker/3802/items/page/1
-    var user = 'swcho';
-    var pass = 'swcho';
-    var credentials = btoa(user + ':' + pass);
-    //var host = 'http://'+ user + ':' + pass + '@10.0.14.229:8080/cb/rest';
-    var host = 'http://'+ user + ':' + pass + '@10.0.14.229/cb/rest';
+//    var user = 'swcho';
+//    var pass = 'swcho';
+//    var credentials = btoa(user + ':' + pass);
+    //var host = 'http://'+ user + ':' + pass + '@10.0.14.229/cb/rest';
+    var host = 'http://10.0.14.229/cb/rest';
 
     function get(aUrl, aParam, aCb) {
         var url = host + aUrl;
@@ -120,11 +118,11 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
         $http({
             url: url,
             method: 'GET',
-            params: param,
-            withCredentials: true,
-            headers: {
-                'Authorization': 'Basic ' + credentials
-            }
+            params: param
+//            withCredentials: true,
+//            headers: {
+//                'Authorization': 'Basic ' + credentials
+//            }
         }).success(function(resp) {
             console.log(resp);
             aCb(null, resp);
@@ -145,11 +143,11 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
         $http({
             url: url,
             method: 'PUT',
-            data: param,
-            withCredentials: true,
-            headers: {
-                'Authorization': 'Basic ' + credentials
-            }
+            data: param
+//            withCredentials: true,
+//            headers: {
+//                'Authorization': 'Basic ' + credentials
+//            }
         }).success(function(resp) {
             console.log(resp);
             aCb(null, resp);
@@ -170,11 +168,11 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
         $http({
             url: url,
             method: 'POST',
-            data: param,
-            withCredentials: true,
-            headers: {
-                'Authorization': 'Basic ' + credentials
-            }
+            data: param
+//            withCredentials: true,
+//            headers: {
+//                'Authorization': 'Basic ' + credentials
+//            }
         }).success(function(resp) {
             console.log(resp);
             aCb(null, resp);
@@ -224,7 +222,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                 tasks.forEach(function(task: cb.TTask) {
                     paralle.push(function(cb) {
                         get(task.uri + '/associations', {
-                            type: 'depends'
+                            type: 'depends,child'
                         }, function(err, items: cb.TAssociation[]) {
                             task.associations = items;
                             cb();
