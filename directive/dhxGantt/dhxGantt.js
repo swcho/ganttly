@@ -21,6 +21,17 @@ angular.module('ganttly').directive('dhxGantt', function () {
                 { name: "duration", label: "기간", align: "center", resize: true }
             ];
 
+            gantt.templates.task_class = function (start, end, task) {
+                var classes = {
+                    'Highest': 'priority_highest',
+                    'High': 'priority_high',
+                    'Normal': 'priority_normal',
+                    'Low': 'priority_low',
+                    'Lowest': 'priority_lowest'
+                };
+                return classes[task.priority];
+            };
+
             //init gantt
             gantt.init($element[0]);
 

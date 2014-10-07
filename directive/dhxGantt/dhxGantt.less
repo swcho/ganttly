@@ -1,0 +1,59 @@
+
+@ALPHA: 50%;
+@HIGHEST: #AA3939;
+@HIGHEST_ALPHA: fade(@HIGHEST, @ALPHA);
+@HIGH: #AA6D39;
+@HIGH_ALPHA: fade(@HIGH, @ALPHA);
+@NORMAL: #2D8633;
+@NORMAL_ALPHA: fade(@NORMAL, @ALPHA);
+@LOW: #226666;
+@LOW_ALPHA: fade(@LOW, @ALPHA);
+@LOWEST: #2E4172;
+@LOWEST_ALPHA: fade(@LOWEST, @ALPHA);
+
+.gantt_task_line {
+  &.priority_highest{
+    border:2px solid @HIGHEST_ALPHA;
+    color: @HIGHEST_ALPHA;
+    background: @HIGHEST_ALPHA;
+  }
+  &.priority_highest .gantt_task_progress{
+    background: @HIGHEST;
+  }
+
+  &.priority_high{
+    border:2px solid @HIGH_ALPHA;
+    color: @HIGH_ALPHA;
+    background: @HIGH_ALPHA;
+  }
+  &.priority_high .gantt_task_progress{
+    background: @HIGH;
+  }
+
+  &.priority_normal{
+    border:2px solid @NORMAL_ALPHA;
+    color: @NORMAL_ALPHA;
+    background: @NORMAL_ALPHA;
+  }
+  &.priority_normal .gantt_task_progress{
+    background: @NORMAL;
+  }
+
+  &.priority_low{
+    border:2px solid @LOW_ALPHA;
+    color: @LOW_ALPHA;
+    background: @LOW_ALPHA;
+  }
+  &.priority_low .gantt_task_progress{
+    background: @LOW;
+  }
+
+  &.priority_lowest{
+    border:2px solid @LOWEST_ALPHA;
+    color: @LOWEST_ALPHA;
+    background: @LOWEST_ALPHA;
+  }
+  &.priority_lowest .gantt_task_progress{
+    background: @LOWEST;
+  }
+}

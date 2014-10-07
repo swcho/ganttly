@@ -1,0 +1,40 @@
+.gantt_task_line.priority_highest {
+  border: 2px solid rgba(170, 57, 57, 0.5);
+  color: rgba(170, 57, 57, 0.5);
+  background: rgba(170, 57, 57, 0.5);
+}
+.gantt_task_line.priority_highest .gantt_task_progress {
+  background: #aa3939;
+}
+.gantt_task_line.priority_high {
+  border: 2px solid rgba(170, 109, 57, 0.5);
+  color: rgba(170, 109, 57, 0.5);
+  background: rgba(170, 109, 57, 0.5);
+}
+.gantt_task_line.priority_high .gantt_task_progress {
+  background: #aa6d39;
+}
+.gantt_task_line.priority_normal {
+  border: 2px solid rgba(45, 134, 51, 0.5);
+  color: rgba(45, 134, 51, 0.5);
+  background: rgba(45, 134, 51, 0.5);
+}
+.gantt_task_line.priority_normal .gantt_task_progress {
+  background: #2d8633;
+}
+.gantt_task_line.priority_low {
+  border: 2px solid rgba(34, 102, 102, 0.5);
+  color: rgba(34, 102, 102, 0.5);
+  background: rgba(34, 102, 102, 0.5);
+}
+.gantt_task_line.priority_low .gantt_task_progress {
+  background: #226666;
+}
+.gantt_task_line.priority_lowest {
+  border: 2px solid rgba(46, 65, 114, 0.5);
+  color: rgba(46, 65, 114, 0.5);
+  background: rgba(46, 65, 114, 0.5);
+}
+.gantt_task_line.priority_lowest .gantt_task_progress {
+  background: #2e4172;
+}

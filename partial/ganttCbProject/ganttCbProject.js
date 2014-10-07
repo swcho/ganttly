@@ -188,7 +188,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                     user: userNames.join(','),
                     start_date: new Date(item.startDate || item.modifiedAt),
                     duration: (item.estimatedMillis || unitDay) / unitDay,
-                    progress: item.spentEstimatedHours || 0
+                    progress: item.spentEstimatedHours || 0,
+                    priority: item.priority.name
                 });
             });
 
