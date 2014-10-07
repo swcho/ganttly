@@ -68,6 +68,7 @@ declare module cb {
         submitter: TUser;
         tracker: TTracker;
         version: number;
+        parent?: TItem;
 
         associations?: TAssociation[];
     }

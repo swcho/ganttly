@@ -35,7 +35,7 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
         });
     };
 
-    $scope.onTaskAdd = function(id, item: TDhxTask) {
+    $scope.onTaskAdd = function(gantt, id, item: TDhxTask) {
         if (taskTrackerUri) {
             console.log(id);
             console.log(item);
@@ -50,7 +50,11 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
             }
 
             $codeBeamer.createTask(param, function (err, resp) {
-
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                gantt.changeTaskId(id, resp.uri);
             });
         }
     };
@@ -66,9 +70,12 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
         });
     };
 
-    $scope.onTaskDelete = function(id, item) {
-        $codeBeamer.deleteTask(id, function(err, resp) {
-
+    $scope.onTaskDelete = function(gantt, id, item) {
+        $codeBeamer.deleteTask(id, function(err) {
+            if (err) {
+                console.log(err);
+                return;
+            }
         });
     };
 
@@ -141,6 +148,9 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
                             }
                         }
                     });
+                }
+                if (item.parent) {
+                    tasks[i].parent = item.parent.uri;
                 }
             });
 
