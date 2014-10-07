@@ -29,6 +29,8 @@
         "spyOn": true,
         "gantt": true,
         "async": true,
-        "Trello": true
+        "Trello": true,
+        "gConfig": true,
+        "dhtmlXMenuObject": true
     }
 }

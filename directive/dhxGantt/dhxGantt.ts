@@ -2,6 +2,9 @@
 /// <reference path="../../typings/tsd.d.ts"/>
 
 // ref http://www.dhtmlx.com/blog/gantt-chart-angularjs-app-dhtmlxgantt/
+
+declare var dhtmlXMenuObject;
+
 angular.module('ganttly').directive('dhxGantt', function () {
     return {
         restrict: 'A',
@@ -10,14 +13,15 @@ angular.module('ganttly').directive('dhxGantt', function () {
         template: '<div ng-transclude></div>',
 
         link: function ($scope, $element, $attrs, $controller) {
-            function myFunc(task){
-                if(task.users)
-                    return "<div class='important'>"+task.text+" ("+task.users+") </div>";
-                return task.text;
-            };
+//            function myFunc(task){
+//                if(task.users) {
+//                    return "<div class='important'>"+task.text+" ("+task.users+") </div>";
+//                }
+//                return task.text;
+//            }
 
             gantt.config.columns=[
-                {name:"text", tree: true, label:"작업",  template:myFunc, resize: true },
+                {name:"text", tree: true, label:"작업", /*template:myFunc,*/ resize: true },
                 {name:"user", label:"담당자", align: "center", resize: true },
                 {name:"start_date", label:"시작일", align: "center", resize: true },
                 {name:"duration",   label:"기간",   align: "center", resize: true }
@@ -87,6 +91,29 @@ angular.module('ganttly').directive('dhxGantt', function () {
                 eventAttachIds.forEach(function(id) {
                     gantt.detachEvent(id);
                 });
+            });
+
+            var menu = new dhtmlXMenuObject();
+            menu.setIconsPath("bower_components/dhtmlxMenu/sample_images/");
+            menu.renderAsContextMenu();
+            menu.setSkin("dhx_terrace");
+            menu.loadXML("data/dhxmenu.xml");
+
+            gantt.attachEvent("onContextMenu", function(taskId, linkId, event){
+                var x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft,
+                    y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+
+                if(taskId){
+                    menu.showContextMenu(x, y);
+                }else if(linkId){
+                    menu.showContextMenu(x, y);
+                }
+
+                if(taskId || linkId){
+                    return false;
+                }
+
+                return true;
             });
         }
     };
