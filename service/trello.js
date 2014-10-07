@@ -9,7 +9,7 @@ angular.module('ganttly').factory('$trello', function ($http) {
                 read: true,
                 write: true
             },
-            expiration: '1hour',
+            expiration: 'never',
             success: function () {
                 console.log('Trello.authorize.success');
                 cb();
@@ -48,6 +48,8 @@ angular.module('ganttly').factory('$trello', function ($http) {
     }
 
     return {
+        setKey: function (key) {
+        },
         getBoards: function (cb) {
             authorize(function (err) {
                 if (err) {
