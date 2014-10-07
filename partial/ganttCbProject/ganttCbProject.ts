@@ -181,10 +181,17 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
             var taskUris = [], tasks: TDhxTask[] = [], links: TDhxLink[] = [];
             items.forEach(function(item) {
+                var userNames = [];
+                if (item.assignedTo) {
+                    item.assignedTo.forEach(function(user) {
+                        userNames.push(user.name);
+                    });
+                }
                 taskUris.push(item.uri);
                 tasks.push({
                     id: item.uri,
                     text: item.name,
+                    user: userNames.join(','),
                     start_date: new Date(item.startDate || item.modifiedAt),
                     duration: (item.estimatedMillis || unitDay)/unitDay
                 });

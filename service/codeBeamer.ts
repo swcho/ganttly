@@ -69,7 +69,7 @@ declare module cb {
         tracker: TTracker;
         version: number;
         parent?: TItem;
-
+        assignedTo: TItem[]; // users
         associations?: TAssociation[];
     }
 

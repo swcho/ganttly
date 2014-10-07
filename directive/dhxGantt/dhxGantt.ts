@@ -13,14 +13,15 @@ angular.module('ganttly').directive('dhxGantt', function () {
             function myFunc(task){
                 if(task.users)
                     return "<div class='important'>"+task.text+" ("+task.users+") </div>";
-                return task.text+" ("+task.users+")";
+                return task.text;
             };
 
-//            gantt.config.columns=[
-//                {name:"text",       label:"Task name",  template:myFunc },
-//                {name:"start_date", label:"Start time", align: "center" },
-//                {name:"duration",   label:"Duration",   align: "center" }
-//            ];
+            gantt.config.columns=[
+                {name:"text", tree: true, label:"작업",  template:myFunc, resize: true },
+                {name:"user", label:"담당자", align: "center", resize: true },
+                {name:"start_date", label:"시작일", align: "center", resize: true },
+                {name:"duration",   label:"기간",   align: "center", resize: true }
+            ];
 
             //init gantt
             gantt.init($element[0]);
