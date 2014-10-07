@@ -10,6 +10,17 @@ angular.module('ganttly').directive('dhxGantt', function () {
         template: '<div ng-transclude></div>',
 
         link: function ($scope, $element, $attrs, $controller) {
+            function myFunc(task){
+                if(task.users)
+                    return "<div class='important'>"+task.text+" ("+task.users+") </div>";
+                return task.text+" ("+task.users+")";
+            };
+
+//            gantt.config.columns=[
+//                {name:"text",       label:"Task name",  template:myFunc },
+//                {name:"start_date", label:"Start time", align: "center" },
+//                {name:"duration",   label:"Duration",   align: "center" }
+//            ];
 
             //init gantt
             gantt.init($element[0]);
