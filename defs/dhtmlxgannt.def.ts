@@ -2,7 +2,8 @@
 interface TDhxTask {
     id: string;
     text?: string;
-    start_date?: Date
+    start_date?: Date;
+    end_date?: Date;
     duration?: number;
     order?: number;
     progress?: number;

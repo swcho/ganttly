@@ -6,6 +6,7 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
 
     var projectUri = $stateParams.project;
     var userId = $stateParams.user;
+    var taskTrackerUri;
 
     $scope.tasks = {
         data: [],
@@ -19,7 +20,26 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
         });
     };
 
-    $scope.onTaskUpdated = function (id, item) {
+    $scope.onTaskAdd = function (id, item) {
+        if (taskTrackerUri) {
+            console.log(id);
+            console.log(item);
+            var param = {
+                tracker: taskTrackerUri,
+                name: item.text,
+                startDate: item.start_date,
+                estimatedMillis: item.duration * unitDay
+            };
+            if (item.parent) {
+                param.parent = item.parent;
+            }
+
+            $codeBeamer.createTask(param, function (err, resp) {
+            });
+        }
+    };
+
+    $scope.onTaskUpdate = function (id, item) {
         $codeBeamer.updateTask({
             uri: item.id,
             name: item.text,
@@ -29,25 +49,30 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
         });
     };
 
-    $scope.onLinkAdded = function (id, item) {
+    $scope.onTaskDelete = function (id, item) {
+        $codeBeamer.deleteTask(id, function (err, resp) {
+        });
+    };
+
+    $scope.onLinkAdd = function (id, item) {
         console.log(id, item);
-        if (item.type === '0') {
-            $codeBeamer.createAssociation({
-                from: item.target,
-                to: item.source
-            }, function (err, association) {
-                //                if (!association.to) {
-                //                    $codeBeamer.updateAssociation({
-                //                        uri: association.uri,
-                //                        to: {
-                //                            uri: item.source
-                //                        }
-                //                    }, function() {
-                //
-                //                    });
-                //                }
-            });
-        }
+        //        if (item.type === '0') {
+        //            $codeBeamer.createAssociation({
+        //                from: item.target,
+        //                to: item.source
+        //            }, function(err, association) {
+        //            });
+        //        }
+    };
+
+    $scope.onLinkUpdate = function (id, item) {
+        console.log(id);
+        console.log(item);
+    };
+
+    $scope.onLinkDelete = function (id, item) {
+        console.log(id);
+        console.log(item);
     };
 
     $codeBeamer.getProjectList({
@@ -61,10 +86,12 @@ angular.module('ganttly').controller('GanttCtrl', function ($scope, $state, $sta
 
     function showProject(aUri) {
         console.log('goProject: ' + aUri);
-        $codeBeamer.getProjectTask(aUri, function (err, items) {
+        $codeBeamer.getProjectTask(aUri, function (err, trackerUri, items) {
             if (err) {
                 return;
             }
+
+            taskTrackerUri = trackerUri;
 
             var taskUris = [], tasks = [], links = [];
             items.forEach(function (item) {

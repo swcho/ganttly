@@ -6,6 +6,7 @@
  */
 
 declare module cb {
+
     interface TItem {
         uri: string;
         name: string;
@@ -46,15 +47,10 @@ declare module cb {
     }
 
     interface TUser extends TItem {
+
     }
 
-    interface TPriority {
-        flags: number;
-        id: number;
-        name: string;
-    }
-
-    interface TStatus {
+    interface TEnum {
         flags: number;
         id: number;
         name: string;
@@ -65,9 +61,9 @@ declare module cb {
         estimatedMillis: number;
         modifiedAt: string; // Date
         modifier: TUser;
-        priority: TPriority;
+        priority: TEnum;
         startDate: string; // Date
-        status: TStatus;
+        status: TEnum;
         submittedAt: string; // Date
         submitter: TUser;
         tracker: TTracker;
@@ -94,36 +90,134 @@ declare module cb {
         descFormat?: string;
     }
 
+    interface TSchema {
+        title: string; // ex) Task
+        plural: string; // ex) Tasks
+        description: string;
+        properties: {
+
+        }
+    }
+
+    interface TSchemaType {
+        title: string;
+        type: string;
+        format?: string; // validator for string
+        maxLength?: number; // validator for string
+        minimum?: number; // validator for number
+        properties: TSchemaType[];
+        required?: string; // validator for properties
+        enum?: TEnum[];
+        uniqueItems?: boolean;
+        optionsURI?: string;
+    }
+
+    interface TRespCreateItem {
+        item: {
+            version: number;
+            tracker: { // tracker
+                project: TItem; // project
+                uri: string;
+                name: string;
+            };
+            priority: TEnum;
+            submitter: TItem; // user
+            descFormat: string;
+        }
+        type: TSchemaType;
+        permissions: {
+            id: number;
+            parent: number;
+            tracker: number;
+            priority: number;
+            name: number;
+            status: number;
+            severity: number;
+            resolution: number;
+            release: number;
+            assignedTo: number;
+            submittedAt: number;
+            submitter: number;
+            modifiedAt: number;
+            modifier: number;
+            startDate: number;
+            endDate: number;
+            estimatedMillis: number;
+            accruedMillis: number;
+            spentMillis: number;
+            spentEstimatedHours: number;
+            description: number;
+            descFormat: number;
+            comments: number;
+            children: number;
+        }
+    }
+
+    interface TParamCreateTask {
+        tracker: string; // tracker uri
+        name: string;
+        parent?: string; // project uri
+        priority?: string;
+        status?: string;
+        severity?: string;
+//        resolution: number;
+//        release: number;
+//        assignedTo: number;
+//        submittedAt: number;
+//        submitter: number;
+//        modifiedAt: number;
+//        modifier: number;
+        startDate?: Date;
+        endDate?: Date;
+        estimatedMillis?: number;
+//        accruedMillis: number;
+//        spentMillis: number;
+//        spentEstimatedHours?: number;
+        description?: string;
+        descFormat?: string;
+//        comments: number;
+//        children: number;
+    }
+
     interface ICodeBeamer {
-        getProjectList(aParam:TParamGetProjectList, aCb:(err, resp?:TRespGetProjectList) => void);
-        getProjectTask(aProjectUri:string, aCb:(err, resp?: TTask[]) => void);
+        getProjectList(aParam: TParamGetProjectList, aCb:(err, resp?: TRespGetProjectList) => void);
+        getProjectTask(aProjectUri: string, aCb:(err, trackerUri: string, resp?: TTask[]) => void);
+        createTask(aParam: TParamCreateTask, aCb:(err, resp: TTask) => void);
+        updateTask(aTask: cb.TTask, aCb: (err, resp: cb.TTask) => void);
+        deleteTask(aTaskUri: string, aCb: (err, resp) => void);
         createAssociation(aParam: TParamCreateAssociation, aCb:(err, resp?: TAssociation) => void);
     }
 }
 
 angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService) {
 
-
-    // /tracker/type/6
-//    var user = 'swcho';
-//    var pass = 'swcho';
-//    var credentials = btoa(user + ':' + pass);
-    //var host = 'http://'+ user + ':' + pass + '@10.0.14.229/cb/rest';
+    var user = 'swcho';
+    var pass = 'swcho';
+    var credentials = btoa(user + ':' + pass);
     var host = 'http://10.0.14.229/cb/rest';
+    var withCredentials = false;
 
-    function get(aUrl, aParam, aCb) {
+    function send(aMethod, aUrl, aParam, aCb) {
         var url = host + aUrl;
-        var param = aParam || {};
         console.log(url);
-        $http({
-            url: url,
-            method: 'GET',
-            params: param
-//            withCredentials: true,
-//            headers: {
-//                'Authorization': 'Basic ' + credentials
-//            }
-        }).success(function(resp) {
+        var options: any  = {};
+        options.url = url;
+        options.method = aMethod;
+        if (aParam) {
+            if (aMethod === 'POST' || aMethod === 'PUT') {
+                options.data = aParam;
+            } else {
+                options.params = aParam;
+            }
+        }
+        if (withCredentials) {
+            options.withCredentials = true;
+            options.headers = {
+                'Authorization': 'Basic ' + credentials
+            }
+        }
+
+        $http(options).success(function(resp) {
             console.log(resp);
             aCb(null, resp);
         }).error(function(data, status, header, config) {
@@ -134,74 +228,42 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                 config: config
             });
         });
+    }
+
+    function get(aUrl, aParam, aCb) {
+        send('GET', aUrl, aParam, aCb);
     }
 
     function put(aUrl, aParam, aCb) {
-        var url = host + aUrl;
-        var param = aParam || {};
-        console.log(url);
-        $http({
-            url: url,
-            method: 'PUT',
-            data: param
-//            withCredentials: true,
-//            headers: {
-//                'Authorization': 'Basic ' + credentials
-//            }
-        }).success(function(resp) {
-            console.log(resp);
-            aCb(null, resp);
-        }).error(function(data, status, header, config) {
-            aCb({
-                data: data,
-                status: status,
-                header: header,
-                config: config
-            });
-        });
+        send('PUT', aUrl, aParam, aCb);
     }
 
     function post(aUrl, aParam, aCb) {
-        var url = host + aUrl;
-        var param = aParam || {};
-        console.log(url);
-        $http({
-            url: url,
-            method: 'POST',
-            data: param
-//            withCredentials: true,
-//            headers: {
-//                'Authorization': 'Basic ' + credentials
-//            }
-        }).success(function(resp) {
-            console.log(resp);
-            aCb(null, resp);
-        }).error(function(data, status, header, config) {
-            aCb({
-                data: data,
-                status: status,
-                header: header,
-                config: config
-            });
-        });
+        send('POST', aUrl, aParam, aCb);
+    }
+
+    function del(aUrl, aCb) {
+        send('DELETE', aUrl, null, aCb);
     }
 
     var codeBeamber: cb.ICodeBeamer = {
         getProjectList: function(aParam: cb.TParamGetProjectList, aCb: (err, resp?: cb.TRespGetProjectList) => void) {
             get('/projects/page/' + aParam.page, aParam, aCb);
         },
-        getProjectTask: function(aProjectUri: string, aCb: (err, resp?: cb.TTask[]) => void) {
+        getProjectTask: function(aProjectUri: string, aCb: (err, trackerUri: string, resp?: cb.TTask[]) => void) {
 
+            console.log('Project URI: ' + aProjectUri);
             var series = [];
 
             // get uri for task
-            var uri;
+            var trackerUri;
             series.push(function(cb) {
                 get(aProjectUri + '/trackers', {
                     type: 'Task'
                 }, function(err, trackers: cb.TTracker[]) {
                     if (trackers && trackers.length) {
-                        uri = trackers[0].uri;
+                        trackerUri = trackers[0].uri;
+                        console.log('Tracker URI: ' + trackers[0].uri);
                     }
                     cb(err);
                 });
@@ -210,7 +272,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             // get trackers all items
             var tasks: cb.TTask[];
             series.push(function(cb) {
-                get(uri + '/items', null, function(err, items: cb.TTask[]) {
+                get(trackerUri + '/items', null, function(err, items: cb.TTask[]) {
                     tasks = items;
                     cb(err);
                 });
@@ -235,11 +297,17 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             });
 
             async.series(series, function(err) {
-                aCb(err, tasks);
+                aCb(err, trackerUri, tasks);
             });
         },
-        updateTask: function(aTask, aCb) {
+        createTask: function(aParam: cb.TParamCreateTask, aCb:(err, resp: cb.TTask) => void) {
+            post('/item', aParam, aCb);
+        },
+        updateTask: function(aTask: cb.TTask, aCb: (err, resp: cb.TTask) => void) {
             put('/item', aTask, aCb);
+        },
+        deleteTask: function (aTaskUri: string, aCb: (err, resp) => void) {
+            del(aTaskUri, aCb);
         },
         createAssociation: function(aParam: cb.TParamCreateAssociation, aCb:(err) => void) {
             aParam.type = aParam.type || "/association/type/1";
