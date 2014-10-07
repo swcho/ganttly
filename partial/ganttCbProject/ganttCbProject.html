@@ -1,8 +1,23 @@
 <div style="height:100%; width:100%;" ng-controller="GanttCbProjectCtrl">
+
+    <div class="btn-group" dropdown is-open="status.isopen">
+        <button type="button" class="btn btn-primary dropdown-toggle">
+            {{selectedScale}}<span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li>
+                <a href ng-click="setScale('Day')">Day</a>
+                <a href ng-click="setScale('Week')">Week</a>
+                <a href ng-click="setScale('Month')">Month</a>
+                <a href ng-click="setScale('Year')">Year</a>
+            </li>
+        </ul>
+    </div>
+
     <!-- Single button -->
     <div class="btn-group" dropdown is-open="status.isopen">
-        <button type="button" class="btn btn-primary dropdown-toggle" ng-disabled="disabled">
-            Select Project <span class="caret"></span>
+        <button type="button" class="btn btn-primary dropdown-toggle">
+            {{selectedProjectName}}<span class="caret"></span>
         </button>
         <ul class="dropdown-menu" role="menu">
             <li ng-repeat="choice in items">

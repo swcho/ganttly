@@ -4,16 +4,79 @@
 angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $state, $stateParams, $codeBeamer /*: ICodeBeamer*/ ) {
     console.log($stateParams);
 
+    var unitDay = 1000 * 60 * 60 * 24;
+
     var projectUri = $stateParams.project;
     var userId = $stateParams.user;
     var taskTrackerUri;
 
+    $scope.selectedScale = "Select Scale";
+    $scope.selectedProjectName = "Select Project";
     $scope.tasks = {
         data: [],
         links: []
     };
 
-    var unitDay = 1000 * 60 * 60 * 24;
+    $scope.setScale = function (scale) {
+        var setScale = {
+            'Day': function () {
+                gantt.config.scale_unit = "day";
+                gantt.config.step = 1;
+                gantt.config.date_scale = "%d %M";
+                gantt.config.subscales = [];
+                gantt.config.scale_height = 27;
+                gantt.templates.date_scale = null;
+            },
+            'Week': function () {
+                var weekScaleTemplate = function (date) {
+                    var dateToStr = gantt.date.date_to_str("%d %M");
+                    var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
+                    return dateToStr(date) + " - " + dateToStr(endDate);
+                };
+
+                gantt.config.scale_unit = "week";
+                gantt.config.step = 1;
+                gantt.templates.date_scale = weekScaleTemplate;
+                gantt.config.subscales = [
+                    { unit: "day", step: 1, date: "%D" }
+                ];
+                gantt.config.scale_height = 50;
+            },
+            'Month': function () {
+                gantt.config.scale_unit = "month";
+                gantt.config.date_scale = "%F, %Y";
+                gantt.config.subscales = [
+                    { unit: "day", step: 1, date: "%j, %D" }
+                ];
+                gantt.config.scale_height = 50;
+                gantt.templates.date_scale = null;
+            },
+            'Year': function () {
+                gantt.config.scale_unit = "year";
+                gantt.config.step = 1;
+                gantt.config.date_scale = "%Y";
+                gantt.config.min_column_width = 50;
+
+                gantt.config.scale_height = 90;
+                gantt.templates.date_scale = null;
+
+                var monthScaleTemplate = function (date) {
+                    var dateToStr = gantt.date.date_to_str("%M");
+                    var endDate = gantt.date.add(date, 2, "month");
+                    return dateToStr(date) + " - " + dateToStr(endDate);
+                };
+
+                gantt.config.subscales = [
+                    { unit: "month", step: 3, template: monthScaleTemplate },
+                    { unit: "month", step: 1, date: "%M" }
+                ];
+            }
+        };
+        $scope.selectedScale = scale;
+        setScale[scale]();
+        gantt.render();
+    };
+
     $scope.goProject = function (uri) {
         $state.go('ganttCbProject', {
             project: uri
@@ -91,6 +154,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             return;
         }
         $scope.items = resp.projects;
+
+        if (projectUri) {
+            $scope.items.forEach(function (project) {
+                if (project.uri === projectUri) {
+                    $scope.selectedProjectName = project.name;
+                }
+            });
+        }
     });
 
     function showProject(aUri) {

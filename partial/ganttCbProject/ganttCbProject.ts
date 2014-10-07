@@ -7,28 +7,81 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
     console.log($stateParams);
 
+    var unitDay = 1000 * 60 * 60 * 24;
+
     var projectUri = $stateParams.project;
     var userId = $stateParams.user;
     var taskTrackerUri: string;
 
+    $scope.selectedScale = "Select Scale";
+    $scope.selectedProjectName = "Select Project";
     $scope.tasks = {
         data: [
-//            {id: 1, text: "Project #2", start_date: "01-04-2013", duration: 18, order: 10,
-//                progress: 0.4, open: true},
-//            {id: 2, text: "Task #1", start_date: "02-04-2013", duration: 8, order: 10,
-//                progress: 0.6, parent: 1},
-//            {id: 3, text: "Task #2", start_date: "11-04-2013", duration: 8, order: 20,
-//                progress: 0.6, parent: 1}
         ],
         links: [
-//            { id: 1, source: 1, target: 2, type: "1"},
-//            { id: 2, source: 2, target: 3, type: "0"},
-//            { id: 3, source: 3, target: 4, type: "0"},
-//            { id: 4, source: 2, target: 5, type: "2"},
         ]
     };
 
-    var unitDay = 1000 * 60 * 60 * 24;
+    $scope.setScale = function(scale) {
+        var setScale = {
+            'Day': function() {
+                gantt.config.scale_unit = "day";
+                gantt.config.step = 1;
+                gantt.config.date_scale = "%d %M";
+                gantt.config.subscales = [];
+                gantt.config.scale_height = 27;
+                gantt.templates.date_scale = null;
+            },
+            'Week': function() {
+                var weekScaleTemplate = function(date){
+                    var dateToStr = gantt.date.date_to_str("%d %M");
+                    var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
+                    return dateToStr(date) + " - " + dateToStr(endDate);
+                };
+
+                gantt.config.scale_unit = "week";
+                gantt.config.step = 1;
+                gantt.templates.date_scale = weekScaleTemplate;
+                gantt.config.subscales = [
+                    {unit:"day", step:1, date:"%D" }
+                ];
+                gantt.config.scale_height = 50;
+            },
+            'Month': function() {
+                gantt.config.scale_unit = "month";
+                gantt.config.date_scale = "%F, %Y";
+                gantt.config.subscales = [
+                    {unit:"day", step:1, date:"%j, %D" }
+                ];
+                gantt.config.scale_height = 50;
+                gantt.templates.date_scale = null;
+            },
+            'Year': function() {
+                gantt.config.scale_unit = "year";
+                gantt.config.step = 1;
+                gantt.config.date_scale = "%Y";
+                gantt.config.min_column_width = 50;
+
+                gantt.config.scale_height = 90;
+                gantt.templates.date_scale = null;
+
+                var monthScaleTemplate = function(date){
+                    var dateToStr = gantt.date.date_to_str("%M");
+                    var endDate = gantt.date.add(date, 2, "month");
+                    return dateToStr(date) + " - " + dateToStr(endDate);
+                };
+
+                gantt.config.subscales = [
+                    {unit:"month", step:3, template:monthScaleTemplate},
+                    {unit:"month", step:1, date:"%M" }
+                ];
+            }
+        };
+        $scope.selectedScale = scale;
+        setScale[scale]();
+        gantt.render();
+    };
+
     $scope.goProject = function(uri) {
         $state.go('ganttCbProject', {
             project: uri
@@ -106,7 +159,15 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         if (err) {
             return;
         }
-        $scope.items = resp.projects
+        $scope.items = resp.projects;
+
+        if (projectUri) {
+            $scope.items.forEach(function(project: cb.TProject) {
+                if (project.uri === projectUri) {
+                    $scope.selectedProjectName = project.name;
+                }
+            });
+        }
     });
 
     function showProject(aUri) {

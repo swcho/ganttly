@@ -10,6 +10,10 @@ angular.module('ganttly').directive('dhxGantt', function () {
         template: '<div ng-transclude></div>',
 
         link: function ($scope, $element, $attrs, $controller) {
+
+            //init gantt
+            gantt.init($element[0]);
+
             //size of gantt
             $scope.$watch(function () {
                 return $element[0].offsetWidth + "." + $element[0].offsetHeight;
@@ -22,8 +26,6 @@ angular.module('ganttly').directive('dhxGantt', function () {
                 gantt.parse(collection, "json");
             }, true);
 
-            //init gantt
-            gantt.init($element[0]);
 
             var eventAttachIds = [
                 gantt.attachEvent("onAfterTaskAdd", function(id, item) {
