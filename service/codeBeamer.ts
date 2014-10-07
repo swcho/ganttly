@@ -190,13 +190,19 @@ declare module cb {
     }
 }
 
+declare var gConfig;
+
 angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService) {
 
-    var user = 'swcho';
-    var pass = 'swcho';
-    var credentials = btoa(user + ':' + pass);
-    var host = 'http://10.0.14.229/cb/rest';
+    var host = gConfig.cbBaseUrl;
+    var user = gConfig.cbUser;
+    var pass = gConfig.cbPass;
     var withCredentials = false;
+    var credentials;
+    if (user && pass) {
+        withCredentials = true;
+        credentials = btoa(user + ':' + pass);
+    }
 
     function send(aMethod, aUrl, aParam, aCb) {
         var url = host + aUrl;
