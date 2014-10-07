@@ -193,7 +193,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                     text: item.name,
                     user: userNames.join(','),
                     start_date: new Date(item.startDate || item.modifiedAt),
-                    duration: (item.estimatedMillis || unitDay)/unitDay
+                    duration: (item.estimatedMillis || unitDay)/unitDay,
+                    progress: item.spentEstimatedHours || 0
                 });
             });
 

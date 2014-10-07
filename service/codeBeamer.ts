@@ -71,6 +71,8 @@ declare module cb {
         parent?: TItem;
         assignedTo: TItem[]; // users
         associations?: TAssociation[];
+        spentEstimatedHours?: number;
+        spentMillis?: number;
     }
 
     interface TAssociation extends TItem {
