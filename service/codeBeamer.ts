@@ -12,26 +12,12 @@ declare module cb {
         name: string;
     }
 
-    interface TParamGetProjectList {
-        page: number;
-        pagesize?: number; // default is 100
-        category?: string;
-        filter?: string;
-    }
-
     interface TProject extends TItem {
         description: string;
         descFormat: string;
         category: string;
         closed: boolean;
         deleted: boolean;
-    }
-
-    interface TRespGetProjectList {
-        page: number;
-        size: number;
-        total: number;
-        projects: TProject[];
     }
 
     interface TType {
@@ -57,19 +43,19 @@ declare module cb {
     }
 
     interface TTask extends TItem {
-        descFormat: string;
-        estimatedMillis: number;
-        modifiedAt: string; // Date
-        modifier: TUser;
-        priority: TEnum;
-        startDate: string; // Date
-        status: TEnum;
-        submittedAt: string; // Date
-        submitter: TUser;
-        tracker: TTracker;
-        version: number;
+        descFormat?: string;
+        estimatedMillis?: number;
+        modifiedAt?: string; // Date
+        modifier?: TUser;
+        priority?: TEnum;
+        startDate?: string; // Date
+        status?: TEnum;
+        submittedAt?: string; // Date
+        submitter?: TUser;
+        tracker?: TTracker;
+        version?: number;
         parent?: TItem;
-        assignedTo: TItem[]; // users
+        assignedTo?: TItem[]; // users
         associations?: TAssociation[];
         spentEstimatedHours?: number;
         spentMillis?: number;
@@ -82,15 +68,6 @@ declare module cb {
         propagatingSuspects: boolean;
         description: string;
         descFormat: string;
-    }
-
-    interface TParamCreateAssociation {
-        from: string; // uri
-        to: string; // uri
-        type?: string; // ex) "/association/type/depends"
-        propagatingSuspects?: boolean;
-        description?: string;
-        descFormat?: string;
     }
 
     interface TSchema {
@@ -113,6 +90,35 @@ declare module cb {
         enum?: TEnum[];
         uniqueItems?: boolean;
         optionsURI?: string;
+    }
+
+    interface TParamPage {
+        page: number;
+        pagesize?: number; // default is 100
+        category?: string;
+        filter?: string;
+    }
+
+    interface TRespPagedItems {
+        page: number;
+        size: number;
+        total: number;
+        projects: any[];
+        users: any[];
+    }
+
+    interface TParamGetTask {
+        userUri?: string;
+        projectUri?: string;
+    }
+
+    interface TParamCreateAssociation {
+        from: string; // uri
+        to: string; // uri
+        type?: string; // ex) "/association/type/depends"
+        propagatingSuspects?: boolean;
+        description?: string;
+        descFormat?: string;
     }
 
     interface TRespCreateItem {
@@ -183,8 +189,9 @@ declare module cb {
     }
 
     interface ICodeBeamer {
-        getProjectList(aParam: TParamGetProjectList, aCb:(err, resp?: TRespGetProjectList) => void);
-        getProjectTask(aProjectUri: string, aCb:(err, trackerUri: string, resp?: TTask[]) => void);
+        getUserList(aParam: TParamPage, aCb:(err, resp?: TRespPagedItems) => void);
+        getProjectList(aParam: TParamPage, aCb:(err, resp?: TRespPagedItems) => void);
+        getTasks(aParam: TParamGetTask, aCb:(err, trackerUriList: string[], resp?: TTask[]) => void);
         createTask(aParam: TParamCreateTask, aCb:(err, resp: TTask) => void);
         updateTask(aTask: cb.TTask, aCb: (err, resp: cb.TTask) => void);
         deleteTask(aTaskUri: string, aCb: (err, resp) => void);
@@ -256,42 +263,71 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
     }
 
     var codeBeamber: cb.ICodeBeamer = {
-        getProjectList: function(aParam: cb.TParamGetProjectList, aCb: (err, resp?: cb.TRespGetProjectList) => void) {
+        getUserList: function(aParam: cb.TParamPage, aCb:(err, resp?: cb.TRespPagedItems) => void) {
+            get('/users/page/' + aParam.page, aParam, aCb);
+        },
+        getProjectList: function(aParam: cb.TParamPage, aCb: (err, resp?: cb.TRespPagedItems) => void) {
             get('/projects/page/' + aParam.page, aParam, aCb);
         },
-        getProjectTask: function(aProjectUri: string, aCb: (err, trackerUri: string, resp?: cb.TTask[]) => void) {
+        getTasks: function(aParam: cb.TParamGetTask, aCb: (err, trackerUriList: string[], resp?: cb.TTask[]) => void) {
+            // http://10.0.14.229/cb/rest/user/3/items?type=Task
 
-            console.log('Project URI: ' + aProjectUri);
+            var baseUri = '';
+            if (aParam.userUri) {
+                baseUri = baseUri + aParam.userUri;
+            }
+            if (aParam.projectUri) {
+                baseUri = baseUri + aParam.projectUri;
+            }
+
             var series = [];
 
             // get uri for task
-            var trackerUri;
+            var trackerUriList = [];
             series.push(function(cb) {
-                get(aProjectUri + '/trackers', {
+                get(baseUri + '/trackers', {
                     type: 'Task'
-                }, function(err, trackers: cb.TTracker[]) {
-                    if (trackers && trackers.length) {
-                        trackerUri = trackers[0].uri;
-                        console.log('Tracker URI: ' + trackers[0].uri);
-                    }
+                }, function(err, items) {
+
+                    items.forEach(function(item) {
+                        if (item.uri) {
+                            trackerUriList.push(item.uri);
+                        }
+
+                        // when base uri is /user/[id]
+                        if (item.trackers) {
+                            item.trackers.forEach(function(tracker) {
+                                trackerUriList.push(tracker.uri);
+                            });
+                        }
+                    });
+
                     cb(err);
                 });
             });
 
             // get trackers all items
-            var tasks: cb.TTask[];
+            var tasks: cb.TTask[] = [];
             series.push(function(cb) {
-                get(trackerUri + '/items', null, function(err, items: cb.TTask[]) {
-                    tasks = items;
+                var parallel = [];
+                trackerUriList.forEach(function(trackerUri) {
+                    parallel.push(function(cb) {
+                        get(trackerUri + '/items', null, function(err, items: cb.TTask[]) {
+                            tasks = tasks.concat(items);
+                            cb(err);
+                        });
+                    });
+                });
+                async.parallelLimit(parallel, 1, function(err) {
                     cb(err);
                 });
             });
 
             // find associations for each task
             series.push(function(cb) {
-                var paralle = [];
+                var parallel = [];
                 tasks.forEach(function(task: cb.TTask) {
-                    paralle.push(function(cb) {
+                    parallel.push(function(cb) {
                         get(task.uri + '/associations', {
                             type: 'depends,child'
                         }, function(err, items: cb.TAssociation[]) {
@@ -300,13 +336,13 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                         });
                     });
                 });
-                async.parallelLimit(paralle, 1, function(err) {
-                    cb();
+                async.parallelLimit(parallel, 1, function(err) {
+                    cb(err);
                 });
             });
 
             async.series(series, function(err) {
-                aCb(err, trackerUri, tasks);
+                aCb(err, trackerUriList, tasks);
             });
         },
         createTask: function(aParam: cb.TParamCreateTask, aCb:(err, resp: cb.TTask) => void) {

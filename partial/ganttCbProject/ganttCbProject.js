@@ -1,20 +1,35 @@
 /// <reference path="../../directive/dhxGantt/dhxGantt.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
-angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $state, $stateParams, $codeBeamer /*: ICodeBeamer*/ ) {
+angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $state, $stateParams, $codeBeamer) {
     console.log($stateParams);
 
     var unitDay = 1000 * 60 * 60 * 24;
 
     var projectUri = $stateParams.project;
-    var userId = $stateParams.user;
-    var taskTrackerUri;
+    var userUri = $stateParams.user;
+    var taskTrackerUriList;
 
-    $scope.selectedScale = "Select Scale";
-    $scope.selectedProjectName = "Select Project";
+    $scope.selectedUser = "노동자";
+    $scope.selectedProjectName = "플젝";
+    $scope.selectedScale = "시간범위";
     $scope.tasks = {
         data: [],
         links: []
+    };
+
+    $scope.setUser = function (uri) {
+        $state.go('ganttCbProject', {
+            user: uri,
+            project: projectUri
+        });
+    };
+
+    $scope.setProject = function (uri) {
+        $state.go('ganttCbProject', {
+            user: userUri,
+            project: uri
+        });
     };
 
     $scope.setScale = function (scale) {
@@ -77,18 +92,12 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         gantt.render();
     };
 
-    $scope.goProject = function (uri) {
-        $state.go('ganttCbProject', {
-            project: uri
-        });
-    };
-
     $scope.onTaskAdd = function (gantt, id, item) {
-        if (taskTrackerUri) {
+        if (taskTrackerUriList) {
             console.log(id);
             console.log(item);
             var param = {
-                tracker: taskTrackerUri,
+                tracker: taskTrackerUriList[0],
                 name: item.text,
                 startDate: item.start_date,
                 estimatedMillis: item.duration * unitDay
@@ -168,16 +177,33 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     };
     $scope.contextMenu = contextMenu;
 
+    $codeBeamer.getUserList({
+        page: 1
+    }, function (err, resp) {
+        if (err) {
+            return;
+        }
+        $scope.userList = resp.users;
+
+        if (userUri) {
+            $scope.userList.forEach(function (user) {
+                if (user.uri === userUri) {
+                    $scope.selectedUser = user.name;
+                }
+            });
+        }
+    });
+
     $codeBeamer.getProjectList({
         page: 1
     }, function (err, resp) {
         if (err) {
             return;
         }
-        $scope.items = resp.projects;
+        $scope.projectList = resp.projects;
 
         if (projectUri) {
-            $scope.items.forEach(function (project) {
+            $scope.projectList.forEach(function (project) {
                 if (project.uri === projectUri) {
                     $scope.selectedProjectName = project.name;
                 }
@@ -185,67 +211,69 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         }
     });
 
-    function showProject(aUri) {
-        console.log('goProject: ' + aUri);
-        $codeBeamer.getProjectTask(aUri, function (err, trackerUri, items) {
-            if (err) {
-                return;
-            }
-
-            taskTrackerUri = trackerUri;
-
-            var taskUris = [], tasks = [], links = [];
-            items.forEach(function (item) {
-                var userNames = [];
-                if (item.assignedTo) {
-                    item.assignedTo.forEach(function (user) {
-                        userNames.push(user.name);
-                    });
-                }
-                taskUris.push(item.uri);
-                tasks.push({
-                    id: item.uri,
-                    text: item.name,
-                    user: userNames.join(','),
-                    start_date: new Date(item.startDate || item.modifiedAt),
-                    duration: (item.estimatedMillis || unitDay) / unitDay,
-                    progress: item.spentEstimatedHours || 0,
-                    priority: item.priority.name
-                });
-            });
-
-            items.forEach(function (item, i) {
-                if (item.associations) {
-                    item.associations.forEach(function (association) {
-                        var index = taskUris.indexOf(association.to.uri);
-                        if (index !== -1) {
-                            if (association.type.name === 'depends') {
-                                links.push({
-                                    id: association.uri,
-                                    source: association.to.uri,
-                                    target: item.uri,
-                                    type: '0'
-                                });
-                            } else if (association.type.name === 'child') {
-                                tasks[i].parent = association.to.uri;
-                            }
-                        }
-                    });
-                }
-                if (item.parent) {
-                    tasks[i].parent = item.parent.uri;
-                }
-            });
-
-            $scope.tasks = {
-                data: tasks,
-                links: links
-            };
-        });
+    var param = {};
+    if (userUri) {
+        param.userUri = userUri;
     }
-
     if (projectUri) {
-        showProject(projectUri);
+        param.projectUri = projectUri;
     }
+
+    $codeBeamer.getTasks(param, function (err, trackerUriList, items) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+
+        taskTrackerUriList = trackerUriList;
+
+        var taskUris = [], tasks = [], links = [];
+        items.forEach(function (item) {
+            var userNames = [];
+            if (item.assignedTo) {
+                item.assignedTo.forEach(function (user) {
+                    userNames.push(user.name);
+                });
+            }
+            taskUris.push(item.uri);
+            tasks.push({
+                id: item.uri,
+                text: item.name,
+                user: userNames.join(','),
+                start_date: new Date(item.startDate || item.modifiedAt),
+                duration: (item.estimatedMillis || unitDay) / unitDay,
+                progress: item.spentEstimatedHours || 0,
+                priority: item.priority.name
+            });
+        });
+
+        items.forEach(function (item, i) {
+            if (item.associations) {
+                item.associations.forEach(function (association) {
+                    var index = taskUris.indexOf(association.to.uri);
+                    if (index !== -1) {
+                        if (association.type.name === 'depends') {
+                            links.push({
+                                id: association.uri,
+                                source: association.to.uri,
+                                target: item.uri,
+                                type: '0'
+                            });
+                        } else if (association.type.name === 'child') {
+                            tasks[i].parent = association.to.uri;
+                        }
+                    }
+                });
+            }
+            if (item.parent) {
+                tasks[i].parent = item.parent.uri;
+            }
+        });
+
+        $scope.tasks = {
+            data: tasks,
+            links: links
+        };
+    });
 });
 //# sourceMappingURL=ganttCbProject.js.map

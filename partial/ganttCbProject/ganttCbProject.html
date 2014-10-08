@@ -2,6 +2,29 @@
 
     <div class="btn-group" dropdown is-open="status.isopen">
         <button type="button" class="btn btn-primary dropdown-toggle">
+            {{selectedUser}}<span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li ng-repeat="user in userList">
+                <a href ng-click="setUser(user.uri)">{{user.name}}</a>
+            </li>
+        </ul>
+    </div>
+
+
+    <div class="btn-group" dropdown is-open="status.isopen">
+        <button type="button" class="btn btn-primary dropdown-toggle">
+            {{selectedProjectName}}<span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li ng-repeat="project in projectList">
+                <a href ng-click="setProject(project.uri)">{{project.name}}</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="btn-group" dropdown is-open="status.isopen">
+        <button type="button" class="btn btn-primary dropdown-toggle">
             {{selectedScale}}<span class="caret"></span>
         </button>
         <ul class="dropdown-menu" role="menu">
@@ -10,18 +33,6 @@
                 <a href ng-click="setScale('Week')">Week</a>
                 <a href ng-click="setScale('Month')">Month</a>
                 <a href ng-click="setScale('Year')">Year</a>
-            </li>
-        </ul>
-    </div>
-
-    <!-- Single button -->
-    <div class="btn-group" dropdown is-open="status.isopen">
-        <button type="button" class="btn btn-primary dropdown-toggle">
-            {{selectedProjectName}}<span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-            <li ng-repeat="choice in items">
-                <a href ng-click="goProject(choice.uri)">{{choice.name}}</a>
             </li>
         </ul>
     </div>
