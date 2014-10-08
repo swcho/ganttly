@@ -272,6 +272,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
         },
         getTasks: function(aParam: cb.TParamGetTask, aCb: (err, trackerUriList: string[], resp?: cb.TTask[]) => void) {
             // http://10.0.14.229/cb/rest/user/3/items?type=Task
+            // http://10.0.14.229/cb/rest/user/3/items?type=Task&role=swcho&onlyDirect=true
 
             var baseUri = '';
             if (aParam.userUri) {
@@ -309,20 +310,31 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
 
             // get trackers all items
             var tasks: cb.TTask[] = [];
-            series.push(function(cb) {
-                var parallel = [];
-                trackerUriList.forEach(function(trackerUri) {
-                    parallel.push(function(cb) {
-                        get(trackerUri + '/items', null, function(err, items: cb.TTask[]) {
-                            tasks = tasks.concat(items);
-                            cb(err);
-                        });
+            if (aParam.userUri) {
+                series.push(function(cb) {
+                    get(baseUri + '/items', {
+                        type: 'Task'
+                    }, function(err, items: cb.TTask[]) {
+                        tasks = tasks.concat(items);
+                        cb(err);
                     });
                 });
-                async.parallelLimit(parallel, 1, function(err) {
-                    cb(err);
+            } else {
+                series.push(function(cb) {
+                    var parallel = [];
+                    trackerUriList.forEach(function(trackerUri) {
+                        parallel.push(function(cb) {
+                            get(trackerUri + '/items', null, function(err, items: cb.TTask[]) {
+                                tasks = tasks.concat(items);
+                                cb(err);
+                            });
+                        });
+                    });
+                    async.parallelLimit(parallel, 1, function(err) {
+                        cb(err);
+                    });
                 });
-            });
+            }
 
             // find associations for each task
             series.push(function(cb) {
