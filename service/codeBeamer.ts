@@ -49,6 +49,7 @@ declare module cb {
         modifier?: TUser;
         priority?: TEnum;
         startDate?: string; // Date
+        endDate?: string; // Date
         status?: TEnum;
         submittedAt?: string; // Date
         submitter?: TUser;
@@ -371,3 +372,4 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
 
     return codeBeamber;
 });
+

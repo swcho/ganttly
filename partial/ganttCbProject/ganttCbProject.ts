@@ -227,7 +227,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
     $codeBeamer.getTasks(param, function(err, trackerUriList: string[], items: cb.TTask[]) {
         if (err) {
-            console.log(err)
+            console.log(err);
             return;
         }
 
@@ -242,15 +242,22 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 });
             }
             taskUris.push(item.uri);
-            tasks.push({
+
+            var task: dhx.TTask = {
                 id: item.uri,
                 text: item.name,
                 user: userNames.join(','),
                 start_date: new Date(item.startDate || item.modifiedAt),
-                duration: (item.estimatedMillis || unitDay)/unitDay,
                 progress: item.spentEstimatedHours || 0,
                 priority: item.priority.name
-            });
+            };
+            if (item.estimatedMillis) {
+                task.duration = (item.estimatedMillis || 0)/unitDay;
+            }
+            if (item.endDate) {
+                task.end_date = new Date(item.endDate);
+            }
+            tasks.push(task);
         });
 
         items.forEach(function(item, i) {
