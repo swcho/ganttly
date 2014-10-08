@@ -1,7 +1,7 @@
 /// <reference path="../typings/tsd.d.ts"/>
 
 angular.module('ganttly').factory('$codeBeamer', function ($http) {
-    var host = gConfig.cbBaseUrl;
+    var host = gConfig.cbBaseUrl + '/rest';
     var user = gConfig.cbUser;
     var pass = gConfig.cbPass;
     var withCredentials = false;
@@ -61,41 +61,81 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
     }
 
     var codeBeamber = {
+        getUserList: function (aParam, aCb) {
+            get('/users/page/' + aParam.page, aParam, aCb);
+        },
         getProjectList: function (aParam, aCb) {
             get('/projects/page/' + aParam.page, aParam, aCb);
         },
-        getProjectTask: function (aProjectUri, aCb) {
-            console.log('Project URI: ' + aProjectUri);
+        getTasks: function (aParam, aCb) {
+            // http://10.0.14.229/cb/rest/user/3/items?type=Task
+            // http://10.0.14.229/cb/rest/user/3/items?type=Task&role=swcho&onlyDirect=true
+            var baseUri = '';
+            if (aParam.userUri) {
+                baseUri = baseUri + aParam.userUri;
+            }
+            if (aParam.projectUri) {
+                baseUri = baseUri + aParam.projectUri;
+            }
+
             var series = [];
 
             // get uri for task
-            var trackerUri;
+            var trackerUriList = [];
             series.push(function (cb) {
-                get(aProjectUri + '/trackers', {
+                get(baseUri + '/trackers', {
                     type: 'Task'
-                }, function (err, trackers) {
-                    if (trackers && trackers.length) {
-                        trackerUri = trackers[0].uri;
-                        console.log('Tracker URI: ' + trackers[0].uri);
-                    }
+                }, function (err, items) {
+                    items.forEach(function (item) {
+                        if (item.uri) {
+                            trackerUriList.push(item.uri);
+                        }
+
+                        // when base uri is /user/[id]
+                        if (item.trackers) {
+                            item.trackers.forEach(function (tracker) {
+                                trackerUriList.push(tracker.uri);
+                            });
+                        }
+                    });
+
                     cb(err);
                 });
             });
 
             // get trackers all items
-            var tasks;
-            series.push(function (cb) {
-                get(trackerUri + '/items', null, function (err, items) {
-                    tasks = items;
-                    cb(err);
+            var tasks = [];
+            if (aParam.userUri) {
+                series.push(function (cb) {
+                    get(baseUri + '/items', {
+                        type: 'Task'
+                    }, function (err, items) {
+                        tasks = tasks.concat(items);
+                        cb(err);
+                    });
                 });
-            });
+            } else {
+                series.push(function (cb) {
+                    var parallel = [];
+                    trackerUriList.forEach(function (trackerUri) {
+                        parallel.push(function (cb) {
+                            get(trackerUri + '/items', null, function (err, items) {
+                                tasks = tasks.concat(items);
+                                cb(err);
+                            });
+                        });
+                    });
+                    async.parallelLimit(parallel, 1, function (err) {
+                        cb(err);
+                    });
+                });
+            }
 
             // find associations for each task
             series.push(function (cb) {
-                var paralle = [];
+                var parallel = [];
                 tasks.forEach(function (task) {
-                    paralle.push(function (cb) {
+                    parallel.push(function (cb) {
                         get(task.uri + '/associations', {
                             type: 'depends,child'
                         }, function (err, items) {
@@ -104,13 +144,13 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         });
                     });
                 });
-                async.parallelLimit(paralle, 1, function (err) {
-                    cb();
+                async.parallelLimit(parallel, 1, function (err) {
+                    cb(err);
                 });
             });
 
             async.series(series, function (err) {
-                aCb(err, trackerUri, tasks);
+                aCb(err, trackerUriList, tasks);
             });
         },
         createTask: function (aParam, aCb) {

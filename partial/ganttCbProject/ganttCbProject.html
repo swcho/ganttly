@@ -1,37 +1,53 @@
 <div style="height:100%; width:100%;" ng-controller="GanttCbProjectCtrl">
 
-    <div class="btn-group" dropdown is-open="status.isopen">
-        <button type="button" class="btn btn-primary dropdown-toggle">
-            {{selectedScale}}<span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-            <li>
-                <a href ng-click="setScale('Day')">Day</a>
-                <a href ng-click="setScale('Week')">Week</a>
-                <a href ng-click="setScale('Month')">Month</a>
-                <a href ng-click="setScale('Year')">Year</a>
-            </li>
-        </ul>
+    <div style="position: fixed; left: 0px; height: 50px; z-index: 1;">
+        <div class="btn-group" dropdown is-open="status.isopen">
+            <button type="button" class="btn btn-primary dropdown-toggle">
+                {{selectedUser}}<span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li ng-repeat="user in userList">
+                    <a href ng-click="setUser(user.uri)">{{user.name}}</a>
+                </li>
+            </ul>
+        </div>
+
+
+        <div class="btn-group" dropdown is-open="status.isopen">
+            <button type="button" class="btn btn-primary dropdown-toggle">
+                {{selectedProjectName}}<span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li ng-repeat="project in projectList">
+                    <a href ng-click="setProject(project.uri)">{{project.name}}</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="btn-group" dropdown is-open="status.isopen">
+            <button type="button" class="btn btn-primary dropdown-toggle">
+                {{selectedScale}}<span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li>
+                    <a href ng-click="setScale('Day')">Day</a>
+                    <a href ng-click="setScale('Week')">Week</a>
+                    <a href ng-click="setScale('Month')">Month</a>
+                    <a href ng-click="setScale('Year')">Year</a>
+                </li>
+            </ul>
+        </div>
     </div>
 
-    <!-- Single button -->
-    <div class="btn-group" dropdown is-open="status.isopen">
-        <button type="button" class="btn btn-primary dropdown-toggle">
-            {{selectedProjectName}}<span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-            <li ng-repeat="choice in items">
-                <a href ng-click="goProject(choice.uri)">{{choice.name}}</a>
-            </li>
-        </ul>
-    </div>
-
-    <div dhx-gantt data="tasks" style="height:100%; width:100%;"
+    <div dhx-gantt style="height:100%; width:100%; padding-top: 50px;"
+         dhx-data="tasks"
+         dhx-scale="scale"
          dhx-task-add="onTaskAdd"
          dhx-task-update="onTaskUpdate"
          dhx-task-delete="onTaskDelete"
          dhx-link-add="onLinkAdd"
          dhx-link-update="onLinkUpdate"
          dhx-link-delete="onLinkDelete"
+         dhx-context-menu="contextMenu"
             ></div>
 </div>
