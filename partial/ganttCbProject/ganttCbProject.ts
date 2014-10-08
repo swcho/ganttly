@@ -1,5 +1,5 @@
 
-/// <reference path="../../defs/dhtmlxgannt.def.ts"/>
+/// <reference path="../../directive/dhxGantt/dhxGantt.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
 
@@ -88,7 +88,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         });
     };
 
-    $scope.onTaskAdd = function(gantt, id, item: TDhxTask) {
+    $scope.onTaskAdd = function(gantt, id, item: dhx.TTask) {
         if (taskTrackerUri) {
             console.log(id);
             console.log(item);
@@ -132,7 +132,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         });
     };
 
-    $scope.onLinkAdd = function(id, item: TDhxLink) {
+    $scope.onLinkAdd = function(id, item: dhx.TLink) {
         console.log(id, item);
 //        if (item.type === '0') {
 //            $codeBeamer.createAssociation({
@@ -152,6 +152,27 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         console.log(id);
         console.log(item);
     };
+
+    var contextMenu: dhx.TContextMenu = {
+        menuItems: [{
+            id: 'open_task',
+            text: '새창에서 열기',
+            cb: function(param: dhx.TContextCbParam) {
+                var url = param.taskId || param.linkId;
+                var width = 1280;
+                var height = 720;
+                var params = [
+                    'width=' + width,
+                    'height=' + height,
+                    'fullscreen=yes' // only works in IE, but here for completeness
+                ].join(',');
+                var win = open(gConfig.cbBaseUrl + url, null, params);
+                win.moveTo((screen.width - width)/2, (screen.height - height)/2);
+                win.resizeTo(width, height);
+            }
+        }]
+    };
+    $scope.contextMenu = contextMenu;
 
     $codeBeamer.getProjectList({
         page: 1
@@ -179,7 +200,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
             taskTrackerUri = trackerUri;
 
-            var taskUris = [], tasks: TDhxTask[] = [], links: TDhxLink[] = [];
+            var taskUris = [], tasks: dhx.TTask[] = [], links: dhx.TLink[] = [];
             items.forEach(function(item) {
                 var userNames = [];
                 if (item.assignedTo) {
@@ -205,7 +226,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                         var index = taskUris.indexOf(association.to.uri);
                         if (index !== -1) {
                             if (association.type.name === 'depends') {
-                                console.log('depends');
                                 links.push({
                                     id: association.uri,
                                     source: association.to.uri,
@@ -213,7 +233,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                                     type: '0'
                                 });
                             } else if (association.type.name === 'child') {
-                                console.log('child');
                                 tasks[i].parent = association.to.uri;
                             }
                         }

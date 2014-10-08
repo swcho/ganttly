@@ -196,7 +196,7 @@ declare var gConfig;
 
 angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService) {
 
-    var host = gConfig.cbBaseUrl;
+    var host = gConfig.cbBaseUrl + '/rest';
     var user = gConfig.cbUser;
     var pass = gConfig.cbPass;
     var withCredentials = false;

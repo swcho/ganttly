@@ -1,7 +1,7 @@
 /// <reference path="../typings/tsd.d.ts"/>
 
 angular.module('ganttly').factory('$codeBeamer', function ($http) {
-    var host = gConfig.cbBaseUrl;
+    var host = gConfig.cbBaseUrl + '/rest';
     var user = gConfig.cbUser;
     var pass = gConfig.cbPass;
     var withCredentials = false;
