@@ -83,7 +83,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
     }
 
     function setScale(scale) {
-        var setScale = {
+        var _setScale = {
             'Day': function() {
                 gantt.config.scale_unit = "day";
                 gantt.config.step = 1;
@@ -137,7 +137,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
                 ];
             }
         };
-        setScale[scale]();
+        _setScale[scale]();
         gantt.render();
     }
 
