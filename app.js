@@ -3,6 +3,10 @@ angular.module('ganttly', ['ui.bootstrap','ui.utils','ui.router','ngAnimate']);
 angular.module('ganttly').config(function($stateProvider, $urlRouterProvider, $logProvider) {
 
 
+    $stateProvider.state('configCb', {
+        url: '/configCb',
+        templateUrl: 'partial/configCb/configCb.html'
+    });
     $stateProvider.state('ganttCbProject', {
         url: '/ganttCbProject?project&user',
         templateUrl: 'partial/ganttCbProject/ganttCbProject.html'
