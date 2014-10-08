@@ -12,7 +12,8 @@ angular.module('ganttly').directive('dhxGantt', function () {
             { name: "text", tree: true, label: "작업", /*template:myFunc,*/ resize: true },
             { name: "user", label: "담당자", align: "center", resize: true },
             { name: "start_date", label: "시작일", align: "center", resize: true },
-            { name: "duration", label: "기간", align: "center", resize: true }
+            { name: "duration", label: "기간", align: "center", resize: true },
+            { name: "add" }
         ];
 
         gantt.templates.task_class = function (start, end, task) {
