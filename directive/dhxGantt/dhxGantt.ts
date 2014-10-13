@@ -62,10 +62,10 @@ angular.module('ganttly').directive('dhxGantt', function () {
         // Column configurations
         gantt.config.columns=[
             {name:"text", tree: true, label:"작업", /*template:myFunc,*/ width: 200, resize: true },
-            {name:"user", label:"담당자", align: "center", resize: true },
-            {name:"start_date", label:"시작일", align: "center", resize: true },
-            {name:"duration",   label:"기간",   align: "center", resize: true },
-            {name:"add"}
+            {name:"user", label:"담당자", align: "center", width: 60, resize: true },
+            {name:"start_date", label:"시작일", align: "center", width: 90, resize: true },
+            {name:"duration",   label:"기간",   align: "center", width: 40, resize: true },
+            {name:"add", width: 40 }
         ];
 
         // Autosize
