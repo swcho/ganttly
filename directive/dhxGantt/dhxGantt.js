@@ -8,6 +8,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
         //                }
         //                return task.text;
         //            }
+        // Column configurations
         gantt.config.columns = [
             { name: "text", tree: true, label: "작업", /*template:myFunc,*/ width: 200, resize: true },
             { name: "user", label: "담당자", align: "center", resize: true },
@@ -16,6 +17,10 @@ angular.module('ganttly').directive('dhxGantt', function () {
             { name: "add" }
         ];
 
+        // Autosize
+        gantt.config.autosize = true;
+
+        // Set task bar's class by priority
         gantt.templates.task_class = function (start, end, task) {
             var classes = {
                 'Highest': 'priority_highest',
@@ -27,17 +32,21 @@ angular.module('ganttly').directive('dhxGantt', function () {
             return classes[task.priority];
         };
 
+        // Highlight weekend
         gantt.templates.scale_cell_class = function (date) {
-            if (date.getDay() == 0 || date.getDay() == 6) {
+            if (date.getDay() === 0 || date.getDay() === 6) {
+                return "weekend";
+            }
+        };
+        gantt.templates.task_cell_class = function (item, date) {
+            if (date.getDay() === 0 || date.getDay() === 6) {
                 return "weekend";
             }
         };
 
-        gantt.templates.task_cell_class = function (item, date) {
-            if (date.getDay() == 0 || date.getDay() == 6) {
-                return "weekend";
-            }
-        };
+        // Mark today
+        var date_to_str = gantt.date.date_to_str(gantt.config.task_date);
+        gantt.addMarker({ start_date: new Date(), css: "today", title: date_to_str(new Date()), text: '오늘' });
 
         //init gantt
         gantt.init($element[0]);

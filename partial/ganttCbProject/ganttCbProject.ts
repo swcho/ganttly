@@ -219,7 +219,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 text: resp.name
             }];
             $scope.cbUserSelected = resp.uri;
-            $scope.$apply();
+//            $scope.$apply();
         });
     }
     if (projectUri) {
@@ -233,7 +233,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 text: resp.name
             }];
             $scope.cbProjectSelected = resp.uri;
-            $scope.$apply();
+//            $scope.$apply();
         });
     }
 

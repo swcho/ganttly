@@ -510,7 +510,9 @@ parse the start_date, end_date properties in case they are specified as strings
 	/**
 	 * sets the date format that is used to parse data from the data set
 	*/
-	xml_date: string;	
+	xml_date: string;
+
+    autosize: boolean;
 }
 
 
@@ -982,6 +984,8 @@ interface GanttStatic{
 	 * @param id the task id
 	*/
 	updateTask(id: string);
+
+    addMarker(param: any);
 }
 
 
