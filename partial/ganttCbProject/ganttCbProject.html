@@ -2,44 +2,55 @@
 
     <div style="position: fixed; left: 0px; height: 50px; z-index: 1;">
 
-        <div dhx-combo style="width:240px; height: 46px; margin-top: 4px;"></div>
+        <div dhx-combo style="width:120px; height: 46px; margin-top: 4px; float: left;"
+                dhx-data="comboConfigUser"
+                dhx-change="setUser"></div>
 
-        <div class="btn-group" dropdown is-open="status.isopen">
-            <button type="button" class="btn btn-primary dropdown-toggle">
-                {{selectedUser}}<span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" role="menu">
-                <li ng-repeat="user in userList">
-                    <a href ng-click="setUser(user.uri)">{{user.name}}</a>
-                </li>
-            </ul>
-        </div>
+        <div dhx-combo style="width:180px; height: 46px; margin-top: 4px; float: left;"
+             dhx-data="comboConfigProject"
+             dhx-change="setProject"></div>
+
+        <div dhx-combo style="width:80px; height: 46px; margin-top: 4px; float: left;"
+             dhx-data="comboConfigScale"
+             dhx-selected="scale"
+             ></div>
+
+        <!--<div class="btn-group" dropdown is-open="status.isopen">-->
+            <!--<button type="button" class="btn btn-primary dropdown-toggle">-->
+                <!--{{selectedUser}}<span class="caret"></span>-->
+            <!--</button>-->
+            <!--<ul class="dropdown-menu" role="menu">-->
+                <!--<li ng-repeat="user in userList">-->
+                    <!--<a href ng-click="setUser(user.uri)">{{user.name}}</a>-->
+                <!--</li>-->
+            <!--</ul>-->
+        <!--</div>-->
 
 
-        <div class="btn-group" dropdown is-open="status.isopen">
-            <button type="button" class="btn btn-primary dropdown-toggle">
-                {{selectedProjectName}}<span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" role="menu">
-                <li ng-repeat="project in projectList">
-                    <a href ng-click="setProject(project.uri)">{{project.name}}</a>
-                </li>
-            </ul>
-        </div>
+        <!--<div class="btn-group" dropdown is-open="status.isopen">-->
+            <!--<button type="button" class="btn btn-primary dropdown-toggle">-->
+                <!--{{selectedProjectName}}<span class="caret"></span>-->
+            <!--</button>-->
+            <!--<ul class="dropdown-menu" role="menu">-->
+                <!--<li ng-repeat="project in projectList">-->
+                    <!--<a href ng-click="setProject(project.uri)">{{project.name}}</a>-->
+                <!--</li>-->
+            <!--</ul>-->
+        <!--</div>-->
 
-        <div class="btn-group" dropdown is-open="status.isopen">
-            <button type="button" class="btn btn-primary dropdown-toggle">
-                {{selectedScale}}<span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" role="menu">
-                <li>
-                    <a href ng-click="setScale('Day')">Day</a>
-                    <a href ng-click="setScale('Week')">Week</a>
-                    <a href ng-click="setScale('Month')">Month</a>
-                    <a href ng-click="setScale('Year')">Year</a>
-                </li>
-            </ul>
-        </div>
+        <!--<div class="btn-group" dropdown is-open="status.isopen">-->
+            <!--<button type="button" class="btn btn-primary dropdown-toggle">-->
+                <!--{{selectedScale}}<span class="caret"></span>-->
+            <!--</button>-->
+            <!--<ul class="dropdown-menu" role="menu">-->
+                <!--<li>-->
+                    <!--<a href ng-click="setScale('Day')">Day</a>-->
+                    <!--<a href ng-click="setScale('Week')">Week</a>-->
+                    <!--<a href ng-click="setScale('Month')">Month</a>-->
+                    <!--<a href ng-click="setScale('Year')">Year</a>-->
+                <!--</li>-->
+            <!--</ul>-->
+        <!--</div>-->
     </div>
 
     <div dhx-gantt style="height:100%; width:100%; padding-top: 50px;"

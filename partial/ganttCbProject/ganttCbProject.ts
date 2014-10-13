@@ -9,13 +9,29 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
     var unitDay = 1000 * 60 * 60 * 24;
 
-    var projectUri = $stateParams.project;
     var userUri = $stateParams.user;
+    var projectUri = $stateParams.project;
     var taskTrackerUriList: string[];
 
     $scope.selectedUser = "노동자";
     $scope.selectedProjectName = "플젝";
-    $scope.selectedScale = "시간범위";
+
+    $scope.comboConfigScale = {
+        items: [{
+            id: 'Day',
+            text: '일'
+        }, {
+            id: 'Week',
+            text: '주'
+        }, {
+            id: 'Month',
+            text: '월'
+        }, {
+            id: 'Year',
+            text: '년'
+        }]
+    };
+
     $scope.scale = 'Week';
     $scope.tasks = {
         data: [
@@ -36,11 +52,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             user: userUri,
             project: uri
         });
-    };
-
-    $scope.setScale = function(scale) {
-        $scope.scale = scale;
-        $scope.selectedScale = scale;
     };
 
     $scope.onTaskAdd = function(gantt, id, item: dhx.TTask) {
@@ -162,6 +173,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             });
         }
     });
+
+    if (!userUri || !projectUri) {
+        return;
+    }
 
     var param: cb.TParamGetTask = {};
     if (userUri) {

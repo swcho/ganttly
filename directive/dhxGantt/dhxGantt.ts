@@ -137,6 +137,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
                 ];
             }
         };
+        console.log(scale);
         _setScale[scale]();
         gantt.render();
     }
@@ -225,6 +226,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
             }, true);
 
             $scope.$watch($attrs['dhxScale'], function(scale){
+                console.log(scale);
                 setScale(scale);
             }, true);
 
