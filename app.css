@@ -7154,6 +7154,25 @@ button.close {
 .gantt_task_line.priority_lowest .gantt_task_progress {
   background: #2e4172;
 }
+#ganttCbProject #topPane {
+  position: fixed;
+  left: 0px;
+  height: 50px;
+  width: 100%;
+  z-index: 1;
+  margin: 4px;
+}
+#ganttCbProject #topPane .combo_group {
+  float: left;
+  margin-right: 4px;
+}
+#ganttCbProject #topPane .combo_group label {
+  line-height: 21px;
+  margin: 0px;
+}
+#ganttCbProject #topPane .combo_group .combo {
+  clear: both;
+}
 /* Add Component LESS Above */
 /* Required for Angular UI Bootstrap */
 .nav,

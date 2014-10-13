@@ -172,7 +172,6 @@ angular.module('ganttly').directive('dhxGantt', function () {
             }, true);
 
             $scope.$watch($attrs['dhxScale'], function (scale) {
-                console.log(scale);
                 setScale(scale);
             }, true);
 

@@ -190,6 +190,7 @@ declare module cb {
     }
 
     interface ICodeBeamer {
+        getByUri(aUri: string, aCb:(err, resp) => void);
         getUserList(aParam: TParamPage, aCb:(err, resp?: TRespPagedItems) => void);
         getProjectList(aParam: TParamPage, aCb:(err, resp?: TRespPagedItems) => void);
         getTasks(aParam: TParamGetTask, aCb:(err, trackerUriList: string[], resp?: TTask[]) => void);
@@ -264,6 +265,9 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
     }
 
     var codeBeamber: cb.ICodeBeamer = {
+        getByUri: function(aUri: string, aCb:(err, resp) => void) {
+            get(aUri, {}, aCb);
+        },
         getUserList: function(aParam: cb.TParamPage, aCb:(err, resp?: cb.TRespPagedItems) => void) {
             get('/users/page/' + aParam.page, aParam, aCb);
         },
@@ -337,22 +341,22 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             }
 
             // find associations for each task
-            series.push(function(cb) {
-                var parallel = [];
-                tasks.forEach(function(task: cb.TTask) {
-                    parallel.push(function(cb) {
-                        get(task.uri + '/associations', {
-                            type: 'depends,child'
-                        }, function(err, items: cb.TAssociation[]) {
-                            task.associations = items;
-                            cb();
-                        });
-                    });
-                });
-                async.parallelLimit(parallel, 1, function(err) {
-                    cb(err);
-                });
-            });
+//            series.push(function(cb) {
+//                var parallel = [];
+//                tasks.forEach(function(task: cb.TTask) {
+//                    parallel.push(function(cb) {
+//                        get(task.uri + '/associations', {
+//                            type: 'depends,child'
+//                        }, function(err, items: cb.TAssociation[]) {
+//                            task.associations = items;
+//                            cb();
+//                        });
+//                    });
+//                });
+//                async.parallelLimit(parallel, 1, function(err) {
+//                    cb(err);
+//                });
+//            });
 
             async.series(series, function(err) {
                 aCb(err, trackerUriList, tasks);

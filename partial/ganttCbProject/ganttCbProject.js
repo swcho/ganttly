@@ -10,25 +10,64 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     var projectUri = $stateParams.project;
     var taskTrackerUriList;
 
-    $scope.selectedUser = "노동자";
-    $scope.selectedProjectName = "플젝";
+    $scope.cbUserItems = [];
+    $scope.cbUserFilter = function (text, cb) {
+        console.log(text);
+        $codeBeamer.getUserList({
+            page: 1,
+            filter: text
+        }, function (err, resp) {
+            if (err) {
+                return;
+            }
 
-    $scope.comboConfigScale = {
-        items: [
-            {
-                id: 'Day',
-                text: '일'
-            }, {
-                id: 'Week',
-                text: '주'
-            }, {
-                id: 'Month',
-                text: '월'
-            }, {
-                id: 'Year',
-                text: '년'
-            }]
+            var items = [];
+            resp.users.forEach(function (user) {
+                items.push({
+                    id: user.uri,
+                    text: user.name
+                });
+            });
+            cb(items);
+        });
     };
+
+    $scope.cbProjectItems = [];
+    $scope.cbProjectFilter = function (text, cb) {
+        console.log(text);
+        $codeBeamer.getProjectList({
+            page: 1,
+            filter: text
+        }, function (err, resp) {
+            if (err) {
+                return;
+            }
+
+            var items = [];
+            resp.projects.forEach(function (project) {
+                items.push({
+                    id: project.uri,
+                    text: project.name
+                });
+            });
+            cb(items);
+        });
+    };
+
+    $scope.cbScaleItems = [
+        {
+            id: 'Day',
+            text: '일'
+        }, {
+            id: 'Week',
+            text: '주'
+        }, {
+            id: 'Month',
+            text: '월'
+        }, {
+            id: 'Year',
+            text: '년'
+        }];
 
     $scope.scale = 'Week';
     $scope.tasks = {
@@ -37,6 +76,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     };
 
     $scope.setUser = function (uri) {
+        if (uri == 'reset') {
+            uri = null;
+        }
         $state.go('ganttCbProject', {
             user: uri,
             project: projectUri
@@ -135,50 +177,58 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     };
     $scope.contextMenu = contextMenu;
 
-    $codeBeamer.getUserList({
-        page: 1
-    }, function (err, resp) {
-        if (err) {
-            return;
-        }
-        $scope.userList = resp.users;
-
-        if (userUri) {
-            $scope.userList.forEach(function (user) {
-                if (user.uri === userUri) {
-                    $scope.selectedUser = user.name;
-                }
-            });
-        }
-    });
-
-    $codeBeamer.getProjectList({
-        page: 1
-    }, function (err, resp) {
-        if (err) {
-            return;
-        }
-        $scope.projectList = resp.projects;
-
-        if (projectUri) {
-            $scope.projectList.forEach(function (project) {
-                if (project.uri === projectUri) {
-                    $scope.selectedProjectName = project.name;
-                }
-            });
-        }
-    });
-
-    if (!userUri || !projectUri) {
+    //    $codeBeamer.getUserList({
+    //        page: 1
+    //    }, function(err, resp) {
+    //        if (err) {
+    //            return;
+    //        }
+    //        $scope.userList = resp.users;
+    //
+    //        if (userUri) {
+    //            $scope.userList.forEach(function(user: cb.TUser) {
+    //                if (user.uri === userUri) {
+    //                    $scope.selectedUser = user.name;
+    //                }
+    //            });
+    //        }
+    //    });
+    if (!userUri && !projectUri) {
         return;
     }
 
     var param = {};
     if (userUri) {
         param.userUri = userUri;
+        $codeBeamer.getByUri(userUri, function (err, resp) {
+            if (err) {
+                return;
+            }
+            $scope.cbUserItems = [
+                {
+                    id: 'reset',
+                    text: '모두'
+                }, {
+                    id: resp.uri,
+                    text: resp.name
+                }];
+            $scope.cbUserSelected = resp.uri;
+            $scope.$apply();
+        });
     }
     if (projectUri) {
         param.projectUri = projectUri;
+        $codeBeamer.getByUri(projectUri, function (err, resp) {
+            if (err) {
+                return;
+            }
+            $scope.cbProjectItems = [{
+                    id: resp.uri,
+                    text: resp.name
+                }];
+            $scope.cbProjectSelected = resp.uri;
+            $scope.$apply();
+        });
     }
 
     $codeBeamer.getTasks(param, function (err, trackerUriList, items) {

@@ -1,19 +1,31 @@
-<div style="height:100%; width:100%;" ng-controller="GanttCbProjectCtrl">
+<div id="ganttCbProject" style="height:100%; width:100%;" ng-controller="GanttCbProjectCtrl">
 
-    <div style="position: fixed; left: 0px; height: 50px; z-index: 1;">
+    <div id="topPane">
+        <div class="combo_group">
+            <label>프로젝트</label>
+            <div dhx-combo style="width:180px;" class="combo"
+                 dhx-data="cbProjectItems"
+                 dhx-filter="cbProjectFilter"
+                 dhx-selected="cbProjectSelected"
+                 dhx-change="setProject"></div>
+        </div>
 
-        <div dhx-combo style="width:120px; height: 46px; margin-top: 4px; float: left;"
-                dhx-data="comboConfigUser"
-                dhx-change="setUser"></div>
+        <div class="combo_group">
+            <label>사용자</label>
+            <div dhx-combo style="width:120px;" class="combo"
+                 dhx-data="cbUserItems"
+                 dhx-filter="cbUserFilter"
+                 dhx-selected="cbUserSelected"
+                 dhx-change="setUser"></div>
+        </div>
 
-        <div dhx-combo style="width:180px; height: 46px; margin-top: 4px; float: left;"
-             dhx-data="comboConfigProject"
-             dhx-change="setProject"></div>
-
-        <div dhx-combo style="width:80px; height: 46px; margin-top: 4px; float: left;"
-             dhx-data="comboConfigScale"
-             dhx-selected="scale"
-             ></div>
+        <div class="combo_group">
+            <label>기간</label>
+            <div dhx-combo style="width:80px;" class="combo"
+                 dhx-data="cbScaleItems"
+                 dhx-selected="scale"
+                 ></div>
+        </div>
 
         <!--<div class="btn-group" dropdown is-open="status.isopen">-->
             <!--<button type="button" class="btn btn-primary dropdown-toggle">-->
