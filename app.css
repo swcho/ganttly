@@ -7154,6 +7154,12 @@ button.close {
 .gantt_task_line.priority_lowest .gantt_task_progress {
   background: #2e4172;
 }
+.weekend {
+  background: #f4f7f4;
+}
+.gantt_selected .weekend {
+  background: #f7eb91;
+}
 #ganttCbProject #topPane {
   position: fixed;
   left: 0px;

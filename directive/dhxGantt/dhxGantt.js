@@ -9,7 +9,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
         //                return task.text;
         //            }
         gantt.config.columns = [
-            { name: "text", tree: true, label: "작업", /*template:myFunc,*/ resize: true },
+            { name: "text", tree: true, label: "작업", /*template:myFunc,*/ width: 200, resize: true },
             { name: "user", label: "담당자", align: "center", resize: true },
             { name: "start_date", label: "시작일", align: "center", resize: true },
             { name: "duration", label: "기간", align: "center", resize: true },
@@ -25,6 +25,18 @@ angular.module('ganttly').directive('dhxGantt', function () {
                 'Lowest': 'priority_lowest'
             };
             return classes[task.priority];
+        };
+
+        gantt.templates.scale_cell_class = function (date) {
+            if (date.getDay() == 0 || date.getDay() == 6) {
+                return "weekend";
+            }
+        };
+
+        gantt.templates.task_cell_class = function (item, date) {
+            if (date.getDay() == 0 || date.getDay() == 6) {
+                return "weekend";
+            }
         };
 
         //init gantt
