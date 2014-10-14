@@ -119,7 +119,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                     console.log(err);
                     return;
                 }
-                window.location.reload();
+                gantt.refreshData();
             });
         }
     };
@@ -342,6 +342,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             data: tasks,
             links: links
         };
+    }, function (msg) {
+        dhtmlx.message(msg);
     });
 });
 //# sourceMappingURL=ganttCbProject.js.map

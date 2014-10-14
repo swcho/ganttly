@@ -70,7 +70,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
         getProjectList: function (aParam, aCb) {
             get('/projects/page/' + aParam.page, aParam, aCb);
         },
-        getTasks: function (aParam, aCb) {
+        getTasks: function (aParam, aCb, aProgress) {
             // http://10.0.14.229/cb/rest/user/3/items?type=Task
             // http://10.0.14.229/cb/rest/user/3/items?type=Task&role=swcho&onlyDirect=true
             var baseUri = '';
@@ -86,6 +86,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
             // get uri for task
             var trackerUriList = [];
             series.push(function (cb) {
+                aProgress('getting uri for task');
                 get(baseUri + '/trackers', {
                     type: 'Task'
                 }, function (err, items) {
@@ -110,6 +111,8 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
             var tasks = [];
             if (aParam.userUri) {
                 series.push(function (cb) {
+                    aProgress('getting trackers all items');
+
                     get(baseUri + '/items', {
                         type: 'Task'
                     }, function (err, items) {
@@ -119,6 +122,8 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                 });
             } else {
                 series.push(function (cb) {
+                    aProgress('getting trackers all items');
+
                     var parallel = [];
                     trackerUriList.forEach(function (trackerUri) {
                         parallel.push(function (cb) {
@@ -137,6 +142,8 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
             // find associations for each task
             var additionalTaskUris = [];
             series.push(function (cb) {
+                aProgress('finding associations for each task');
+
                 var taskUriList = [];
                 tasks.forEach(function (task) {
                     taskUriList.push(task.uri);
@@ -168,6 +175,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
             });
 
             series.push(function (cb) {
+                aProgress('getting tasks and its associations outside project');
                 var parallel = [];
                 console.log(additionalTaskUris.length);
                 additionalTaskUris.forEach(function (uri) {

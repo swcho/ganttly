@@ -193,7 +193,7 @@ declare module cb {
         getByUri(aUri: string, aCb:(err, resp) => void);
         getUserList(aParam: TParamPage, aCb:(err, resp?: TRespPagedItems) => void);
         getProjectList(aParam: TParamPage, aCb:(err, resp?: TRespPagedItems) => void);
-        getTasks(aParam: TParamGetTask, aCb:(err, trackerUriList: string[], resp?: TTask[]) => void);
+        getTasks(aParam: TParamGetTask, aCb:(err, trackerUriList: string[], resp?: TTask[], aProgress?: (msg) => void) => void);
         createTask(aParam: TParamCreateTask, aCb:(err, resp: TTask) => void);
         updateTask(aTask: cb.TTask, aCb: (err, resp: cb.TTask) => void);
         deleteTask(aTaskUri: string, aCb: (err, resp) => void);
@@ -275,7 +275,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
         getProjectList: function(aParam: cb.TParamPage, aCb: (err, resp?: cb.TRespPagedItems) => void) {
             get('/projects/page/' + aParam.page, aParam, aCb);
         },
-        getTasks: function(aParam: cb.TParamGetTask, aCb: (err, trackerUriList: string[], resp?: cb.TTask[]) => void) {
+        getTasks: function(aParam: cb.TParamGetTask, aCb: (err, trackerUriList: string[], resp?: cb.TTask[]) => void, aProgress?: (msg) => void) {
             // http://10.0.14.229/cb/rest/user/3/items?type=Task
             // http://10.0.14.229/cb/rest/user/3/items?type=Task&role=swcho&onlyDirect=true
 
@@ -292,6 +292,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             // get uri for task
             var trackerUriList = [];
             series.push(function(cb) {
+                aProgress('getting uri for task');
                 get(baseUri + '/trackers', {
                     type: 'Task'
                 }, function(err, items) {
@@ -317,6 +318,8 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             var tasks: cb.TTask[] = [];
             if (aParam.userUri) {
                 series.push(function(cb) {
+                    aProgress('getting trackers all items');
+
                     get(baseUri + '/items', {
                         type: 'Task'
                     }, function(err, items: cb.TTask[]) {
@@ -326,6 +329,8 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                 });
             } else {
                 series.push(function(cb) {
+                    aProgress('getting trackers all items');
+
                     var parallel = [];
                     trackerUriList.forEach(function(trackerUri) {
                         parallel.push(function(cb) {
@@ -344,6 +349,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             // find associations for each task
             var additionalTaskUris = [];
             series.push(function(cb) {
+                aProgress('finding associations for each task');
 
                 var taskUriList = [];
                 tasks.forEach(function(task) {
@@ -376,6 +382,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             });
 
             series.push(function(cb) {
+                aProgress('getting tasks and its associations outside project');
                 var parallel = [];
                 console.log(additionalTaskUris.length);
                 additionalTaskUris.forEach(function(uri: string) {
