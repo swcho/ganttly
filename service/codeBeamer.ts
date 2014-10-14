@@ -380,12 +380,24 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                 console.log(additionalTaskUris.length);
                 additionalTaskUris.forEach(function(uri: string) {
                     parallel.push(function(cb) {
-                        get(uri, null, function(err, item) {
+                        get(uri, null, function(err, item: cb.TTask) {
                             if (err) {
+                                cb(err);
                                 return;
                             }
                             tasks.push(item);
-                            cb();
+
+                            get(item.uri + '/associations', {
+                                type: 'depends,child',
+                                inout: true
+                            }, function(err, associations) {
+                                if (err) {
+                                    cb(err);
+                                    return;
+                                }
+                                item.associations = associations;
+                                cb();
+                            });
                         });
                     });
                 });

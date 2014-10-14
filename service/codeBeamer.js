@@ -174,10 +174,22 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                     parallel.push(function (cb) {
                         get(uri, null, function (err, item) {
                             if (err) {
+                                cb(err);
                                 return;
                             }
                             tasks.push(item);
-                            cb();
+
+                            get(item.uri + '/associations', {
+                                type: 'depends,child',
+                                inout: true
+                            }, function (err, associations) {
+                                if (err) {
+                                    cb(err);
+                                    return;
+                                }
+                                item.associations = associations;
+                                cb();
+                            });
                         });
                     });
                 });
