@@ -177,8 +177,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         console.log(id, item);
         if (item.type === '0') {
 
-            adjustStartTime(gantt, item.source, item.target);
-
             $codeBeamer.createAssociation({
                 from: item.target,
                 to: item.source
@@ -187,6 +185,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                     return;
                 }
                 gantt.changeLinkId(id, association.uri);
+                adjustStartTime(gantt, item.source, item.target);
             });
         } else {
             gantt.deleteLink(id);
