@@ -128,29 +128,30 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                             });
                         });
                     });
-                    async.parallelLimit(parallel, 1, function (err) {
+                    async.parallelLimit(parallel, 5, function (err) {
                         cb(err);
                     });
                 });
             }
 
             // find associations for each task
-            //            series.push(function(cb) {
-            //                var parallel = [];
-            //                tasks.forEach(function(task: cb.TTask) {
-            //                    parallel.push(function(cb) {
-            //                        get(task.uri + '/associations', {
-            //                            type: 'depends,child'
-            //                        }, function(err, items: cb.TAssociation[]) {
-            //                            task.associations = items;
-            //                            cb();
-            //                        });
-            //                    });
-            //                });
-            //                async.parallelLimit(parallel, 1, function(err) {
-            //                    cb(err);
-            //                });
-            //            });
+            series.push(function (cb) {
+                var parallel = [];
+                tasks.forEach(function (task) {
+                    parallel.push(function (cb) {
+                        get(task.uri + '/associations', {
+                            type: 'depends,child'
+                        }, function (err, items) {
+                            task.associations = items;
+                            cb();
+                        });
+                    });
+                });
+                async.parallelLimit(parallel, 5, function (err) {
+                    cb(err);
+                });
+            });
+
             async.series(series, function (err) {
                 aCb(err, trackerUriList, tasks);
             });

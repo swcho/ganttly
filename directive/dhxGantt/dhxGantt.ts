@@ -69,7 +69,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
         ];
 
         // Autosize
-        gantt.config.autosize = true;
+//        gantt.config.autosize = true;
 
         // Set task bar's class by priority
         gantt.templates.task_class  = function(start, end, task){

@@ -143,13 +143,13 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
     $scope.onLinkAdd = function(id, item: dhx.TLink) {
         console.log(id, item);
-//        if (item.type === '0') {
-//            $codeBeamer.createAssociation({
-//                from: item.target,
-//                to: item.source
-//            }, function(err, association) {
-//            });
-//        }
+        if (item.type === '0') {
+            $codeBeamer.createAssociation({
+                from: item.target,
+                to: item.source
+            }, function(err, association) {
+            });
+        }
     };
 
     $scope.onLinkUpdate = function(id, item) {

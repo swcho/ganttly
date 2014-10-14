@@ -1,5 +1,5 @@
 #ganttCbProject #topPane {
-  position: fixed;
+  position: absolute;
   left: 0px;
   height: 50px;
   width: 100%;

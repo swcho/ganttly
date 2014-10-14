@@ -7161,7 +7161,7 @@ button.close {
   background: #f7eb91;
 }
 #ganttCbProject #topPane {
-  position: fixed;
+  position: absolute;
   left: 0px;
   height: 50px;
   width: 100%;
