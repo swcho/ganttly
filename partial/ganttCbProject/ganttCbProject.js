@@ -316,8 +316,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         items.forEach(function (item, i) {
             if (item.associations) {
                 item.associations.forEach(function (association) {
-                    var index = taskUris.indexOf(association.to.uri);
-                    if (index !== -1) {
+                    var indexTo = taskUris.indexOf(association.to.uri);
+                    var indexFrom = taskUris.indexOf(association.from.uri);
+                    if (indexTo !== -1) {
                         if (association.type.name === 'depends') {
                             links.push({
                                 id: association.uri,
@@ -326,7 +327,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                                 type: '0'
                             });
                         } else if (association.type.name === 'child') {
-                            tasks[i].parent = association.to.uri;
+                            console.log(association.to.uri + ' -> ' + association.from.uri);
+                            tasks[indexFrom].parent = association.to.uri;
                         }
                     }
                 });

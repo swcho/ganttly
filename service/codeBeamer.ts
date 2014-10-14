@@ -342,14 +342,49 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
             }
 
             // find associations for each task
+            var additionalTaskUris = [];
             series.push(function(cb) {
+
+                var taskUriList = [];
+                tasks.forEach(function(task) {
+                    taskUriList.push(task.uri);
+                });
+
                 var parallel = [];
                 tasks.forEach(function(task: cb.TTask) {
                     parallel.push(function(cb) {
                         get(task.uri + '/associations', {
-                            type: 'depends,child'
+                            type: 'depends,child',
+                            inout: true
                         }, function(err, items: cb.TAssociation[]) {
                             task.associations = items;
+                            items.forEach(function(associ) {
+                                if (taskUriList.indexOf(associ.to.uri) == -1) {
+                                    additionalTaskUris.push(associ.to.uri);
+                                }
+                                if (taskUriList.indexOf(associ.from.uri) == -1) {
+                                    additionalTaskUris.push(associ.from.uri);
+                                }
+                            });
+                            cb();
+                        });
+                    });
+                });
+                async.parallelLimit(parallel, 5, function(err) {
+                    cb(err);
+                });
+            });
+
+            series.push(function(cb) {
+                var parallel = [];
+                console.log(additionalTaskUris.length);
+                additionalTaskUris.forEach(function(uri: string) {
+                    parallel.push(function(cb) {
+                        get(uri, null, function(err, item) {
+                            if (err) {
+                                return;
+                            }
+                            tasks.push(item);
                             cb();
                         });
                     });
