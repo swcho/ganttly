@@ -193,7 +193,7 @@ declare module cb {
         getByUri(aUri: string, aCb:(err, resp) => void);
         getUserList(aParam: TParamPage, aCb:(err, resp?: TRespPagedItems) => void);
         getProjectList(aParam: TParamPage, aCb:(err, resp?: TRespPagedItems) => void);
-        getTasks(aParam: TParamGetTask, aCb:(err, trackerUriList: string[], resp?: TTask[], aProgress?: (msg) => void) => void);
+        getTasks(aParam: TParamGetTask, aCb:(err, trackerUriList: string[], resp?: TTask[]) => void, aProgress?: (msg) => void);
         createTask(aParam: TParamCreateTask, aCb:(err, resp: TTask) => void);
         updateTask(aTask: cb.TTask, aCb: (err, resp: cb.TTask) => void);
         deleteTask(aTaskUri: string, aCb: (err, resp) => void);
