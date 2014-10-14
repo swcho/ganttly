@@ -134,7 +134,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             uri: item.id,
             name: item.text,
             startDate: item.start_date,
-            estimatedMillis: item.duration * unitDay
+            estimatedMillis: item.duration * unitDay,
+            endDate: <any>new Date(item.start_date.getTime() + item.duration * unitDay)
         }, function(err, resp) {
 
         });
@@ -150,14 +151,34 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         });
     };
 
+
     /**
      * Link add
      * @param id
      * @param item
      */
+
+    function adjustStartTime(gantt, toId, fromId) {
+        var taskTo: dhx.TTask = gantt.getTask(toId);
+        var taskFrom: dhx.TTask = gantt.getTask(fromId);
+        if (taskTo.duration) {
+            taskFrom.start_date = new Date(taskTo.start_date.getTime() + taskTo.duration * unitDay);
+            taskFrom.end_date = new Date(taskFrom.start_date.getTime() + taskFrom.duration * unitDay);
+            gantt.updateTask(fromId);
+            $scope.tasks.links.forEach(function(link) {
+                if (link.source == fromId) {
+                    adjustStartTime(gantt, fromId, link.target);
+                }
+            });
+        }
+    }
+
     $scope.onLinkAdd = function(gantt, id, item: dhx.TLink) {
         console.log(id, item);
         if (item.type === '0') {
+
+            adjustStartTime(gantt, item.source, item.target);
+
             $codeBeamer.createAssociation({
                 from: item.target,
                 to: item.source
@@ -297,7 +318,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 task.duration = (item.estimatedMillis || 0)/unitDay;
             }
             if (item.endDate) {
-                task.end_date = new Date(item.endDate);
+                task.duration = (new Date(item.endDate).getTime() - task.start_date.getTime())/unitDay;
             }
             tasks.push(task);
         });
