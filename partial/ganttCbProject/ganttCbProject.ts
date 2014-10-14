@@ -81,7 +81,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     };
 
     $scope.setUser = function(uri) {
-        if (uri == 'reset') {
+        if (uri === 'reset') {
             uri = null;
         }
         $state.go('ganttCbProject', {
@@ -166,7 +166,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             taskFrom.end_date = new Date(taskFrom.start_date.getTime() + taskFrom.duration * unitDay);
             gantt.updateTask(fromId);
             $scope.tasks.links.forEach(function(link) {
-                if (link.source == fromId) {
+                if (link.source === fromId) {
                     adjustStartTime(gantt, fromId, link.target);
                 }
             });
