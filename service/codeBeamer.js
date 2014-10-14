@@ -177,6 +177,9 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
         },
         updateAssociation: function (aParam, aCb) {
             put('/association', aParam, aCb);
+        },
+        deleteAssociation: function (aAssociationUri, aCb) {
+            del(aAssociationUri, aCb);
         }
     };
 

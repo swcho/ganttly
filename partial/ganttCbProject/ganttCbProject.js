@@ -92,6 +92,12 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         });
     };
 
+    /**
+    * Task Add
+    * @param gantt
+    * @param id
+    * @param item
+    */
     $scope.onTaskAdd = function (gantt, id, item) {
         if (taskTrackerUriList) {
             console.log(id);
@@ -113,7 +119,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                     console.log(err);
                     return;
                 }
-                gantt.changeTaskId(id, resp.uri);
+                window.location.reload();
             });
         }
     };
@@ -134,30 +140,47 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 console.log(err);
                 return;
             }
+            window.location.reload();
         });
     };
 
-    $scope.onLinkAdd = function (id, item) {
+    /**
+    * Link add
+    * @param id
+    * @param item
+    */
+    $scope.onLinkAdd = function (gantt, id, item) {
         console.log(id, item);
         if (item.type === '0') {
             $codeBeamer.createAssociation({
                 from: item.target,
                 to: item.source
             }, function (err, association) {
+                if (err) {
+                    return;
+                }
+                gantt.changeLinkId(id, association.uri);
             });
+        } else {
+            gantt.deleteLink(id);
+            dhtmlx.message('의존 관계만 설정할 수 있습니다.');
         }
     };
 
-    $scope.onLinkUpdate = function (id, item) {
+    $scope.onLinkUpdate = function (gantt, id, item) {
         console.log(id);
         console.log(item);
     };
 
-    $scope.onLinkDelete = function (id, item) {
-        console.log(id);
-        console.log(item);
+    $scope.onLinkDelete = function (gantt, id, item) {
+        $codeBeamer.deleteAssociation(id, function (err, resp) {
+        });
     };
 
+    /**
+    * Context menu
+    * @type {{menuItems: {id: string, text: string, cb: (function(dhx.TContextCbParam): undefined)}[]}}
+    */
     var contextMenu = {
         menuItems: [{
                 id: 'open_task',
@@ -199,6 +222,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         return;
     }
 
+    /**
+    * Display Tasks
+    * @type {{}}
+    */
     var param = {};
     if (userUri) {
         param.userUri = userUri;

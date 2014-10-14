@@ -213,17 +213,17 @@ angular.module('ganttly').directive('dhxGantt', function () {
                 }),
                 gantt.attachEvent("onAfterLinkAdd", function (id, item) {
                     if ($attrs['dhxLinkAdd']) {
-                        $scope[$attrs['dhxLinkAdd']](id, item);
+                        $scope[$attrs['dhxLinkAdd']](gantt, id, item);
                     }
                 }),
                 gantt.attachEvent("onAfterLinkUpdate", function (id, item) {
                     if ($attrs['dhxLinkUpdate']) {
-                        $scope[$attrs['dhxLinkUpdate']](id, item);
+                        $scope[$attrs['dhxLinkUpdate']](gantt, id, item);
                     }
                 }),
                 gantt.attachEvent("onAfterLinkDelete", function (id, item) {
                     if ($attrs['dhxLinkDelete']) {
-                        $scope[$attrs['dhxLinkDelete']](id, item);
+                        $scope[$attrs['dhxLinkDelete']](gantt, id, item);
                     }
                 })
             ];

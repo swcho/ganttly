@@ -198,6 +198,7 @@ declare module cb {
         updateTask(aTask: cb.TTask, aCb: (err, resp: cb.TTask) => void);
         deleteTask(aTaskUri: string, aCb: (err, resp) => void);
         createAssociation(aParam: TParamCreateAssociation, aCb:(err, resp?: TAssociation) => void);
+        deleteAssociation(aAssociationUri: string, aCb:(err, resp) => void);
     }
 }
 
@@ -383,6 +384,9 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
         },
         updateAssociation: function(aParam, aCb: (err) => void) {
             put('/association', aParam, aCb);
+        },
+        deleteAssociation(aAssociationUri: string, aCb:(err, resp) => void) {
+            del(aAssociationUri, aCb);
         }
     };
 
