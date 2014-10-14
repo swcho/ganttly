@@ -133,7 +133,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
                 gantt.config.scale_unit = "month";
                 gantt.config.date_scale = "%F, %Y";
                 gantt.config.subscales = [
-                    {unit:"day", step:1, date:"%j, %D" }
+                    {unit:"week", step:1, date:"Week #%W" }
                 ];
                 gantt.config.scale_height = 50;
                 gantt.templates.date_scale = null;
