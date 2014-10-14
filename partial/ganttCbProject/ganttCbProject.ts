@@ -186,6 +186,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 }
                 gantt.changeLinkId(id, association.uri);
                 adjustStartTime(gantt, item.source, item.target);
+                gantt.refreshData();
             });
         } else {
             gantt.deleteLink(id);
