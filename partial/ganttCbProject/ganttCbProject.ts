@@ -105,7 +105,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 tracker: taskTrackerUriList[0],
                 name: item.text,
                 startDate: item.start_date,
-                estimatedMillis: item.duration * unitDay
+                estimatedMillis: item.duration * unitDay,
+                description: item.text + '\n\n[Created by ganttly]',
+                descFormat: "Wiki"
             };
             if (item.parent) {
                 param.parent = item.parent;
