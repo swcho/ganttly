@@ -220,7 +220,12 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 if (err) {
                     return;
                 }
-                gantt.changeLinkId(id, association.uri);
+                $scope.tasks.links.push({
+                    id: association.uri,
+                    source: item.source,
+                    target: item.target,
+                    type: '0'
+                });
                 adjustStartTime(gantt, item.source, item.target);
                 gantt.refreshData();
             });
