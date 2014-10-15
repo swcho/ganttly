@@ -316,9 +316,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             };
             if (item.estimatedMillis) {
                 task.duration = (item.estimatedMillis || 0)/unitDay;
-            }
-            if (item.endDate) {
+            } else if (item.endDate) {
                 task.duration = (new Date(item.endDate).getTime() - task.start_date.getTime())/unitDay;
+            } else {
+                task.duration = 1;
             }
             tasks.push(task);
         });
@@ -326,8 +327,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         items.forEach(function(item, i) {
             if (item.associations) {
                 item.associations.forEach(function (association:cb.TAssociation) {
-                    var indexTo = taskUris.indexOf(association.to.uri);
-                    var indexFrom = taskUris.indexOf(association.from.uri);
+                    var indexTo = association.to ? taskUris.indexOf(association.to.uri): -1;
+                    var indexFrom = association.from ? taskUris.indexOf(association.from.uri): -1;
                     if (indexTo !== -1) {
                         if (association.type.name === 'depends') {
                             links.push({
@@ -336,7 +337,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                                 target: item.uri,
                                 type: '0'
                             });
-                        } else if (association.type.name === 'child') {
+                        } else if (indexFrom !== -1 && association.type.name === 'child') {
                             console.log(association.to.uri + ' -> ' + association.from.uri);
                             tasks[indexFrom].parent = association.to.uri;
                         }
