@@ -153,7 +153,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                 tasks.forEach(function (task) {
                     parallel.push(function (cb) {
                         get(task.uri + '/associations', {
-                            type: 'depends,child',
+                            type: 'depends,child,parent',
                             inout: true
                         }, function (err, items) {
                             task.associations = items;
@@ -169,7 +169,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         });
                     });
                 });
-                async.parallelLimit(parallel, 5, function (err) {
+                async.parallelLimit(parallel, 1, function (err) {
                     cb(err);
                 });
             });
@@ -188,7 +188,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                             tasks.push(item);
 
                             get(item.uri + '/associations', {
-                                type: 'depends,child',
+                                type: 'depends,child,parent',
                                 inout: true
                             }, function (err, associations) {
                                 if (err) {
@@ -201,7 +201,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         });
                     });
                 });
-                async.parallelLimit(parallel, 5, function (err) {
+                async.parallelLimit(parallel, 1, function (err) {
                     cb(err);
                 });
             });

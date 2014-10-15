@@ -328,6 +328,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                                 target: item.uri,
                                 type: '0'
                             });
+                        } else if (association.type.name === 'parent') {
+                            console.log(association.from.uri + ' -> ' + association.to.uri);
+                            tasks[indexTo].parent = association.from.uri;
                         } else if (indexFrom !== -1 && association.type.name === 'child') {
                             console.log(association.to.uri + ' -> ' + association.from.uri);
                             tasks[indexFrom].parent = association.to.uri;

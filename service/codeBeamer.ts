@@ -360,7 +360,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                 tasks.forEach(function(task: cb.TTask) {
                     parallel.push(function(cb) {
                         get(task.uri + '/associations', {
-                            type: 'depends,child',
+                            type: 'depends,child,parent',
                             inout: true
                         }, function(err, items: cb.TAssociation[]) {
                             task.associations = items;
@@ -376,7 +376,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                         });
                     });
                 });
-                async.parallelLimit(parallel, 5, function(err) {
+                async.parallelLimit(parallel, 1, function(err) {
                     cb(err);
                 });
             });
@@ -395,7 +395,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                             tasks.push(item);
 
                             get(item.uri + '/associations', {
-                                type: 'depends,child',
+                                type: 'depends,child,parent',
                                 inout: true
                             }, function(err, associations) {
                                 if (err) {
@@ -408,7 +408,7 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                         });
                     });
                 });
-                async.parallelLimit(parallel, 5, function(err) {
+                async.parallelLimit(parallel, 1, function(err) {
                     cb(err);
                 });
             });
