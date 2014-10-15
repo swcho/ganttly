@@ -158,10 +158,10 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         }, function (err, items) {
                             task.associations = items;
                             items.forEach(function (associ) {
-                                if (associ.to && taskUriList.indexOf(associ.to.uri) == -1) {
+                                if (associ.to && taskUriList.indexOf(associ.to.uri) === -1) {
                                     additionalTaskUris.push(associ.to.uri);
                                 }
-                                if (associ.from && taskUriList.indexOf(associ.from.uri) == -1) {
+                                if (associ.from && taskUriList.indexOf(associ.from.uri) === -1) {
                                     additionalTaskUris.push(associ.from.uri);
                                 }
                             });
