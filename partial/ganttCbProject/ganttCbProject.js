@@ -308,7 +308,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 task.duration = (item.estimatedMillis || 0) / unitDay;
             } else if (item.endDate) {
                 task.duration = (new Date(item.endDate).getTime() - task.start_date.getTime()) / unitDay;
-            } else {
+            }
+            if (!task.duration || task.duration < 1) {
                 task.duration = 1;
             }
             tasks.push(task);

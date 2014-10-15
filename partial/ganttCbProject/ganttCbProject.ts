@@ -319,7 +319,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             } else if (item.endDate) {
                 task.duration = (new Date(item.endDate).getTime() - task.start_date.getTime())/unitDay;
             }
-            if (task.duration < 1) {
+            if (!task.duration || task.duration < 1) {
                 task.duration = 1;
             }
             tasks.push(task);
