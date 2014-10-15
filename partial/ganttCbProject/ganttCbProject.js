@@ -92,6 +92,40 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         });
     };
 
+    function covertCbTaskToDhxTask(cbTask, parentUri) {
+        console.log(cbTask);
+        var task = {
+            id: cbTask.uri,
+            text: cbTask.name,
+            start_date: new Date(cbTask.startDate || cbTask.modifiedAt),
+            progress: cbTask.spentEstimatedHours || 0,
+            priority: cbTask.priority ? cbTask.priority.name : 'Noraml'
+        };
+
+        var userNames = [];
+        if (cbTask.assignedTo) {
+            cbTask.assignedTo.forEach(function (user) {
+                userNames.push(user.name);
+            });
+        }
+        task.user = userNames.join(',');
+
+        if (cbTask.estimatedMillis) {
+            task.duration = (cbTask.estimatedMillis || 0) / unitDay;
+        } else if (cbTask.endDate) {
+            task.duration = (new Date(cbTask.endDate).getTime() - task.start_date.getTime()) / unitDay;
+        }
+
+        if (!task.duration || task.duration < 1) {
+            task.duration = 1;
+        }
+
+        if (parentUri) {
+            task.parent = parentUri;
+        }
+        return task;
+    }
+
     /**
     * Task Add
     * @param gantt
@@ -100,14 +134,12 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     */
     $scope.onTaskAdd = function (gantt, id, item) {
         if (taskTrackerUriList) {
-            console.log(id);
-            console.log(item);
             var param = {
                 tracker: taskTrackerUriList[0],
                 name: item.text,
                 startDate: item.start_date,
                 estimatedMillis: item.duration * unitDay,
-                description: item.text + '\n\n[Created by ganttly]',
+                description: item.text + '\n\nCreated by ganttly',
                 descFormat: "Wiki"
             };
             if (item.parent) {
@@ -119,6 +151,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                     console.log(err);
                     return;
                 }
+
+                //                gantt.changeTaskId(id, resp.uri);
+                var task = covertCbTaskToDhxTask(resp, item.parent);
+                $scope.tasks.data.unshift(task);
+                console.log($scope.tasks);
                 gantt.refreshData();
             });
         }
@@ -136,12 +173,20 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     };
 
     $scope.onTaskDelete = function (gantt, id, item) {
+        var i, len = $scope.tasks.data.length, task;
+        for (i = 0; i < len; i++) {
+            task = $scope.tasks.data[i];
+            if (task.id === id) {
+                $scope.tasks.data.splice(i, 1);
+                break;
+            }
+        }
         $codeBeamer.deleteTask(id, function (err) {
             if (err) {
                 console.log(err);
                 return;
             }
-            window.location.reload();
+            gantt.refreshData();
         });
     };
 
@@ -288,31 +333,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
         var taskUris = [], tasks = [], links = [];
         items.forEach(function (item) {
-            var userNames = [];
-            if (item.assignedTo) {
-                item.assignedTo.forEach(function (user) {
-                    userNames.push(user.name);
-                });
-            }
             taskUris.push(item.uri);
-
-            var task = {
-                id: item.uri,
-                text: item.name,
-                user: userNames.join(','),
-                start_date: new Date(item.startDate || item.modifiedAt),
-                progress: item.spentEstimatedHours || 0,
-                priority: item.priority.name
-            };
-            if (item.estimatedMillis) {
-                task.duration = (item.estimatedMillis || 0) / unitDay;
-            } else if (item.endDate) {
-                task.duration = (new Date(item.endDate).getTime() - task.start_date.getTime()) / unitDay;
-            }
-            if (!task.duration || task.duration < 1) {
-                task.duration = 1;
-            }
-            tasks.push(task);
+            tasks.push(covertCbTaskToDhxTask(item));
         });
 
         items.forEach(function (item, i) {

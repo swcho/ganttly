@@ -13,7 +13,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
 
     function send(aMethod, aUrl, aParam, aCb) {
         var url = host + aUrl;
-        console.log(url);
+        console.log(aMethod + ': ' + url);
         var options = {};
         options.url = url;
         options.method = aMethod;
@@ -211,7 +211,13 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
             });
         },
         createTask: function (aParam, aCb) {
-            post('/item', aParam, aCb);
+            post('/item', aParam, function (err, resp) {
+                if (err) {
+                    aCb(err);
+                    return;
+                }
+                get(resp.uri, null, aCb);
+            });
         },
         updateTask: function (aTask, aCb) {
             put('/item', aTask, aCb);
