@@ -187,6 +187,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     };
 
     $scope.onTaskUpdate = function (id, item) {
+        if (item.parent) {
+            setParentOpen(item);
+        }
         $codeBeamer.updateTask({
             uri: item.id,
             name: item.text,
