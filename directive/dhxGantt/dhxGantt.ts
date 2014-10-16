@@ -256,6 +256,9 @@ angular.module('ganttly').directive('dhxGantt', function () {
             }, true);
 
             var eventAttachIds = [
+            /**
+             * Task editing events
+             */
                 gantt.attachEvent("onAfterTaskAdd", function(id, item) {
                     if ($attrs['dhxTaskAdd']) {
                         $scope[$attrs['dhxTaskAdd']](gantt, id, item);
@@ -266,16 +269,29 @@ angular.module('ganttly').directive('dhxGantt', function () {
                         $scope[$attrs['dhxTaskUpdate']](id, item);
                     }
                 }),
-                gantt.attachEvent("onBeforeTaskDelete", function(id, item) {
-                    if ($attrs['dhxBeforeTaskDelete']) {
-                        $scope[$attrs['dhxBeforeTaskDelete']](gantt, id, item);
-                    }
-                }),
                 gantt.attachEvent("onAfterTaskDelete", function(id, item) {
                     if ($attrs['dhxTaskDelete']) {
                         $scope[$attrs['dhxTaskDelete']](gantt, id, item);
                     }
                 }),
+
+            /**
+             *  Task open/close event
+             */
+                gantt.attachEvent("onTaskOpened", function(id) {
+                    if ($attrs['dhxTaskOpened']) {
+                        $scope[$attrs['dhxTaskOpened']](gantt, id);
+                    }
+                }),
+                gantt.attachEvent("onTaskClosed", function(id) {
+                    if ($attrs['dhxTaskClosed']) {
+                        $scope[$attrs['dhxTaskClosed']](gantt, id);
+                    }
+                }),
+
+            /**
+             * Link editing events
+             */
                 gantt.attachEvent("onAfterLinkAdd", function(id, item) {
                     if ($attrs['dhxLinkAdd']) {
                         $scope[$attrs['dhxLinkAdd']](gantt, id, item);

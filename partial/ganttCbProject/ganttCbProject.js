@@ -156,7 +156,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     */
     $scope.onTaskAdd = function (gantt, id, item) {
         if (taskTrackerUriList) {
-            console.log('onTaskAdd');
             var param = {
                 tracker: taskTrackerUriList[0],
                 name: item.text,
@@ -165,10 +164,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 description: item.text + '\n\nCreated by ganttly',
                 descFormat: "Wiki"
             };
-            console.log(item);
             if (item.parent) {
                 param.parent = item.parent;
-                setParentOpen(item);
             }
 
             $codeBeamer.createTask(param, function (err, resp) {
@@ -187,9 +184,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     };
 
     $scope.onTaskUpdate = function (id, item) {
-        if (item.parent) {
-            setParentOpen(item);
-        }
         $codeBeamer.updateTask({
             uri: item.id,
             name: item.text,
@@ -198,13 +192,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             endDate: new Date(item.start_date.getTime() + item.duration * unitDay)
         }, function (err, resp) {
         });
-    };
-
-    $scope.onBeforeTaskDelete = function (gantt, id, item) {
-        if (item.parent) {
-            setParentOpen(item);
-        }
-        return true;
     };
 
     $scope.onTaskDelete = function (gantt, id, item) {
@@ -224,6 +211,22 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             }
             gantt.refreshData();
         });
+    };
+
+    $scope.onTaskOpened = function (gantt, id) {
+        var task = findTask(id);
+        if (task) {
+            task.open = true;
+        }
+        return true;
+    };
+
+    $scope.onTaskClosed = function (gantt, id) {
+        var task = findTask(id);
+        if (task) {
+            task.open = false;
+        }
+        return true;
     };
 
     /**
