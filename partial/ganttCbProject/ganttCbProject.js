@@ -92,6 +92,28 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         });
     };
 
+    function findTask(id) {
+        var t = null;
+        var i, len = $scope.tasks.data.length;
+        for (i = 0; i < len; i++) {
+            t = $scope.tasks.data[i];
+            if (t.id == id) {
+                return t;
+            }
+        }
+        return t;
+    }
+
+    function setParentOpen(task) {
+        if (task.parent) {
+            var parentTask = findTask(task.parent);
+            if (parentTask) {
+                parentTask.open = true;
+                setParentOpen(parentTask);
+            }
+        }
+    }
+
     function covertCbTaskToDhxTask(cbTask, parentUri) {
         console.log(cbTask);
         var task = {
@@ -134,6 +156,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     */
     $scope.onTaskAdd = function (gantt, id, item) {
         if (taskTrackerUriList) {
+            console.log('onTaskAdd');
             var param = {
                 tracker: taskTrackerUriList[0],
                 name: item.text,
@@ -142,8 +165,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 description: item.text + '\n\nCreated by ganttly',
                 descFormat: "Wiki"
             };
+            console.log(item);
             if (item.parent) {
                 param.parent = item.parent;
+                setParentOpen(item);
             }
 
             $codeBeamer.createTask(param, function (err, resp) {
@@ -172,7 +197,15 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         });
     };
 
+    $scope.onBeforeTaskDelete = function (gantt, id, item) {
+        if (item.parent) {
+            setParentOpen(item);
+        }
+        return true;
+    };
+
     $scope.onTaskDelete = function (gantt, id, item) {
+        console.log('onTaskDelete');
         var i, len = $scope.tasks.data.length, task;
         for (i = 0; i < len; i++) {
             task = $scope.tasks.data[i];

@@ -266,6 +266,11 @@ angular.module('ganttly').directive('dhxGantt', function () {
                         $scope[$attrs['dhxTaskUpdate']](id, item);
                     }
                 }),
+                gantt.attachEvent("onBeforeTaskDelete", function(id, item) {
+                    if ($attrs['dhxBeforeTaskDelete']) {
+                        $scope[$attrs['dhxBeforeTaskDelete']](gantt, id, item);
+                    }
+                }),
                 gantt.attachEvent("onAfterTaskDelete", function(id, item) {
                     if ($attrs['dhxTaskDelete']) {
                         $scope[$attrs['dhxTaskDelete']](gantt, id, item);
