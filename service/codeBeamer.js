@@ -4,6 +4,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
     var host = gConfig.cbBaseUrl + '/rest';
     var user = gConfig.cbUser;
     var pass = gConfig.cbPass;
+    var concurrentCount = gConfig.concurrentCount || 5;
     var withCredentials = false;
     var credentials;
     if (user && pass) {
@@ -133,7 +134,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                             });
                         });
                     });
-                    async.parallelLimit(parallel, 5, function (err) {
+                    async.parallelLimit(parallel, concurrentCount, function (err) {
                         cb(err);
                     });
                 });
@@ -169,7 +170,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         });
                     });
                 });
-                async.parallelLimit(parallel, 1, function (err) {
+                async.parallelLimit(parallel, concurrentCount, function (err) {
                     cb(err);
                 });
             });
@@ -201,7 +202,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         });
                     });
                 });
-                async.parallelLimit(parallel, 1, function (err) {
+                async.parallelLimit(parallel, concurrentCount, function (err) {
                     cb(err);
                 });
             });
@@ -249,7 +250,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         });
                     });
                 });
-                async.parallelLimit(parallel, 5, function (err) {
+                async.parallelLimit(parallel, concurrentCount, function (err) {
                     cb(err);
                 });
             });
