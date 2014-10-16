@@ -44,6 +44,7 @@ declare module cb {
 
     interface TTask extends TItem {
         descFormat?: string;
+        description?: string;
         estimatedMillis?: number;
         modifiedAt?: string; // Date
         modifier?: TUser;
@@ -60,6 +61,19 @@ declare module cb {
         associations?: TAssociation[];
         spentEstimatedHours?: number;
         spentMillis?: number;
+    }
+
+    interface TRelease extends TItem {
+        parent?: TItem;
+        tracker?: TItem;
+        status?: TEnum;
+        plannedReleaseDate?: string; // Date
+        submittedAt?: string; // Date
+        submitter?: TUser;
+        modifiedAt?: string; // Date
+        modifier?: TUser;
+        description?: string;
+        descFormat?: string;
     }
 
     interface TAssociation extends TItem {
@@ -110,6 +124,10 @@ declare module cb {
 
     interface TParamGetTask {
         userUri?: string;
+        projectUri?: string;
+    }
+
+    interface TParamGetRelease {
         projectUri?: string;
     }
 
@@ -194,6 +212,7 @@ declare module cb {
         getUserList(aParam: TParamPage, aCb:(err, resp?: TRespPagedItems) => void);
         getProjectList(aParam: TParamPage, aCb:(err, resp?: TRespPagedItems) => void);
         getTasks(aParam: TParamGetTask, aCb:(err, trackerUriList: string[], resp?: TTask[]) => void, aProgress?: (msg) => void);
+        getReleases(aParam: TParamGetRelease, aCb:(err, trackerUriList: string[], resp?: TRelease[]) => void);
         createTask(aParam: TParamCreateTask, aCb:(err, resp?: TTask) => void);
         updateTask(aTask: cb.TTask, aCb: (err, resp: cb.TTask) => void);
         deleteTask(aTaskUri: string, aCb: (err, resp) => void);
@@ -415,6 +434,56 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
 
             async.series(series, function(err) {
                 aCb(err, trackerUriList, tasks);
+            });
+        },
+        getReleases: function(aParam: cb.TParamGetRelease, aCb:(err, trackerUriList: string[], resp?: cb.TRelease[]) => void) {
+
+            var projectUri = aParam.projectUri;
+            var series = [];
+
+            // get uri for task
+            var trackerUriList = [];
+            series.push(function(cb) {
+                get(projectUri + '/categories', {
+                    type: 'Release'
+                }, function(err, items) {
+
+                    items.forEach(function(item) {
+                        if (item.uri) {
+                            trackerUriList.push(item.uri);
+                        }
+
+                        // when base uri is /user/[id]
+                        if (item.trackers) {
+                            item.trackers.forEach(function(tracker) {
+                                trackerUriList.push(tracker.uri);
+                            });
+                        }
+                    });
+
+                    cb(err);
+                });
+            });
+
+            // get trackers all items
+            var releases: cb.TRelease[] = [];
+            series.push(function(cb) {
+                var parallel = [];
+                trackerUriList.forEach(function(trackerUri) {
+                    parallel.push(function(cb) {
+                        get(trackerUri + '/items', null, function(err, items: cb.TTask[]) {
+                            releases = releases.concat(items);
+                            cb(err);
+                        });
+                    });
+                });
+                async.parallelLimit(parallel, 5, function(err) {
+                    cb(err);
+                });
+            });
+
+            async.series(series, function(err) {
+                aCb(err, trackerUriList, releases);
             });
         },
         createTask: function(aParam: cb.TParamCreateTask, aCb:(err, resp?: cb.TTask) => void) {

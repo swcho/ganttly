@@ -210,6 +210,54 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                 aCb(err, trackerUriList, tasks);
             });
         },
+        getReleases: function (aParam, aCb) {
+            var projectUri = aParam.projectUri;
+            var series = [];
+
+            // get uri for task
+            var trackerUriList = [];
+            series.push(function (cb) {
+                get(projectUri + '/categories', {
+                    type: 'Release'
+                }, function (err, items) {
+                    items.forEach(function (item) {
+                        if (item.uri) {
+                            trackerUriList.push(item.uri);
+                        }
+
+                        // when base uri is /user/[id]
+                        if (item.trackers) {
+                            item.trackers.forEach(function (tracker) {
+                                trackerUriList.push(tracker.uri);
+                            });
+                        }
+                    });
+
+                    cb(err);
+                });
+            });
+
+            // get trackers all items
+            var releases = [];
+            series.push(function (cb) {
+                var parallel = [];
+                trackerUriList.forEach(function (trackerUri) {
+                    parallel.push(function (cb) {
+                        get(trackerUri + '/items', null, function (err, items) {
+                            releases = releases.concat(items);
+                            cb(err);
+                        });
+                    });
+                });
+                async.parallelLimit(parallel, 5, function (err) {
+                    cb(err);
+                });
+            });
+
+            async.series(series, function (err) {
+                aCb(err, trackerUriList, releases);
+            });
+        },
         createTask: function (aParam, aCb) {
             post('/item', aParam, function (err, resp) {
                 if (err) {
