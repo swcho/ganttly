@@ -6,7 +6,7 @@ describe('GanttCtrl', function() {
 
     beforeEach(inject(function($rootScope, $controller) {
       scope = $rootScope.$new();
-      ctrl = $controller('GanttCtrl', {$scope: scope});
+      ctrl = $controller('GanttCbProjectCtrl', {$scope: scope});
     }));	
 
 	it('should ...', inject(function() {

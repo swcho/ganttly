@@ -102,7 +102,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         var i, len=$scope.tasks.data.length;
         for (i=0; i<len; i++) {
             t = $scope.tasks.data[i];
-            if (t.id == id) {
+            if (t.id === id) {
                 return t;
             }
         }
@@ -187,14 +187,19 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         }
     };
 
-    $scope.onTaskUpdate = function(id, item) {
-        $codeBeamer.updateTask({
+    $scope.onTaskUpdate = function(id, item: dhx.TTask) {
+        console.log(item);
+        var task: any = {
             uri: item.id,
             name: item.text,
             startDate: item.start_date,
             estimatedMillis: item.duration * unitDay,
             endDate: <any>new Date(item.start_date.getTime() + item.duration * unitDay)
-        }, function(err, resp) {
+        };
+        if (item.progress) {
+            task.spentMillis = item.duration * item.progress * unitDay;
+        }
+        $codeBeamer.updateTask(task, function(err, resp) {
         });
     };
 
