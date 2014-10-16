@@ -11,7 +11,9 @@
 @LOWEST: #2E4172;
 @LOWEST_ALPHA: fade(@LOWEST, @ALPHA);
 
-@STATUS_NEW: #767676;
+@STATUS_NONE: #afafaf;
+@STATUS_NONE_ALPHA: fade(@STATUS_NONE, @ALPHA);
+@STATUS_NEW: #515151;
 @STATUS_NEW_ALPHA: fade(@STATUS_NEW, @ALPHA);
 @STATUS_SUSPENDED: #AA3939;
 @STATUS_SUSPENDED_ALPHA: fade(@STATUS_SUSPENDED, @ALPHA);
@@ -51,6 +53,15 @@
 //    border:2px solid @LOWEST_ALPHA;
   }
   &.priority_lowest .gantt_task_progress{
+  }
+
+  &.status_none {
+    border:2px solid @STATUS_NONE_ALPHA;
+    color: @STATUS_NONE_ALPHA;
+    background: @STATUS_NONE_ALPHA;
+    .gantt_task_progress{
+      background: @STATUS_NONE;
+    }
   }
 
   &.status_new {

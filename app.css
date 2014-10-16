@@ -7114,13 +7114,21 @@ button.close {
   content: "\f196";
 }
 /* Component LESS */
+.gantt_task_line.status_none {
+  border: 2px solid rgba(175, 175, 175, 0.5);
+  color: rgba(175, 175, 175, 0.5);
+  background: rgba(175, 175, 175, 0.5);
+}
+.gantt_task_line.status_none .gantt_task_progress {
+  background: #afafaf;
+}
 .gantt_task_line.status_new {
-  border: 2px solid rgba(118, 118, 118, 0.5);
-  color: rgba(118, 118, 118, 0.5);
-  background: rgba(118, 118, 118, 0.5);
+  border: 2px solid rgba(81, 81, 81, 0.5);
+  color: rgba(81, 81, 81, 0.5);
+  background: rgba(81, 81, 81, 0.5);
 }
 .gantt_task_line.status_new .gantt_task_progress {
-  background: #767676;
+  background: #515151;
 }
 .gantt_task_line.status_suspended {
   border: 2px solid rgba(170, 57, 57, 0.5);
