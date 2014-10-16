@@ -127,7 +127,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             start_date: new Date(cbTask.startDate || cbTask.modifiedAt),
             progress: cbTask.spentEstimatedHours || 0,
             priority: cbTask.priority ? cbTask.priority.name: 'Noraml',
-            status: cbTask.status.name
+            status: cbTask.status ? cbTask.status.name: ''
         };
 
         var userNames = [];
