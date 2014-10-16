@@ -29,6 +29,7 @@ angular.module('ganttly').directive('dhxGantt', function () {
                 'Lowest': 'priority_lowest'
             };
             var classes_status = {
+                'None': 'status_none',
                 'New': 'status_new',
                 'Suspended': 'status_suspended',
                 'In progress': 'status_in_progress',
