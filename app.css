@@ -7114,45 +7114,52 @@ button.close {
   content: "\f196";
 }
 /* Component LESS */
-.gantt_task_line.priority_highest {
+.gantt_task_line.status_new {
+  border: 2px solid rgba(118, 118, 118, 0.5);
+  color: rgba(118, 118, 118, 0.5);
+  background: rgba(118, 118, 118, 0.5);
+}
+.gantt_task_line.status_new .gantt_task_progress {
+  background: #767676;
+}
+.gantt_task_line.status_suspended {
   border: 2px solid rgba(170, 57, 57, 0.5);
   color: rgba(170, 57, 57, 0.5);
   background: rgba(170, 57, 57, 0.5);
 }
-.gantt_task_line.priority_highest .gantt_task_progress {
+.gantt_task_line.status_suspended .gantt_task_progress {
   background: #aa3939;
 }
-.gantt_task_line.priority_high {
-  border: 2px solid rgba(170, 109, 57, 0.5);
-  color: rgba(170, 109, 57, 0.5);
-  background: rgba(170, 109, 57, 0.5);
+.gantt_task_line.status_suspended .gantt_task_content {
+  text-decoration: underline;
+  font-weight: bold;
 }
-.gantt_task_line.priority_high .gantt_task_progress {
-  background: #aa6d39;
+.gantt_task_line.status_in_progress {
+  border: 2px solid rgba(255, 171, 70, 0.5);
+  color: rgba(255, 171, 70, 0.5);
+  background: rgba(255, 171, 70, 0.5);
 }
-.gantt_task_line.priority_normal {
-  border: 2px solid rgba(45, 134, 51, 0.5);
-  color: rgba(45, 134, 51, 0.5);
-  background: rgba(45, 134, 51, 0.5);
+.gantt_task_line.status_in_progress .gantt_task_progress {
+  background: #ffab46;
 }
-.gantt_task_line.priority_normal .gantt_task_progress {
-  background: #2d8633;
+.gantt_task_line.status_partly_completed {
+  border: 2px solid rgba(0, 168, 93, 0.5);
+  color: rgba(0, 168, 93, 0.5);
+  background: rgba(0, 168, 93, 0.5);
 }
-.gantt_task_line.priority_low {
-  border: 2px solid rgba(34, 102, 102, 0.5);
-  color: rgba(34, 102, 102, 0.5);
-  background: rgba(34, 102, 102, 0.5);
+.gantt_task_line.status_partly_completed .gantt_task_progress {
+  background: #00a85d;
 }
-.gantt_task_line.priority_low .gantt_task_progress {
-  background: #226666;
+.gantt_task_line.status_completed {
+  border: 2px solid rgba(24, 122, 109, 0.5);
+  color: rgba(24, 122, 109, 0.5);
+  background: rgba(24, 122, 109, 0.5);
 }
-.gantt_task_line.priority_lowest {
-  border: 2px solid rgba(46, 65, 114, 0.5);
-  color: rgba(46, 65, 114, 0.5);
-  background: rgba(46, 65, 114, 0.5);
+.gantt_task_line.status_completed .gantt_task_progress {
+  background: #187a6d;
 }
-.gantt_task_line.priority_lowest .gantt_task_progress {
-  background: #2e4172;
+.gantt_task_line.status_completed .gantt_task_content {
+  text-decoration: line-through !important;
 }
 .weekend {
   background: #f4f7f4;

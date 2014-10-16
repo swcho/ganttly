@@ -74,14 +74,21 @@ angular.module('ganttly').directive('dhxGantt', function () {
 
         // Set task bar's class by priority
         gantt.templates.task_class  = function(start, end, task){
-            var classes = {
+            var classes_priority = {
                 'Highest': 'priority_highest',
                 'High': 'priority_high',
                 'Normal': 'priority_normal',
                 'Low': 'priority_low',
                 'Lowest': 'priority_lowest'
             };
-            return classes[task.priority];
+            var classes_status = {
+                'New': 'status_new',
+                'Suspended': 'status_suspended',
+                'In progress': 'status_in_progress',
+                'Partly completed': 'status_partly_completed',
+                'Completed': 'status_completed'
+            };
+            return classes_priority[task.priority] + ' ' + classes_status[task.status];
         };
 
         // Highlight weekend
