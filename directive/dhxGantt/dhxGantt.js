@@ -63,16 +63,15 @@ angular.module('ganttly').directive('dhxGantt', function () {
             },
             'Week': function () {
                 var weekScaleTemplate = function (date) {
-                    var dateToStr = gantt.date.date_to_str("%d %M");
-                    var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
-                    return dateToStr(date) + " - " + dateToStr(endDate);
+                    var dateToStr = gantt.date.date_to_str("%M w%W");
+                    return dateToStr(date);
                 };
 
                 gantt.config.scale_unit = "week";
                 gantt.config.step = 1;
                 gantt.templates.date_scale = weekScaleTemplate;
                 gantt.config.subscales = [
-                    { unit: "day", step: 1, date: "%D" }
+                    { unit: "day", step: 1, date: "%d %D" }
                 ];
                 gantt.config.scale_height = 50;
             },
@@ -96,8 +95,13 @@ angular.module('ganttly').directive('dhxGantt', function () {
 
                 var monthScaleTemplate = function (date) {
                     var dateToStr = gantt.date.date_to_str("%M");
-                    var endDate = gantt.date.add(date, 2, "month");
-                    return dateToStr(date) + " - " + dateToStr(endDate);
+                    var quarter = {
+                        'Jan': '1',
+                        'Apr': '2',
+                        'Jul': '3',
+                        'Oct': '4'
+                    };
+                    return quarter[dateToStr(date)] + 'Q';
                 };
 
                 gantt.config.subscales = [
