@@ -32,13 +32,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         });
     };
 
-    $scope.cbProjectItems = [];
-    $scope.cbProjectFilter = function (text, cb) {
-        console.log(text);
-        $codeBeamer.getProjectList({
-            page: 1,
-            filter: text
-        }, function (err, resp) {
+    function getProjectList(text, cb) {
+        var param = {
+            page: 1
+        };
+        if (text.length) {
+            param.filter = text + '*';
+        }
+        $codeBeamer.getProjectList(param, function (err, resp) {
             if (err) {
                 return;
             }
@@ -52,7 +53,16 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             });
             cb(items);
         });
+    }
+
+    $scope.cbProjectItems = [];
+    $scope.cbProjectFilter = function (text, cb) {
+        console.log(text);
+        getProjectList(text, cb);
     };
+    getProjectList('', function (items) {
+        $scope.cbProjectItems = items;
+    });
 
     $scope.cbScaleItems = [
         {
