@@ -17,10 +17,13 @@ gantt._tooltip = {}, gantt._tooltip_class = "gantt_tooltip", gantt.config.toolti
         n.innerHTML = t, gantt.$task_data.appendChild(n);
         console.log(e);
         // tooltip bug fix
+        if (n.offsetWidth > 300) {
+
+            n.style.width = '300px';
+        }
         var i = n.offsetWidth + 20, a = n.offsetHeight + 40, s = this.$task.offsetHeight, r = this.$task.offsetWidth, o = this.getScrollState();
         console.log(n.offsetWidth);
 //        var i = n.offsetWidth + 20, a = n.offsetHeight + 40, s = this.$task.offsetHeight, r = e.width, o = this.getScrollState();
-        i = Math.min(i, 200);
         // tooltip bug fix
         console.log(i);
         e.y += o.y;
