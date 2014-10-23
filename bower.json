@@ -29,6 +29,7 @@
     "jquery.timers": "*",
     "jquery.livequery": "~1.3.6",
     "platform": "~1.2.0",
-    "jquery.svg": "*"
+    "jquery.svg": "*",
+    "jquery-xml2json": "~0.0.8"
   }
 }

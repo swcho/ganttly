@@ -3,7 +3,8 @@
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
 
-angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $state, $stateParams, $codeBeamer: cb.ICodeBeamer) {
+angular.module('ganttly').controller('GanttCbProjectCtrl', function (
+    $scope, $state, $stateParams, $calendar, $codeBeamer: cb.ICodeBeamer) {
 
     console.log($stateParams);
 

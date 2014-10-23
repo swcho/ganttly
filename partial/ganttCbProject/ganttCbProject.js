@@ -1,7 +1,7 @@
 /// <reference path="../../directive/dhxGantt/dhxGantt.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
-angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $state, $stateParams, $codeBeamer) {
+angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $state, $stateParams, $calendar, $codeBeamer) {
     console.log($stateParams);
 
     var unitDay = 1000 * 60 * 60 * 24;
