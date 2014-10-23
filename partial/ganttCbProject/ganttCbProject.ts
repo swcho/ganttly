@@ -9,6 +9,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     console.log($stateParams);
 
     var unitDay = 1000 * 60 * 60 * 24;
+    var unitHour = 1000 * 60 * 60;
 
     var userUri = $stateParams.user;
     var projectUri = $stateParams.project;
@@ -148,10 +149,12 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
         task.user = userNames.join(',');
 
+        if (cbTask.endDate) {
+            task.end_date = new Date(cbTask.endDate);
+        }
+
         if (cbTask.estimatedMillis) {
-            task.duration = (cbTask.estimatedMillis || 0)/unitDay;
-        } else if (cbTask.endDate) {
-            task.duration = (new Date(cbTask.endDate).getTime() - task.start_date.getTime())/unitDay;
+            task.duration = (cbTask.estimatedMillis || 0) / gConfig.workingHours * unitHour;
         }
 
         if (!task.duration || task.duration < 1) {
@@ -204,13 +207,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             uri: item.id,
             name: item.text,
             startDate: item.start_date,
-            estimatedMillis: item.duration * unitDay,
-            endDate: <any>new Date(item.start_date.getTime() + item.duration * unitDay)
+            estimatedMillis: item.duration * gConfig.workingHour * unitHour,
+            endDate: $calendar.getEndDate(item.start_date, item.duration * gConfig.workingHour * unitHour)
         };
         if (item.progress) {
             task.spentMillis = item.duration * item.progress * unitDay;
         }
         $codeBeamer.updateTask(task, function(err, resp) {
+
         });
     };
 

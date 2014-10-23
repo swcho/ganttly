@@ -13,19 +13,19 @@ gantt._tooltip = {}, gantt._tooltip_class = "gantt_tooltip", gantt.config.toolti
 }, gantt._show_tooltip = function (t, e) {
     if (!gantt.config.touch || gantt.config.touch_tooltip) {
         var n = this._create_tooltip();
-        console.log(n.offsetWidth);
-        n.innerHTML = t, gantt.$task_data.appendChild(n);
-        console.log(e);
         // tooltip bug fix
+//        console.log(n.offsetWidth);
+        n.innerHTML = t, gantt.$task_data.appendChild(n);
+//        console.log(e);
         if (n.offsetWidth > 300) {
 
             n.style.width = '300px';
         }
-        var i = n.offsetWidth + 20, a = n.offsetHeight + 40, s = this.$task.offsetHeight, r = this.$task.offsetWidth, o = this.getScrollState();
-        console.log(n.offsetWidth);
+//        console.log(n.offsetWidth);
 //        var i = n.offsetWidth + 20, a = n.offsetHeight + 40, s = this.$task.offsetHeight, r = e.width, o = this.getScrollState();
+//        console.log(i);
         // tooltip bug fix
-        console.log(i);
+        var i = n.offsetWidth + 20, a = n.offsetHeight + 40, s = this.$task.offsetHeight, r = this.$task.offsetWidth, o = this.getScrollState();
         e.y += o.y;
         var l = {x: e.x, y: e.y};
         e.x += 1 * gantt.config.tooltip_offset_x || 0, e.y += 1 * gantt.config.tooltip_offset_y || 0, e.y = Math.min(Math.max(o.y, e.y), o.y + s - a), e.x = Math.min(Math.max(o.x, e.x), o.x + r - i), gantt._is_cursor_under_tooltip(l, {pos: e, width: i, height: a}) && (l.x + i > r + o.x && (e.x = l.x - (i - 20) - (1 * gantt.config.tooltip_offset_x || 0)), l.y + a > s + o.y && (e.y = l.y - (a - 40) - (1 * gantt.config.tooltip_offset_y || 0))), n.style.left = e.x + "px", n.style.top = e.y + "px"
