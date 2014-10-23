@@ -138,7 +138,16 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 gantt.config.step = 1;
                 gantt.templates.date_scale = weekScaleTemplate;
                 gantt.config.subscales = [
-                    {unit:"day", step:1, date:"%d %D" }
+                    {
+                        unit:"day",
+                        step:1,
+//                        date:"%d %D",
+                        template: function(date) {
+                            var dateToStr = gantt.date.date_to_str("%d %D");
+                            var holiday = $calendar.isHoliday(date);
+                            return holiday ? holiday.title + '<br>' + dateToStr(date): dateToStr(date);
+                        }
+                    }
                 ];
                 gantt.config.scale_height = 50;
             },

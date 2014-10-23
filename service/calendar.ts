@@ -32,17 +32,26 @@ angular.module('ganttly').factory('$calendar',function($http) {
         return weekends.indexOf(aDate.getDay()) !== -1;
     }
 
+    var isHolidayCache = {};
     function isHoliday(aDate: Date) {
         var date = new Date(aDate.getFullYear(), aDate.getMonth(), aDate.getDate());
-        var i, len=calEntries.length, entry;
-        for (i=0; i<len; i++) {
-            entry = calEntries[i];
-            if (entry.start <= date && date < entry.end) {
-                console.log(entry);
-                return entry;
+        var dateKey = date.toString();
+        var ret = null;
+        if (isHolidayCache[dateKey]) {
+            return isHolidayCache[dateKey];
+        } else {
+            var i, len=calEntries.length, entry;
+            for (i=0; i<len; i++) {
+                entry = calEntries[i];
+                if (entry.start <= date && date < entry.end) {
+                    console.log(entry);
+                    ret = entry;
+                    break;
+                }
             }
+            isHolidayCache[dateKey] = ret;
         }
-        return null;
+        return ret;
     }
 
     function getEndDate(aStartTime: Date, aDuration: number) {
