@@ -2,15 +2,30 @@
 
 angular.module('ganttly').directive('dhxGantt', function ($calendar) {
     function initGantt($element) {
-        //            function myFunc(task){
-        //                if(task.users) {
-        //                    return "<div class='important'>"+task.text+" ("+task.users+") </div>";
-        //                }
-        //                return task.text;
-        //            }
+        var classes_priority = {
+            'Highest': 'priority_highest',
+            'High': 'priority_high',
+            'Normal': 'priority_normal',
+            'Low': 'priority_low',
+            'Lowest': 'priority_lowest'
+        };
+        var classes_status = {
+            'None': 'status_none',
+            'New': 'status_new',
+            'Suspended': 'status_suspended',
+            'In progress': 'status_in_progress',
+            'Partly completed': 'status_partly_completed',
+            'Completed': 'status_completed'
+        };
+
+        function myFunc(task) {
+            var classNames = classes_priority[task.priority] + ' ' + classes_status[task.status];
+            return "<div class='" + classNames + "'>" + task.text + "</div>";
+        }
+
         // Column configurations
         gantt.config.columns = [
-            { name: "text", tree: true, label: "작업", /*template:myFunc,*/ width: 200, resize: true },
+            { name: "text", tree: true, label: "작업", template: myFunc, width: 200, resize: true },
             { name: "user", label: "담당자", align: "center", width: 60, resize: true },
             { name: "start_date", label: "시작일", align: "center", width: 90, resize: true },
             { name: "duration", label: "기간", align: "center", width: 40, resize: true },
@@ -36,6 +51,9 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 'Partly completed': 'status_partly_completed',
                 'Completed': 'status_completed'
             };
+            return classes_priority[task.priority] + ' ' + classes_status[task.status];
+        };
+        gantt.templates.task_row_class = function (start, end, task) {
             return classes_priority[task.priority] + ' ' + classes_status[task.status];
         };
 

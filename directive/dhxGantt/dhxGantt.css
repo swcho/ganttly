@@ -53,6 +53,28 @@
 .gantt_task_line.status_completed .gantt_task_content {
   text-decoration: line-through !important;
 }
+.gantt_tree_content {
+  width: 100%;
+}
+.gantt_tree_content .status_none {
+  color: #afafaf;
+}
+.gantt_tree_content .status_new {
+  color: #515151;
+}
+.gantt_tree_content .status_suspended {
+  color: #aa3939;
+}
+.gantt_tree_content .status_in_progress {
+  color: #ffab46;
+}
+.gantt_tree_content .status_partly_completed {
+  color: #00a85d;
+}
+.gantt_tree_content .status_completed {
+  color: #187a6d;
+  text-decoration: line-through !important;
+}
 .weekend {
   background: #f4f7f4;
 }

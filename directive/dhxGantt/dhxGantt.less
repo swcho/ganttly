@@ -115,6 +115,30 @@
   }
 }
 
+.gantt_tree_content {
+  width: 100%;
+  .status_none {
+    color: @STATUS_NONE;
+  }
+
+  .status_new {
+    color: @STATUS_NEW;
+  }
+  .status_suspended {
+    color: @STATUS_SUSPENDED;
+  }
+  .status_in_progress {
+    color: @STATUS_IN_PROGRESS;
+  }
+  .status_partly_completed {
+    color: @STATUS_PARTLY_COMPLETED;
+  }
+  .status_completed {
+    color: @STATUS_COMPLETED;
+    text-decoration: line-through!important;
+  }
+}
+
 .weekend{
   background: #f4f7f4;
 }
