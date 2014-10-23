@@ -87,3 +87,6 @@
 .gantt_selected .holiday {
   background: #f7eb91;
 }
+.gantt_tooltip {
+  width: 200px;
+}
