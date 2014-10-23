@@ -108,6 +108,10 @@ angular.module('ganttly').factory('$calendar',function($http) {
 
     return {
         getEndDate: function(aStartTime: Date, aDuration: number) {
+            return getEndDate(aStartTime, aDuration);
+        },
+        isHoliday: function(aDate: Date) {
+            return isHoliday(aDate);
         }
     };
 

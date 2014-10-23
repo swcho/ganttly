@@ -1,6 +1,6 @@
 /// <reference path="../../typings/tsd.d.ts"/>
 
-angular.module('ganttly').directive('dhxGantt', function () {
+angular.module('ganttly').directive('dhxGantt', function ($calendar) {
     function initGantt($element) {
         //            function myFunc(task){
         //                if(task.users) {
@@ -41,11 +41,17 @@ angular.module('ganttly').directive('dhxGantt', function () {
 
         // Highlight weekend
         gantt.templates.scale_cell_class = function (date) {
+            if ($calendar.isHoliday(date)) {
+                return "holiday";
+            }
             if (date.getDay() === 0 || date.getDay() === 6) {
                 return "weekend";
             }
         };
         gantt.templates.task_cell_class = function (item, date) {
+            if ($calendar.isHoliday(date)) {
+                return "holiday";
+            }
             if (date.getDay() === 0 || date.getDay() === 6) {
                 return "weekend";
             }
