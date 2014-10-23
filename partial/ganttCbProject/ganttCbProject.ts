@@ -153,13 +153,13 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             task.end_date = new Date(cbTask.endDate);
         }
 
-        if (cbTask.estimatedMillis) {
-            task.duration = (cbTask.estimatedMillis || 0) / gConfig.workingHours * unitHour;
-        }
-
-        if (!task.duration || task.duration < 1) {
-            task.duration = 1;
-        }
+//        if (cbTask.estimatedMillis) {
+//            task.duration = (cbTask.estimatedMillis || 0) / gConfig.workingHours * unitHour;
+//        }
+//
+//        if (!task.duration || task.duration < 1) {
+//            task.duration = 1;
+//        }
 
         if (parentUri) {
             task.parent = parentUri;
