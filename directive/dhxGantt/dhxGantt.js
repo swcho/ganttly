@@ -75,6 +75,11 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             }
         };
 
+        // Task tooltip
+        gantt.templates.tooltip_text = function (start, end, task) {
+            return "<b>Task:</b> " + task.text + "<br/><b>Start date:</b> " + gantt.templates.tooltip_date_format(start) + "<br/><b>End date:</b> " + gantt.templates.tooltip_date_format(end);
+        };
+
         // Mark today
         var date_to_str = gantt.date.date_to_str(gantt.config.task_date);
         gantt.addMarker({ start_date: new Date(), css: "today", title: date_to_str(new Date()), text: '오늘' });
