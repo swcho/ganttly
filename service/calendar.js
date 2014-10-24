@@ -3,7 +3,7 @@
 angular.module('ganttly').factory('$calendar', function ($http) {
     var url = 'https://www.google.com/calendar/feeds/ko.south_korea%23holiday%40group.v.calendar.google.com/public/full-noattendees';
     var calEntries = window['gCalData'] || [];
-    var workingHour = gConfig.workingHour;
+    var workingHours = gConfig.workingHours;
     var unitDay = 1000 * 60 * 60 * 24;
     var unitHour = 1000 * 60 * 60;
     var weekends = [0, 6];
@@ -44,7 +44,7 @@ angular.module('ganttly').factory('$calendar', function ($http) {
 
     function getEndDate(aStartTime, aDuration) {
         var hours = Math.ceil(aDuration / unitHour);
-        var days = Math.ceil(hours / workingHour);
+        var days = Math.ceil(hours / workingHours);
         var start = new Date(aStartTime.getFullYear(), aStartTime.getMonth(), aStartTime.getDate());
         var end = addDays(start, days);
         console.log('getEndDate From: ' + start + ' ~ ' + end + ' (' + days + ')');

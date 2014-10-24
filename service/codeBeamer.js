@@ -269,7 +269,13 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
             });
         },
         updateTask: function (aTask, aCb) {
-            put('/item', aTask, aCb);
+            put('/item', aTask, function (err, resp) {
+                if (err) {
+                    aCb(err);
+                    return;
+                }
+                get(aTask.uri, null, aCb);
+            });
         },
         deleteTask: function (aTaskUri, aCb) {
             del(aTaskUri, aCb);

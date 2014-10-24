@@ -53,6 +53,9 @@ declare module dhx {
 
 angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 
+    var unitDay = 1000 * 60 * 60 * 24;
+    var unitHour = 1000 * 60 * 60;
+
     function initGantt($element) {
         var classes_priority = {
             'Highest': 'priority_highest',
@@ -130,9 +133,16 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 
         // Task tooltip
         gantt.templates.tooltip_text = function(start,end,task){
-            return "<b>Task:</b> "+task.text+"<br/><b>Start date:</b> " +
-                gantt.templates.tooltip_date_format(start)+
-                "<br/><b>End date:</b> "+gantt.templates.tooltip_date_format(end);
+
+            var descriptions = [
+                "<b>Task:</b> " + task.text,
+                "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start),
+                "<b>End date:</b> " + gantt.templates.tooltip_date_format(end),
+                "<b>Duration:</b> " + task.duration,
+                "<b>Est. Hours:</b> " + task.estimatedMillis,
+            ];
+
+            return descriptions.join('<br/>');
         };
 
         // Mark today

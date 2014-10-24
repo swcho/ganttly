@@ -115,6 +115,19 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         return t;
     }
 
+    function updateTask(task) {
+        var t = null;
+        var i, len = $scope.tasks.data.length;
+        for (i = 0; i < len; i++) {
+            t = $scope.tasks.data[i];
+            if (t.id === task.id) {
+                $scope.tasks.data[i] = task;
+                return true;
+            }
+        }
+        return false;
+    }
+
     function setParentOpen(task) {
         if (task.parent) {
             var parentTask = findTask(task.parent);
@@ -133,7 +146,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             start_date: new Date(cbTask.startDate || cbTask.modifiedAt),
             progress: cbTask.spentEstimatedHours || 0,
             priority: cbTask.priority ? cbTask.priority.name : 'Noraml',
-            status: cbTask.status ? cbTask.status.name : 'None'
+            status: cbTask.status ? cbTask.status.name : 'None',
+            estimatedMillis: cbTask.estimatedMillis
         };
 
         var userNames = [];
@@ -151,10 +165,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         //        if (cbTask.estimatedMillis) {
         //            task.duration = (cbTask.estimatedMillis || 0) / gConfig.workingHours * unitHour;
         //        }
-        //
-        //        if (!task.duration || task.duration < 1) {
-        //            task.duration = 1;
-        //        }
+        // This is required to display adjustment icon
+        if (!task.duration || task.duration < 1) {
+            task.duration = 1;
+        }
+
         if (parentUri) {
             task.parent = parentUri;
         }
@@ -203,12 +218,19 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             name: item.text,
             startDate: item.start_date,
             estimatedMillis: item.duration * gConfig.workingHour * unitHour,
-            endDate: $calendar.getEndDate(item.start_date, item.duration * gConfig.workingHour * unitHour)
+            endDate: $calendar.getEndDate(item.start_date, item.duration * gConfig.workingHours * unitHour)
         };
         if (item.progress) {
             task.spentMillis = item.duration * item.progress * unitDay;
         }
         $codeBeamer.updateTask(task, function (err, resp) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            var task = covertCbTaskToDhxTask(resp, item.parent);
+            updateTask(task);
+            gantt.refreshData();
         });
     };
 

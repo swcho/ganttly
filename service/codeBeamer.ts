@@ -214,7 +214,7 @@ declare module cb {
         getTasks(aParam: TParamGetTask, aCb:(err, trackerUriList: string[], resp?: TTask[]) => void, aProgress?: (msg) => void);
         getReleases(aParam: TParamGetRelease, aCb:(err, trackerUriList: string[], resp?: TRelease[]) => void);
         createTask(aParam: TParamCreateTask, aCb:(err, resp?: TTask) => void);
-        updateTask(aTask: cb.TTask, aCb: (err, resp: cb.TTask) => void);
+        updateTask(aTask: cb.TTask, aCb: (err, resp?: cb.TTask) => void);
         deleteTask(aTaskUri: string, aCb: (err, resp) => void);
         createAssociation(aParam: TParamCreateAssociation, aCb:(err, resp?: TAssociation) => void);
         deleteAssociation(aAssociationUri: string, aCb:(err, resp) => void);
@@ -496,8 +496,14 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                 get(resp.uri, null, aCb);
             });
         },
-        updateTask: function(aTask: cb.TTask, aCb: (err, resp: cb.TTask) => void) {
-            put('/item', aTask, aCb);
+        updateTask: function(aTask: cb.TTask, aCb: (err, resp?: cb.TTask) => void) {
+            put('/item', aTask, function(err, resp) {
+                if (err) {
+                    aCb(err);
+                    return;
+                }
+                get(aTask.uri, null, aCb);
+            });
         },
         deleteTask: function (aTaskUri: string, aCb: (err, resp) => void) {
             del(aTaskUri, aCb);
