@@ -218,16 +218,20 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     };
 
-    $scope.onTaskUpdate = function(id, item: dhx.TTask) {
+    $scope.onTaskUpdate = function(id, item: dhx.TTask, mode: string) {
+        console.log(mode);
         console.log(item);
-
         var task: any = {
             uri: item.id,
             name: item.text,
-            startDate: item.start_date,
-            estimatedMillis: item.duration * unitWorkingDay,
-            endDate: $calendar.getEndDate(item.start_date, item.duration * unitWorkingDay)
+            startDate: item.start_date
         };
+        if (mode === 'resize') { // by dragging end date only changes end date
+            task.endDate = item.end_date;
+        } else { // by duration change in light box, apply holiday awareness
+            task.estimatedMillis = item.duration * unitWorkingDay;
+            task.endDate = $calendar.getEndDate(item.start_date, item.duration * unitWorkingDay);
+        }
         if (item.progress) {
             task.spentMillis = item.duration * item.progress * unitDay;
         }

@@ -62,7 +62,7 @@ angular.module('ganttly').factory('$calendar', function ($http) {
         var appliedHoliday = appliedHolidays.shift();
         for (; day < end;) {
             console.log(day.getDay() + ': ' + day);
-            if (appliedHoliday && appliedHoliday.start == day) {
+            if (appliedHoliday && appliedHoliday.start === day) {
                 day = new Date(appliedHoliday.end);
                 continue;
             }
@@ -85,9 +85,9 @@ angular.module('ganttly').factory('$calendar', function ($http) {
         isHoliday(s_09_08);
     } else {
         $http.get(url).success(function (resp) {
-            var resp = $.xml2json(resp);
-            if (resp.feed.entry) {
-                resp.feed.entry.forEach(function (entry) {
+            var json = $.xml2json(resp);
+            if (json.feed.entry) {
+                json.feed.entry.forEach(function (entry) {
                     calEntries.push({
                         title: entry.title['_'],
                         start: roundDay(new Date(entry['gd:when']['$']['startTime'])),

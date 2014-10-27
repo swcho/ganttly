@@ -334,6 +334,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 setScale(scale);
             }, true);
 
+            var taskChangeMode;
             var eventAttachIds = [
             /**
              * Task editing events
@@ -343,9 +344,15 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                         $scope[$attrs['dhxTaskAdd']](gantt, id, item);
                     }
                 }),
+                gantt.attachEvent("onBeforeTaskChanged", function(id, mode, task) {
+                    console.log(mode);
+                    taskChangeMode = mode;
+                    return true;
+                }),
                 gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
                     if ($attrs['dhxTaskUpdate']) {
-                        $scope[$attrs['dhxTaskUpdate']](id, item);
+                        $scope[$attrs['dhxTaskUpdate']](id, item, taskChangeMode);
+                        taskChangeMode = '';
                     }
                 }),
                 gantt.attachEvent("onAfterTaskDelete", function(id, item) {

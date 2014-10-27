@@ -213,16 +213,20 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         }
     };
 
-    $scope.onTaskUpdate = function (id, item) {
+    $scope.onTaskUpdate = function (id, item, mode) {
+        console.log(mode);
         console.log(item);
-
         var task = {
             uri: item.id,
             name: item.text,
-            startDate: item.start_date,
-            estimatedMillis: item.duration * unitWorkingDay,
-            endDate: $calendar.getEndDate(item.start_date, item.duration * unitWorkingDay)
+            startDate: item.start_date
         };
+        if (mode === 'resize') {
+            task.endDate = item.end_date;
+        } else {
+            task.estimatedMillis = item.duration * unitWorkingDay;
+            task.endDate = $calendar.getEndDate(item.start_date, item.duration * unitWorkingDay);
+        }
         if (item.progress) {
             task.spentMillis = item.duration * item.progress * unitDay;
         }
