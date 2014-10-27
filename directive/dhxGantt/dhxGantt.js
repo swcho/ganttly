@@ -85,7 +85,8 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start),
                 "<b>End date:</b> " + gantt.templates.tooltip_date_format(end),
                 "<b>Duration:</b> " + task.duration,
-                "<b>Est. Days:</b> " + task.estimatedDays
+                "<b>Est. Days:</b> " + task.estimatedDays,
+                "<b>Progress:</b> " + task.progress
             ];
 
             return descriptions.join('<br/>');

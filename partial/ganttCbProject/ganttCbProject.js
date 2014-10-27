@@ -223,12 +223,15 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         };
         if (mode === 'resize') {
             task.endDate = item.end_date;
+        } else if (mode === 'move') {
+            task.endDate = $calendar.getEndDate(item.start_date, item.estimatedMillis);
+        } else if (mode === 'progress') {
         } else {
             task.estimatedMillis = item.duration * unitWorkingDay;
             task.endDate = $calendar.getEndDate(item.start_date, item.duration * unitWorkingDay);
         }
         if (item.progress) {
-            task.spentMillis = item.duration * item.progress * unitDay;
+            task.spentMillis = Math.round(item.estimatedMillis * item.progress);
         }
         $codeBeamer.updateTask(task, function (err, resp) {
             if (err) {

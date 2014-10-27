@@ -228,12 +228,15 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         };
         if (mode === 'resize') { // by dragging end date only changes end date
             task.endDate = item.end_date;
+        } else if (mode === 'move') { // by dragging task bar, apply holiday awareness by estimatedMillis
+            task.endDate = $calendar.getEndDate(item.start_date, item.estimatedMillis);
+        } else if (mode === 'progress') { // by dragging progress bar, do nothing
         } else { // by duration change in light box, apply holiday awareness
             task.estimatedMillis = item.duration * unitWorkingDay;
             task.endDate = $calendar.getEndDate(item.start_date, item.duration * unitWorkingDay);
         }
         if (item.progress) {
-            task.spentMillis = item.duration * item.progress * unitDay;
+            task.spentMillis = Math.round(item.estimatedMillis * item.progress);
         }
         $codeBeamer.updateTask(task, function(err, resp) {
             if (err) {
