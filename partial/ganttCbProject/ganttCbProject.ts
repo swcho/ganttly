@@ -196,7 +196,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                 tracker: taskTrackerUriList[0],
                 name: item.text,
                 startDate: item.start_date,
-                estimatedMillis: item.duration * unitDay,
+                estimatedMillis: item.duration * unitWorkingDay,
                 description: item.text + '\n\nCreated by ganttly',
                 descFormat: "Wiki"
             };
