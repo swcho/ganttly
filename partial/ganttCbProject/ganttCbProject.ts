@@ -10,7 +10,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     var unitDay = 1000 * 60 * 60 * 24;
     var unitHour = 1000 * 60 * 60;
-    var unitWorkingDay = gConfig.workingHours * unitHour;
+    var unitWorkingDay = gConfig.workingHours ? gConfig.workingHours * unitHour: unitDay;
+    var holidayAwareness = gConfig.holidayAwareness;
 
     var userUri = $stateParams.user;
     var projectUri = $stateParams.project;
@@ -229,11 +230,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         if (mode === 'resize') { // by dragging end date only changes end date
             task.endDate = item.end_date;
         } else if (mode === 'move') { // by dragging task bar, apply holiday awareness by estimatedMillis
-            task.endDate = $calendar.getEndDate(item.start_date, item.estimatedMillis);
+            task.endDate = holidayAwareness ? $calendar.getEndDate(item.start_date, item.estimatedMillis): item.end_date;
         } else if (mode === 'progress') { // by dragging progress bar, do nothing
         } else { // by duration change in light box, apply holiday awareness
             task.estimatedMillis = item.duration * unitWorkingDay;
-            task.endDate = $calendar.getEndDate(item.start_date, item.duration * unitWorkingDay);
+            task.endDate = holidayAwareness ? $calendar.getEndDate(item.start_date, item.duration * unitWorkingDay): item.end_date;
         }
         if (item.progress) {
             task.spentMillis = Math.round(item.estimatedMillis * item.progress);
