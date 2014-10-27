@@ -6362,7 +6362,9 @@ gantt._resolve_default_mapping = function(section) {
 			mapping = {start_date: "start_date", end_date: "end_date", duration: "duration"};
 		}else if(typeof(section.map_to) === "string"){
 			mapping = {start_date: section.map_to};
-		}
+		}else {
+            mapping = section.map_to;
+        }
 	}
 
 	return mapping;

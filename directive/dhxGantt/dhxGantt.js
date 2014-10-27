@@ -85,7 +85,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start),
                 "<b>End date:</b> " + gantt.templates.tooltip_date_format(end),
                 "<b>Duration:</b> " + task.duration,
-                "<b>Est. Hours:</b> " + task.estimatedMillis
+                "<b>Est. Days:</b> " + task.estimatedDays
             ];
 
             return descriptions.join('<br/>');
@@ -94,6 +94,26 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
         // Mark today
         var date_to_str = gantt.date.date_to_str(gantt.config.task_date);
         gantt.addMarker({ start_date: new Date(), css: "today", title: date_to_str(new Date()), text: '오늘' });
+
+        gantt.config.lightbox.sections = [
+            { name: "description", height: 38, map_to: "text", type: "textarea", focus: true },
+            //            {name: "priority", height: 22, map_to: "priority", type: "select", options: [
+            //                {key: "Hight", label: "Hight"},
+            //                {key: "Normal", label: "Normal"},
+            //                {key: "Low", label: "Low"}
+            //            ]},
+            //            {name: "time", height: 72, type: "time", map_to: "auto", time_format: ["%d", "%m", "%Y", "%H:%i"]}
+            {
+                name: "time",
+                height: 72,
+                map_to: {
+                    start_date: 'start_date',
+                    end_date: "end_date",
+                    duration: 'estimatedDays'
+                },
+                type: "duration"
+            }
+        ];
 
         //init gantt
         gantt.init($element[0]);

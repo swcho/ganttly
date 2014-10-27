@@ -10,6 +10,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     var unitDay = 1000 * 60 * 60 * 24;
     var unitHour = 1000 * 60 * 60;
+    var unitWorkingDay = gConfig.workingHours * unitHour;
 
     var userUri = $stateParams.user;
     var projectUri = $stateParams.project;
@@ -152,7 +153,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             progress: cbTask.spentEstimatedHours || 0,
             priority: cbTask.priority ? cbTask.priority.name: 'Noraml',
             status: cbTask.status ? cbTask.status.name: 'None',
-            estimatedMillis: cbTask.estimatedMillis
+            estimatedMillis: cbTask.estimatedMillis,
+            estimatedDays: Math.ceil(cbTask.estimatedMillis / unitWorkingDay)
         };
 
         var userNames = [];
@@ -218,12 +220,13 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     $scope.onTaskUpdate = function(id, item: dhx.TTask) {
         console.log(item);
+
         var task: any = {
             uri: item.id,
             name: item.text,
             startDate: item.start_date,
-            estimatedMillis: item.duration * gConfig.workingHour * unitHour,
-            endDate: $calendar.getEndDate(item.start_date, item.duration * gConfig.workingHours * unitHour)
+            estimatedMillis: item.duration * unitWorkingDay,
+            endDate: $calendar.getEndDate(item.start_date, item.duration * unitWorkingDay)
         };
         if (item.progress) {
             task.spentMillis = item.duration * item.progress * unitDay;

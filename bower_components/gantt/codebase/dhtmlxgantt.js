@@ -2190,9 +2190,23 @@ var _0xe612 = ["href", "location", "", "indexOf", "", "This version of Gantt is 
 },gantt._save_lightbox = function () {
     var t = this.getLightboxValues();
     this.callEvent("onLightboxSave", [this._lightbox_id, t, !!t.$new]) && (t.$new ? (delete t.$new, this.addTask(t)) : this.isTaskExists(t.id) && (dhtmlx.mixin(this.getTask(t.id), t, !0), this.updateTask(t.id)), this.refreshData(), this.hideLightbox())
-},gantt._resolve_default_mapping = function (t) {
-    var e = t.map_to, n = {time: !0, duration: !0};
-    return n[t.type] && ("auto" == t.map_to ? e = {start_date: "start_date", end_date: "end_date", duration: "duration"} : "string" == typeof t.map_to && (e = {start_date: t.map_to})), e
+},gantt._resolve_default_mapping = function (section) {
+
+    var mapping = section.map_to;
+    var time_controls = {"time":true, "duration":true};
+    if(time_controls[section.type]){
+        if(section.map_to == 'auto'){
+            mapping = {start_date: "start_date", end_date: "end_date", duration: "duration"};
+        }else if(typeof(section.map_to) === "string"){
+            mapping = {start_date: section.map_to};
+        }else {
+            mapping = section.map_to;
+        }
+    }
+    return mapping;
+
+//    var e = t.map_to, n = {time: !0, duration: !0};
+//    return n[t.type] && ("auto" == t.map_to ? e = {start_date: "start_date", end_date: "end_date", duration: "duration"} : "string" == typeof t.map_to && (e = {start_date: t.map_to})), e
 },gantt.getLightboxValues = function () {
     var t = {};
     gantt.isTaskExists(this._lightbox_id) && (t = dhtmlx.mixin({}, this.getTask(this._lightbox_id)));
