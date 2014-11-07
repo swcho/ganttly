@@ -187,40 +187,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         return task;
     }
 
-    /**
-     * Task Add
-     * @param gantt
-     * @param id
-     * @param item
-     */
-    $scope.onTaskAdd = function(gantt, id, item: dhx.TTask) {
-        if (taskTrackerUriList) {
-            var param: cb.TParamCreateTask = {
-                tracker: taskTrackerUriList[0],
-                name: item.text,
-                startDate: item.start_date,
-                estimatedMillis: item.duration * unitWorkingDay,
-                description: item.text + '\n\nCreated by ganttly',
-                descFormat: "Wiki"
-            };
-            if (item.parent) {
-                param.parent = item.parent;
-            }
-
-            $codeBeamer.createTask(param, function (err, resp) {
-                if (err) {
-                    console.log(err);
-                    return;
-                }
-//                gantt.changeTaskId(id, resp.uri);
-                var task = covertCbTaskToDhxTask(resp, item.parent);
-                $scope.tasks.data.unshift(task);
-                console.log($scope.tasks);
-                gantt.refreshData();
-            });
-        }
-    };
-
     var hdxWins = new dhtmlXWindows();
     hdxWins.attachViewportTo('ganttCbProject');
     var dialog;
@@ -244,7 +210,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     function closeModal() {
         dialog.close();
     }
-
 
     var contextWin: any = (function() {
 
@@ -295,8 +260,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                         y = prevGeo.y;
                     }
                     var params = [
-                        'width=' + width,
-                        'height=' + height,
+                            'width=' + width,
+                            'height=' + height,
                         'fullscreen=yes' // only works in IE, but here for completeness
                     ].join(',');
                     var win: Window = open(aUrl, null, params);
@@ -310,6 +275,42 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         };
     }());
 
+    /**
+     * Task Add
+     * @param gantt
+     * @param id
+     * @param item
+     */
+    $scope.onTaskAdd = function(gantt, id, item: dhx.TTask) {
+        if (taskTrackerUriList) {
+            var param: cb.TParamCreateTask = {
+                tracker: taskTrackerUriList[0],
+                name: item.text,
+                startDate: item.start_date,
+                estimatedMillis: item.duration * unitWorkingDay,
+                description: item.text + '\n\nCreated by ganttly',
+                descFormat: "Wiki"
+            };
+            if (item.parent) {
+                param.parent = item.parent;
+            }
+
+            showModal("Adding task");
+
+            $codeBeamer.createTask(param, function (err, resp) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+//                gantt.changeTaskId(id, resp.uri);
+                var task = covertCbTaskToDhxTask(resp, item.parent);
+                $scope.tasks.data.unshift(task);
+                console.log($scope.tasks);
+                gantt.refreshData();
+                closeModal();
+            });
+        }
+    };
 
     $scope.onTaskSelected = function(gantt, id, item) {
         var match = /(\d+)$/.exec(id);
@@ -322,7 +323,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     $scope.onTaskUpdate = function(id, item: dhx.TTask, mode: string) {
         console.log(mode);
         console.log(item);
-        showModal("Updating task");
         var task: any = {
             uri: item.id,
             name: item.text,
@@ -340,15 +340,19 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         if (item.progress) {
             task.spentMillis = Math.round(item.estimatedMillis * item.progress);
         }
+        showModal("Updating task");
         $codeBeamer.updateTask(task, function(err, resp) {
             if (err) {
                 console.log(err);
                 return;
             }
             var task = covertCbTaskToDhxTask(resp, item.parent);
-            updateTask(task);
+            item.start_date = task.start_date;
+            item.estimatedMillis = task.estimatedMillis;
+            item.progress = task.progress;
+            item.end_date = task.end_date;
+            gantt.refreshTask(item.id);
 //            gantt.refreshData();
-//            gantt.refreshTask(task.id);
 //            gantt.selectTask(task.id);
             closeModal();
         });
@@ -427,7 +431,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                     target: item.target,
                     type: '0'
                 });
-                adjustStartTime(gantt, item.source, item.target);
+//                adjustStartTime(gantt, item.source, item.target);
                 gantt.refreshData();
             });
         } else {

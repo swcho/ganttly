@@ -983,7 +983,7 @@ interface GanttStatic{
 	 * updates the specified task
 	 * @param id the task id
 	*/
-	updateTask(id: string);
+	updateTask(id: string, item: any);
 
     addMarker(param: any);
 }
