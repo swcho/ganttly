@@ -239,6 +239,73 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         dialog.close();
     }
 
+    var contextWin = (function () {
+        var wins = {};
+        setInterval(function () {
+            var key, winInfo;
+            for (key in wins) {
+                winInfo = wins[key];
+                if (!winInfo.win.closed) {
+                    if (!winInfo.geo || winInfo.geo.x != winInfo.win.screenX || winInfo.geo.y != winInfo.win.screenY || winInfo.geo.width != winInfo.win.innerWidth || winInfo.geo.height != winInfo.win.innerHeight) {
+                        winInfo.geo = {
+                            x: winInfo.win.screenX,
+                            y: winInfo.win.screenY,
+                            width: winInfo.win.innerWidth,
+                            height: winInfo.win.innerHeight
+                        };
+                        console.log(winInfo.geo);
+                        window.localStorage.setItem('contextWin.' + key, JSON.stringify(winInfo.geo));
+                    }
+                }
+            }
+        }, 250);
+
+        return {
+            show: function (aName, aUrl) {
+                console.log('contextWin.show: [' + aName + ']' + aUrl);
+                if (wins[aName] && !wins[aName].win.closed) {
+                    wins[aName].win.location.href = 'about:blank';
+                    wins[aName].win.location.href = aUrl;
+                } else {
+                    var prevGeo;
+                    try  {
+                        prevGeo = JSON.parse(window.localStorage.getItem('contextWin.' + aName));
+                    } catch (e) {
+                    }
+                    var width = 1280;
+                    var height = 720;
+                    var x = (screen.width - width) / 2;
+                    var y = (screen.height - height) / 2;
+                    if (prevGeo) {
+                        width = prevGeo.width;
+                        height = prevGeo.height;
+                        x = prevGeo.x;
+                        y = prevGeo.y;
+                    }
+                    var params = [
+                        'width=' + width,
+                        'height=' + height,
+                        'fullscreen=yes'
+                    ].join(',');
+                    var win = open(aUrl, null, params);
+                    win.moveTo(x, y);
+                    win.resizeTo(width, height);
+                    wins[aName] = {
+                        win: win
+                    };
+                }
+            }
+        };
+    }());
+
+    $scope.onTaskSelected = function (gantt, id, item) {
+        var match = /(\d+)$/.exec(id);
+        contextWin.show('task_details', gConfig.cbBaseUrl + id);
+        if (match) {
+            contextWin.show('task_relations', gConfig.cbBaseUrl + '/proj/tracker/itemDependencyGraph.spr?task_id=' + match[1]);
+        }
+    };
+
     $scope.onTaskUpdate = function (id, item, mode) {
         console.log(mode);
         console.log(item);

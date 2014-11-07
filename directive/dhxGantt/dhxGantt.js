@@ -278,6 +278,11 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 
             var taskChangeMode;
             var eventAttachIds = [
+                gantt.attachEvent("onTaskSelected", function (id, item) {
+                    if ($attrs['dhxTaskSelected']) {
+                        $scope[$attrs['dhxTaskSelected']](gantt, id, item);
+                    }
+                }),
                 gantt.attachEvent("onAfterTaskAdd", function (id, item) {
                     if ($attrs['dhxTaskAdd']) {
                         $scope[$attrs['dhxTaskAdd']](gantt, id, item);
