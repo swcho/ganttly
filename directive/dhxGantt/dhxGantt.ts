@@ -326,10 +326,10 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 gantt.setSizes();
             });
 
-            $scope.$watch($attrs['dhxData'], function(collection){
-                gantt.clearAll();
-                gantt.parse(collection, "json");
-            }, true);
+//            $scope.$watch($attrs['dhxData'], function(collection){
+//                gantt.clearAll();
+//                gantt.parse(collection, "json");
+//            }, false);
 
             $scope.$watch($attrs['dhxScale'], function(scale){
                 setScale(scale);
@@ -351,6 +351,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                     return true;
                 }),
                 gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
+                    gantt['_hide_tooltip']();
                     if ($attrs['dhxTaskUpdate']) {
                         $scope[$attrs['dhxTaskUpdate']](id, item, taskChangeMode);
                         taskChangeMode = '';

@@ -1,6 +1,7 @@
 /// <reference path="../../directive/dhxGantt/dhxGantt.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
+
 angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $state, $stateParams, $calendar, $codeBeamer) {
     console.log($stateParams);
 
@@ -214,9 +215,34 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         }
     };
 
+    var hdxWins = new dhtmlXWindows();
+    hdxWins.attachViewportTo('ganttCbProject');
+    var dialog;
+    function showModal(aMessage) {
+        dialog = hdxWins.createWindow({
+            id: 'progress',
+            left: 20,
+            top: 30,
+            width: 300,
+            height: 100,
+            modal: true,
+            center: true,
+            header: false,
+            caption: 'Please wait...'
+        });
+        dialog.setModal(true);
+        dialog.progressOn();
+        dialog.attachHTMLString('<p>' + aMessage + '</p>');
+        dialog.show();
+    }
+    function closeModal() {
+        dialog.close();
+    }
+
     $scope.onTaskUpdate = function (id, item, mode) {
         console.log(mode);
         console.log(item);
+        showModal("Updating task");
         var task = {
             uri: item.id,
             name: item.text,
@@ -241,7 +267,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             }
             var task = covertCbTaskToDhxTask(resp, item.parent);
             updateTask(task);
-            gantt.refreshData();
+
+            //            gantt.refreshData();
+            //            gantt.refreshTask(task.id);
+            //            gantt.selectTask(task.id);
+            closeModal();
         });
     };
 
@@ -437,6 +467,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         });
     }
 
+    showModal('Getting information...');
     $codeBeamer.getTasks(param, function (err, trackerUriList, items) {
         if (err) {
             console.log(err);
@@ -483,6 +514,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             data: tasks,
             links: links
         };
+
+        gantt.clearAll();
+        gantt.parse($scope.tasks, "json");
+
+        closeModal();
     }, function (msg) {
         dhtmlx.message(msg);
     });
