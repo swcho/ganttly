@@ -336,6 +336,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             }, true);
 
             var taskChangeMode;
+            var moveStartDate;
             var eventAttachIds = [
             /**
              * Task selection
@@ -354,12 +355,21 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                     }
                 }),
                 gantt.attachEvent("onBeforeTaskChanged", function(id, mode, task) {
-                    console.log(mode);
+//                    console.log('onBeforeTaskChanged: ' + mode + ', ' + task.start_date);
+                    if (mode === "move") {
+                        moveStartDate = task.start_date;
+                    }
                     taskChangeMode = mode;
                     return true;
                 }),
                 gantt.attachEvent("onAfterTaskUpdate", function(id, item) {
                     gantt['_hide_tooltip']();
+//                    console.log('onAfterTaskUpdate: ' + taskChangeMode + ', ' + moveStartDate);
+//                    console.log(item);
+                    if (taskChangeMode === "move" && moveStartDate.getTime() === item.start_date.getTime()) {
+                        console.log('skip not necessary move event');
+                        return;
+                    }
                     if ($attrs['dhxTaskUpdate']) {
                         $scope[$attrs['dhxTaskUpdate']](id, item, taskChangeMode);
                         taskChangeMode = '';

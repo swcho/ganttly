@@ -230,7 +230,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                             width: winInfo.win.outerWidth,
                             height: winInfo.win.outerHeight
                         };
-                        console.log(winInfo.geo);
+//                        console.log(winInfo.geo);
                         window.localStorage.setItem('contextWin.' + key, JSON.stringify(winInfo.geo));
                     }
                 }
@@ -239,7 +239,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
         return {
             show: function(aName, aUrl) {
-                console.log('contextWin.show: [' + aName + ']' + aUrl);
+//                console.log('contextWin.show: [' + aName + ']' + aUrl);
                 if (wins[aName] && !wins[aName].win.closed) {
                     wins[aName].win.location.href = 'about:blank';
                     wins[aName].win.location.href = aUrl;
@@ -321,8 +321,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     };
 
     $scope.onTaskUpdate = function(id, item: dhx.TTask, mode: string) {
-        console.log(mode);
-        console.log(item);
         var task: any = {
             uri: item.id,
             name: item.text,
