@@ -246,12 +246,12 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             for (key in wins) {
                 winInfo = wins[key];
                 if (!winInfo.win.closed) {
-                    if (!winInfo.geo || winInfo.geo.x != winInfo.win.screenX || winInfo.geo.y != winInfo.win.screenY || winInfo.geo.width != winInfo.win.innerWidth || winInfo.geo.height != winInfo.win.innerHeight) {
+                    if (!winInfo.geo || winInfo.geo.x != winInfo.win.screenX || winInfo.geo.y != winInfo.win.screenY || winInfo.geo.width != winInfo.win.outerWidth || winInfo.geo.height != winInfo.win.outerHeight) {
                         winInfo.geo = {
                             x: winInfo.win.screenX,
                             y: winInfo.win.screenY,
-                            width: winInfo.win.innerWidth,
-                            height: winInfo.win.innerHeight
+                            width: winInfo.win.outerWidth,
+                            height: winInfo.win.outerHeight
                         };
                         console.log(winInfo.geo);
                         window.localStorage.setItem('contextWin.' + key, JSON.stringify(winInfo.geo));
