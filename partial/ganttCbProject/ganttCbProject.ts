@@ -305,17 +305,17 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 //                gantt.changeTaskId(id, resp.uri);
                 var task = covertCbTaskToDhxTask(resp, item.parent);
                 $scope.tasks.data.unshift(task);
-                console.log($scope.tasks);
-                gantt.refreshData();
+                gantt.clearAll();
+                gantt.parse($scope.tasks, "json");
                 closeModal();
             });
         }
     };
 
     $scope.onTaskSelected = function(gantt, id, item) {
-        var match = /(\d+)$/.exec(id);
-        contextWin.show('task_details', gConfig.cbBaseUrl + id);
+        var match = /\/(\d+)$/.exec(id);
         if (match) {
+            contextWin.show('task_details', gConfig.cbBaseUrl + id);
             contextWin.show('task_relations', gConfig.cbBaseUrl + '/proj/tracker/itemDependencyGraph.spr?task_id=' + match[1]);
         }
     };
@@ -418,6 +418,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         console.log(id, item);
         if (item.type === '0') {
 
+            showModal("Adding association");
             $codeBeamer.createAssociation({
                 from: item.target,
                 to: item.source
@@ -433,6 +434,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                 });
 //                adjustStartTime(gantt, item.source, item.target);
                 gantt.refreshData();
+                closeModal();
             });
         } else {
             gantt.deleteLink(id);
