@@ -302,7 +302,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         }
     };
 
-    $scope.onTaskSelected = function (gantt, id, item) {
+    $scope.onTaskShiftClicked = function (gantt, id) {
         var match = /\/(\d+)$/.exec(id);
         if (match) {
             contextWin.show('task_details', gConfig.cbBaseUrl + id);

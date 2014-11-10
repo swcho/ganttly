@@ -290,6 +290,14 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             var taskChangeMode;
             var moveStartDate;
             var eventAttachIds = [
+                gantt.attachEvent("onTaskClick", function (id, e) {
+                    var taskClickWithShift = e ? e.shiftKey : false;
+                    if ($attrs['dhxTaskShiftClicked'] && taskClickWithShift) {
+                        $scope[$attrs['dhxTaskShiftClicked']](gantt, id);
+                        return false;
+                    }
+                    return true;
+                }),
                 gantt.attachEvent("onTaskSelected", function (id, item) {
                     if ($attrs['dhxTaskSelected']) {
                         $scope[$attrs['dhxTaskSelected']](gantt, id, item);
