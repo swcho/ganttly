@@ -87,15 +87,74 @@ angular.module('ganttly').factory('$calendar',function($http) {
         return end;
     }
 
+    function getStartAndEndDate(aStartTime: Date, aDuration: number) {
+        var hours = Math.ceil(aDuration / unitHour);
+        var days = Math.ceil(hours / workingHours);
+        var start = new Date(aStartTime.getFullYear(), aStartTime.getMonth(), aStartTime.getDate());
+        var end = addDays(start, days);
+        console.log('getEndDate From: ' + start + ' ~ ' + end + ' (' + days + ')');
+
+        var holidays = calEntries.slice(0);
+        var holiday = holidays.shift();
+        while (holiday && holiday.end < start) {
+            holiday = holidays.shift();
+        }
+
+        while (1) {
+            if (holiday.start <= start) {
+                start = new Date(holiday.end.getTime());
+                console.log('start holiday add');
+                holiday = holidays.shift();
+                continue;
+            }
+            if (isWeekends(start)) {
+                console.log('start weekend add');
+                start = addDays(start, 1);
+                continue;
+            }
+            break;
+        }
+
+        end = new Date(start.getTime());
+        while(1) {
+            if (holiday.start <= end) {
+                console.log('end holiday add');
+                end = new Date(holiday.end.getTime());
+                holiday = holidays.shift();
+                continue;
+            }
+            if (isWeekends(end)) {
+                console.log('end weekend add');
+                end = addDays(end, 1);
+                continue;
+            }
+            if (days) {
+                console.log('end duration add');
+                end = addDays(end, 1);
+                days = days - 1;
+                if (days) {
+                    continue;
+                }
+            }
+            break;
+        }
+
+        console.log('getEndDate To  : ' + start + ' ~ ' + end);
+        return {
+            start: start,
+            end: end
+        };
+    }
+
     if (calEntries.length) {
 //        var s_10_02 = new Date(2014, 9, 8);
-//        getEndDate(s_10_02, workingHour * unitHour * 2);
-//        getEndDate(s_10_02, workingHour * unitHour * 3);
-//        var s_09_05 = new Date(2014, 8, 5);
-//        getEndDate(s_09_05, workingHour * unitHour * 2);
-
-        var s_09_08 = new Date(2014, 8, 8);
-        isHoliday(s_09_08);
+//        getStartAndEndDate(s_10_02, workingHours * unitHour * 2);
+//        getStartAndEndDate(s_10_02, workingHours * unitHour * 3);
+        var s_09_05 = new Date(2014, 8, 6);
+        getStartAndEndDate(s_09_05, workingHours * unitHour * 2);
+//
+//        var s_09_08 = new Date(2014, 8, 8);
+//        isHoliday(s_09_08);
 
     } else {
         $http.get(url).success(function(resp) {
@@ -116,6 +175,9 @@ angular.module('ganttly').factory('$calendar',function($http) {
     }
 
     return {
+        getStartAndEndDate: function(aStartTime: Date, aDuration: number) {
+            return getStartAndEndDate(aStartTime, aDuration);
+        },
         getEndDate: function(aStartTime: Date, aDuration: number) {
             return getEndDate(aStartTime, aDuration);
         },

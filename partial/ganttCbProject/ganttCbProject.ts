@@ -297,19 +297,28 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     }());
 
     function get_holiday_awared_task(aTask: dhx.TTask, aMode: string): cb.TTask {
+        var holidayAwared = holidayAwareness? $calendar.getStartAndEndDate(aTask.start_date, aTask.estimatedMillis): {
+            start: aTask.start_date,
+            end: aTask.end_date
+        };
+
         var task: any = {
             uri: aTask.id,
             name: aTask.text,
-            startDate: aTask.start_date
+            startDate: holidayAwared.start
         };
         if (aMode === 'resize') { // by dragging end date only changes end date
             task.endDate = aTask.end_date;
         } else if (aMode === 'move') { // by dragging task bar, apply holiday awareness by estimatedMillis
-            task.endDate = holidayAwareness ? $calendar.getEndDate(aTask.start_date, aTask.estimatedMillis): aTask.end_date;
+            task.endDate = holidayAwared.end;
         } else if (aMode === 'progress') { // by dragging progress bar, do nothing
         } else { // by duration change in light box, apply holiday awareness
             task.estimatedMillis = aTask.duration * unitWorkingDay;
-            task.endDate = holidayAwareness ? $calendar.getEndDate(aTask.start_date, aTask.duration * unitWorkingDay): aTask.end_date;
+            if (holidayAwareness) {
+                task.endDate = $calendar.getStartAndEndDate(aTask.start_date, aTask.duration * unitWorkingDay).end;
+            } else {
+                task.endDate = holidayAwared.end;
+            }
         }
         if (aTask.progress) {
             task.spentMillis = Math.round(aTask.estimatedMillis * aTask.progress);
