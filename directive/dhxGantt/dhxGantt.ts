@@ -20,6 +20,7 @@ declare module dhx {
         user?: string;
         estimatedMillis?: number;
         estimatedDays?: number;
+        depends?: string[];
     }
 
     interface TLink {

@@ -147,6 +147,16 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     }
 
+    function doDependsTasks(aTask: dhx.TTask, aCb) {
+        if (aTask.depends) {
+            aTask.depends.forEach(function(taskId: string) {
+                var task =gantt.getTask(taskId);
+                aCb(task);
+                doDependsTasks(task, aCb);
+            });
+        }
+    }
+
     function covertCbTaskToDhxTask(cbTask: cb.TTask, parentUri?: string): dhx.TTask {
         console.log(cbTask);
         var task: dhx.TTask = {
@@ -275,6 +285,27 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         };
     }());
 
+    function get_holiday_awared_task(aTask: dhx.TTask, aMode: string) {
+        var task: any = {
+            uri: aTask.id,
+            name: aTask.text,
+            startDate: aTask.start_date
+        };
+        if (aMode === 'resize') { // by dragging end date only changes end date
+            task.endDate = aTask.end_date;
+        } else if (aMode === 'move') { // by dragging task bar, apply holiday awareness by estimatedMillis
+            task.endDate = holidayAwareness ? $calendar.getEndDate(aTask.start_date, aTask.estimatedMillis): aTask.end_date;
+        } else if (aMode === 'progress') { // by dragging progress bar, do nothing
+        } else { // by duration change in light box, apply holiday awareness
+            task.estimatedMillis = aTask.duration * unitWorkingDay;
+            task.endDate = holidayAwareness ? $calendar.getEndDate(aTask.start_date, aTask.duration * unitWorkingDay): aTask.end_date;
+        }
+        if (aTask.progress) {
+            task.spentMillis = Math.round(aTask.estimatedMillis * aTask.progress);
+        }
+        return task;
+    }
+
     /**
      * Task Add
      * @param gantt
@@ -321,23 +352,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     };
 
     $scope.onTaskUpdate = function(id, item: dhx.TTask, mode: string) {
-        var task: any = {
-            uri: item.id,
-            name: item.text,
-            startDate: item.start_date
-        };
-        if (mode === 'resize') { // by dragging end date only changes end date
-            task.endDate = item.end_date;
-        } else if (mode === 'move') { // by dragging task bar, apply holiday awareness by estimatedMillis
-            task.endDate = holidayAwareness ? $calendar.getEndDate(item.start_date, item.estimatedMillis): item.end_date;
-        } else if (mode === 'progress') { // by dragging progress bar, do nothing
-        } else { // by duration change in light box, apply holiday awareness
-            task.estimatedMillis = item.duration * unitWorkingDay;
-            task.endDate = holidayAwareness ? $calendar.getEndDate(item.start_date, item.duration * unitWorkingDay): item.end_date;
-        }
-        if (item.progress) {
-            task.spentMillis = Math.round(item.estimatedMillis * item.progress);
-        }
+        var task = get_holiday_awared_task(item, mode);
         showModal("Updating task");
         $codeBeamer.updateTask(task, function(err, resp) {
             if (err) {
@@ -476,7 +491,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             id: 'adjust_schedule',
             text: '연관 작업 일정 조정',
             cb: function(param: dhx.TContextCbParam) {
-
+                console.log(param);
+                var task = gantt.getTask(param.taskId);
+                doDependsTasks(task, function(task) {
+                    console.log(task);
+                });
             }
         }]
     };
@@ -587,6 +606,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                                 target: item.uri,
                                 type: '0'
                             });
+                            if (!tasks[indexTo].depends) {
+                                tasks[indexTo].depends = [];
+                            }
+                            tasks[indexTo].depends.push(item.uri);
                         } else if (association.type.name === 'parent') {
                             console.log(association.from.uri + ' -> ' + association.to.uri);
                             tasks[indexTo].parent = association.from.uri;
