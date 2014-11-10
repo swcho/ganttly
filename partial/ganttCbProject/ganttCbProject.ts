@@ -220,10 +220,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                 winInfo = wins[key];
                 if (!winInfo.win.closed) {
                     if (!winInfo.geo ||
-                        winInfo.geo.x != winInfo.win.screenX ||
-                        winInfo.geo.y != winInfo.win.screenY ||
-                        winInfo.geo.width != winInfo.win.outerWidth ||
-                        winInfo.geo.height != winInfo.win.outerHeight) {
+                        winInfo.geo.x !== winInfo.win.screenX ||
+                        winInfo.geo.y !== winInfo.win.screenY ||
+                        winInfo.geo.width !== winInfo.win.outerWidth ||
+                        winInfo.geo.height !== winInfo.win.outerHeight) {
                         winInfo.geo = {
                             x: winInfo.win.screenX,
                             y: winInfo.win.screenY,
@@ -471,6 +471,12 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                 var win = open(gConfig.cbBaseUrl + url, null, params);
                 win.moveTo((screen.width - width)/2, (screen.height - height)/2);
                 win.resizeTo(width, height);
+            }
+        }, {
+            id: 'adjust_schedule',
+            text: '연관 작업 일정 조정',
+            cb: function(param: dhx.TContextCbParam) {
+
             }
         }]
     };

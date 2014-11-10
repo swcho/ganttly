@@ -211,7 +211,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             for (key in wins) {
                 winInfo = wins[key];
                 if (!winInfo.win.closed) {
-                    if (!winInfo.geo || winInfo.geo.x != winInfo.win.screenX || winInfo.geo.y != winInfo.win.screenY || winInfo.geo.width != winInfo.win.outerWidth || winInfo.geo.height != winInfo.win.outerHeight) {
+                    if (!winInfo.geo || winInfo.geo.x !== winInfo.win.screenX || winInfo.geo.y !== winInfo.win.screenY || winInfo.geo.width !== winInfo.win.outerWidth || winInfo.geo.height !== winInfo.win.outerHeight) {
                         winInfo.geo = {
                             x: winInfo.win.screenX,
                             y: winInfo.win.screenY,
@@ -445,7 +445,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     * @type {{menuItems: {id: string, text: string, cb: (function(dhx.TContextCbParam): undefined)}[]}}
     */
     var contextMenu = {
-        menuItems: [{
+        menuItems: [
+            {
                 id: 'open_task',
                 text: '새창에서 열기',
                 cb: function (param) {
@@ -460,6 +461,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                     var win = open(gConfig.cbBaseUrl + url, null, params);
                     win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
                     win.resizeTo(width, height);
+                }
+            }, {
+                id: 'adjust_schedule',
+                text: '연관 작업 일정 조정',
+                cb: function (param) {
                 }
             }]
     };
