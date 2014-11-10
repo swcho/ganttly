@@ -141,14 +141,25 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         }
     }
 
-    function doDependsTasks(aTask, aCb) {
+    function doDependsTasks(aTask, aCb, aLoopFunc) {
+        var series = [];
         if (aTask.depends) {
             aTask.depends.forEach(function (taskId) {
                 var task = gantt.getTask(taskId);
-                aCb(task);
-                doDependsTasks(task, aCb);
+                series.push(function (cb) {
+                    aLoopFunc(aTask, task, function (err) {
+                        if (err) {
+                            cb(err);
+                            return;
+                        }
+                        doDependsTasks(task, cb, aLoopFunc);
+                    });
+                });
             });
         }
+        async.series(series, function (err) {
+            aCb(err);
+        });
     }
 
     function covertCbTaskToDhxTask(cbTask, parentUri) {
@@ -483,8 +494,23 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 cb: function (param) {
                     console.log(param);
                     var task = gantt.getTask(param.taskId);
-                    doDependsTasks(task, function (task) {
-                        console.log(task);
+                    showModal("Rescheduling tasks");
+                    doDependsTasks(task, function () {
+                        closeModal();
+                    }, function (precedentTask, task, aCb) {
+                        task.start_date = precedentTask.end_date;
+                        var adjusted_task = get_holiday_awared_task(task, "move");
+                        $codeBeamer.updateTask(adjusted_task, function (err, resp) {
+                            if (!err) {
+                                var task_from_cb = covertCbTaskToDhxTask(resp, task.parent);
+                                task.start_date = task_from_cb.start_date;
+                                task.estimatedMillis = task_from_cb.estimatedMillis;
+                                task.progress = task_from_cb.progress;
+                                task.end_date = task_from_cb.end_date;
+                                gantt.refreshTask(task.id);
+                            }
+                            aCb(err);
+                        });
                     });
                 }
             }]
