@@ -284,6 +284,17 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
         menu.attachEvent("onClick", function(id, zoneId, cas) {
             cbMap.call(id, outstanding_param);
         });
+        var _is_tooltip_orig;
+        menu.attachEvent("onShow", function() {
+            gantt['_hide_tooltip']();
+            _is_tooltip_orig = gantt['_is_tooltip'];
+            gantt['_is_tooltip'] = function() {
+                return true;
+            };
+        });
+        menu.attachEvent("onHide", function() {
+            gantt['_is_tooltip'] = _is_tooltip_orig;
+        });
 
         gantt.attachEvent("onContextMenu", function(taskId, linkId, event){
             var x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft,
