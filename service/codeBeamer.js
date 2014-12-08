@@ -186,6 +186,12 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                                 cb(err);
                                 return;
                             }
+
+                            if (item.tracker.name !== 'Task') {
+                                cb();
+                                return;
+                            }
+
                             tasks.push(item);
 
                             get(item.uri + '/associations', {

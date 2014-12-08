@@ -30,6 +30,7 @@ declare module cb {
         description: string;
         keyName: string;
         type: TType;
+        project: TItem;
     }
 
     interface TUser extends TItem {
@@ -125,6 +126,7 @@ declare module cb {
     interface TParamGetTask {
         userUri?: string;
         projectUri?: string;
+        groupByProject?: boolean;
     }
 
     interface TParamGetRelease {
@@ -412,6 +414,12 @@ angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService)
                                 cb(err);
                                 return;
                             }
+
+                            if (item.tracker.name !== 'Task') {
+                                cb();
+                                return;
+                            }
+
                             tasks.push(item);
 
                             get(item.uri + '/associations', {

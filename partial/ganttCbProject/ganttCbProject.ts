@@ -615,6 +615,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             });
         });
     }
+    if (!projectUri && userUri) {
+        param.groupByProject = true;
+    }
 
     showModal('Getting information...');
     $codeBeamer.getTasks(param, function(err, trackerUriList: string[], items: cb.TTask[]) {
@@ -626,9 +629,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         taskTrackerUriList = trackerUriList;
 
         var taskUris = [], tasks: dhx.TTask[] = [], links: dhx.TLink[] = [];
+        var projects = {};
+
         items.forEach(function(item) {
             taskUris.push(item.uri);
             tasks.push(covertCbTaskToDhxTask(item));
+            if (param.groupByProject) {
+                projects[item.tracker.project.uri] = item.tracker.project;
+            }
         });
 
         items.forEach(function(item, i) {
@@ -658,9 +666,19 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                     }
                 });
             }
-            if (item.parent) {
+            if (param.groupByProject) {
+                tasks[i].parent = item.tracker.project.uri;
+            } else if (item.parent) {
                 tasks[i].parent = item.parent.uri;
             }
+        });
+
+        Object.keys(projects).forEach(function(key) {
+            tasks.push({
+                id: projects[key].uri,
+                text: projects[key].name,
+                user: '-'
+            });
         });
 
         $scope.tasks = {
