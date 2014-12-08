@@ -33,6 +33,7 @@
         "gConfig": true,
         "dhtmlXMenuObject": true,
         "dhtmlXCombo": true,
+        "dhtmlXForm": true,
         "dhtmlx": true,
         "dhtmlXWindows": true
     }

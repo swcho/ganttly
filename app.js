@@ -8,7 +8,7 @@ angular.module('ganttly').config(function($stateProvider, $urlRouterProvider, $l
         templateUrl: 'partial/configCb/configCb.html'
     });
     $stateProvider.state('ganttCbProject', {
-        url: '/ganttCbProject?project&user',
+        url: '/ganttCbProject?project&user&groupByUser&groupByProject',
         templateUrl: 'partial/ganttCbProject/ganttCbProject.html'
     });
     $stateProvider.state('ganttTrello', {

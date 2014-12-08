@@ -86,7 +86,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 "<b>End date:</b> " + gantt.templates.tooltip_date_format(end),
                 "<b>Duration:</b> " + task.duration,
                 "<b>Est. Days:</b> " + task.estimatedDays,
-                "<b>Progress:</b> " + task.progress ? task.progress.toFixed(2) : 0
+                "<b>Progress:</b> " + (task.progress ? task.progress.toFixed(2) : 0)
             ];
 
             return descriptions.join('<br/>');
@@ -283,10 +283,9 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             //                gantt.clearAll();
             //                gantt.parse(collection, "json");
             //            }, false);
-            $scope.$watch($attrs['dhxScale'], function (scale) {
-                setScale(scale);
-            }, true);
-
+            //            $scope.$watch($attrs['dhxScale'], function(scale){
+            //                setScale(scale);
+            //            }, true);
             var taskChangeMode;
             var moveStartDate;
             var eventAttachIds = [

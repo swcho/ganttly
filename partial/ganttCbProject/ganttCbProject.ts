@@ -1,5 +1,6 @@
 
 /// <reference path="../../directive/dhxGantt/dhxGantt.ts"/>
+/// <reference path="../../directive/dhxForm/dhxForm.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
 
@@ -17,6 +18,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     var userUri = $stateParams.user;
     var projectUri = $stateParams.project;
+    var groupByUser = $stateParams.groupByUser === 'true';
+    var groupByProject = $stateParams.groupByProject === 'true';
     var taskTrackerUriList: string[];
 
     $scope.cbUserItems = [];
@@ -95,20 +98,84 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         ]
     };
 
+    var options: dhx.TFormItem[] = [];
+    if (projectUri) {
+        options = [{
+            data: {
+                name: 'by_user',
+                type: 'checkbox',
+                label: 'By user',
+                checked: groupByUser
+            },
+            eventHandlers: {
+                onChange: function(value, state) {
+                    if (state == groupByUser) {
+                        return;
+                    }
+
+                    console.log('****** by_user');
+                    $state.go('ganttCbProject', {
+                        project: projectUri,
+                        groupByUser: state ? 'true': 'false'
+                    }, {
+                        inherit: false
+                    });
+                }
+            }
+        }];
+    }
+    if (userUri) {
+        options = [{
+            data: {
+                name: 'by_project',
+                type: 'checkbox',
+                label: 'By project',
+                checked: groupByProject
+            },
+            eventHandlers: {
+                onChange: function(value, state) {
+                    if (state == groupByProject) {
+                        return;
+                    }
+
+                    console.log('****** by_project');
+                    $state.go('ganttCbProject', {
+                        user: userUri,
+                        groupByProject: state ? 'true': 'false'
+                    }, {
+                        inherit: false
+                    });
+                }
+            }
+        }];
+    }
+
+    $scope.options = options;
+
     $scope.setUser = function(uri) {
         if (uri === 'reset') {
             uri = null;
         }
+        if (uri == userUri) {
+            return;
+        }
+        console.log('****** user');
         $state.go('ganttCbProject', {
-            user: uri,
-            project: projectUri
+            user: uri
+        }, {
+            inherit: false
         });
     };
 
     $scope.setProject = function(uri) {
+        if (uri == projectUri) {
+            return;
+        }
+        console.log('****** project');
         $state.go('ganttCbProject', {
-            user: userUri,
             project: uri
+        }, {
+            inherit: false
         });
     };
 
@@ -615,12 +682,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             });
         });
     }
-    if (!projectUri && userUri) {
-        param.groupByProject = true;
-    }
-    if (projectUri && !userUri) {
-        param.groupByUser = true;
-    }
 
     showModal('Getting information...');
     $codeBeamer.getTasks(param, function(err, trackerUriList: string[], items: cb.TTask[]) {
@@ -638,10 +699,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         items.forEach(function(item) {
             taskUris.push(item.uri);
             tasks.push(covertCbTaskToDhxTask(item));
-            if (param.groupByProject) {
+            if (groupByProject) {
                 projects[item.tracker.project.uri] = item.tracker.project;
             }
-            if (param.groupByUser) {
+            if (groupByUser) {
                 if (item.assignedTo && item.assignedTo.length) {
                     assignedUser[item.assignedTo[0].uri] = item.assignedTo[0];
                 }
@@ -675,9 +736,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                     }
                 });
             }
-            if (param.groupByProject) {
+            if (groupByProject) {
                 tasks[i].parent = item.tracker.project.uri;
-            } else if (param.groupByUser) {
+            } else if (groupByUser) {
                 if (item.assignedTo && item.assignedTo.length) {
                     tasks[i].parent = item.assignedTo[0].uri;
                 } else {
@@ -724,5 +785,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     }, function(msg) {
         dhtmlx.message(msg);
     });
+
+    console.log('-------------------------');
 
 });
