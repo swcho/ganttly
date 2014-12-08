@@ -18,6 +18,7 @@ declare module dhx {
         open?: boolean;
         parent?: string;
         user?: string;
+        userIdList?: string[];
         estimatedMillis?: number;
         estimatedDays?: number;
         depends?: string[];

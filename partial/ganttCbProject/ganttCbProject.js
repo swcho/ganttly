@@ -243,12 +243,15 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         };
 
         var userNames = [];
+        var userIdList = [];
         if (cbTask.assignedTo) {
             cbTask.assignedTo.forEach(function (user) {
                 userNames.push(user.name);
+                userIdList.push(user.uri);
             });
         }
         task.user = userNames.join(',');
+        task.userIdList = userIdList;
 
         if (cbTask.endDate) {
             task.end_date = new Date(cbTask.endDate);
@@ -568,7 +571,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 id: 'adjust_schedule',
                 text: '연관 작업 일정 조정',
                 cb: function (param) {
-                    console.log(param);
+                    //                console.log(param);
                     var task = gantt.getTask(param.taskId);
                     showModal("Rescheduling tasks");
                     doDependsTasks(task, function () {
@@ -589,8 +592,30 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                         });
                     });
                 }
+            }, {
+                id: 'open_user_view',
+                text: '사용자 작업 보기',
+                cb: function (param) {
+                    //                var task = gantt.getTask(param.taskId);
+                    //                console.log(task);
+                    //                console.log(location);
+                    if (param.taskId.indexOf('/user') == 0) {
+                        var width = 1280;
+                        var height = 720;
+                        var params = [
+                            'width=' + width,
+                            'height=' + height,
+                            'fullscreen=yes'
+                        ].join(',');
+
+                        var win = open(location['origin'] + location.pathname + '/#/ganttCbProject?user=' + param.taskId, null, params);
+                        win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+                        win.resizeTo(width, height);
+                    }
+                }
             }]
     };
+
     $scope.contextMenu = contextMenu;
 
     //    $codeBeamer.getUserList({
