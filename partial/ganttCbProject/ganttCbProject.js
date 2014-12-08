@@ -605,6 +605,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     if (!projectUri && userUri) {
         param.groupByProject = true;
     }
+    if (projectUri && !userUri) {
+        param.groupByUser = true;
+    }
 
     showModal('Getting information...');
     $codeBeamer.getTasks(param, function (err, trackerUriList, items) {
@@ -617,12 +620,18 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
         var taskUris = [], tasks = [], links = [];
         var projects = {};
+        var assignedUser = {};
 
         items.forEach(function (item) {
             taskUris.push(item.uri);
             tasks.push(covertCbTaskToDhxTask(item));
             if (param.groupByProject) {
                 projects[item.tracker.project.uri] = item.tracker.project;
+            }
+            if (param.groupByUser) {
+                if (item.assignedTo && item.assignedTo.length) {
+                    assignedUser[item.assignedTo[0].uri] = item.assignedTo[0];
+                }
             }
         });
 
@@ -655,6 +664,12 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             }
             if (param.groupByProject) {
                 tasks[i].parent = item.tracker.project.uri;
+            } else if (param.groupByUser) {
+                if (item.assignedTo && item.assignedTo.length) {
+                    tasks[i].parent = item.assignedTo[0].uri;
+                } else {
+                    tasks[i].parent = '__not_assigned__';
+                }
             } else if (item.parent) {
                 tasks[i].parent = item.parent.uri;
             }
@@ -667,6 +682,22 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 user: '-'
             });
         });
+
+        var assignedUserKeys = Object.keys(assignedUser);
+        if (assignedUserKeys.length) {
+            assignedUserKeys.forEach(function (key) {
+                tasks.push({
+                    id: assignedUser[key].uri,
+                    text: assignedUser[key].name,
+                    user: '-'
+                });
+            });
+            tasks.push({
+                id: '__not_assigned__',
+                text: 'Not assigned',
+                user: '-'
+            });
+        }
 
         $scope.tasks = {
             data: tasks,

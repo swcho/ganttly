@@ -127,6 +127,7 @@ declare module cb {
         userUri?: string;
         projectUri?: string;
         groupByProject?: boolean;
+        groupByUser?: boolean;
     }
 
     interface TParamGetRelease {
