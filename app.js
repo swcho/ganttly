@@ -11,6 +11,10 @@ angular.module('ganttly').config(function($stateProvider, $urlRouterProvider, $l
         url: '/ganttCbProject?project&user&groupByUser&groupByProject',
         templateUrl: 'partial/ganttCbProject/ganttCbProject.html'
     });
+    $stateProvider.state('scheduleCb', {
+        url: '/scheduleCb',
+        templateUrl: 'partial/scheduleCb/scheduleCb.html'
+    });
     $stateProvider.state('ganttTrello', {
         url: '/ganttTrello?board&user',
         templateUrl: 'partial/ganttTrello/ganttTrello.html'

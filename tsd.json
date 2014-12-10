@@ -19,6 +19,9 @@
     },
     "underscore/underscore.d.ts": {
       "commit": "b6970132c4ddf4b0ffe7952e9e3b08e23f96ea8f"
+    },
+    "dhtmlxscheduler/dhtmlxscheduler.d.ts": {
+      "commit": "1fb0d8c3e30156e69a86271d0532d68d71e0735c"
     }
   }
 }

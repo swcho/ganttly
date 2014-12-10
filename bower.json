@@ -30,6 +30,7 @@
     "jquery.livequery": "~1.3.6",
     "platform": "~1.2.0",
     "jquery.svg": "*",
-    "jquery-xml2json": "~0.0.8"
+    "jquery-xml2json": "~0.0.8",
+    "scheduler": "~4.2.0"
   }
 }

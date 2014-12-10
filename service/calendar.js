@@ -80,8 +80,8 @@ angular.module('ganttly').factory('$calendar', function ($http) {
         var days = Math.ceil(hours / workingHours);
         var start = new Date(aStartTime.getFullYear(), aStartTime.getMonth(), aStartTime.getDate());
         var end = addDays(start, days);
-        console.log('getEndDate From: ' + start + ' ~ ' + end + ' (' + days + ')');
 
+        //        console.log('getEndDate From: ' + start + ' ~ ' + end + ' (' + days + ')');
         var holidays = calEntries.slice(0);
         var holiday = holidays.shift();
         while (holiday && holiday.end < start) {
@@ -91,12 +91,13 @@ angular.module('ganttly').factory('$calendar', function ($http) {
         while (1) {
             if (holiday.start <= start) {
                 start = new Date(holiday.end.getTime());
-                console.log('start holiday add');
+
+                //                console.log('start holiday add');
                 holiday = holidays.shift();
                 continue;
             }
             if (isWeekends(start)) {
-                console.log('start weekend add');
+                //                console.log('start weekend add');
                 start = addDays(start, 1);
                 continue;
             }
@@ -106,18 +107,18 @@ angular.module('ganttly').factory('$calendar', function ($http) {
         end = new Date(start.getTime());
         while (1) {
             if (holiday.start <= end) {
-                console.log('end holiday add');
+                //                console.log('end holiday add');
                 end = new Date(holiday.end.getTime());
                 holiday = holidays.shift();
                 continue;
             }
             if (isWeekends(end)) {
-                console.log('end weekend add');
+                //                console.log('end weekend add');
                 end = addDays(end, 1);
                 continue;
             }
             if (days) {
-                console.log('end duration add');
+                //                console.log('end duration add');
                 end = addDays(end, 1);
                 days = days - 1;
                 if (days) {
@@ -127,7 +128,7 @@ angular.module('ganttly').factory('$calendar', function ($http) {
             break;
         }
 
-        console.log('getEndDate To  : ' + start + ' ~ ' + end);
+        //        console.log('getEndDate To  : ' + start + ' ~ ' + end);
         return {
             start: start,
             end: end

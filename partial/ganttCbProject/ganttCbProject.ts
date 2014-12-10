@@ -109,7 +109,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             },
             eventHandlers: {
                 onChange: function(value, state) {
-                    if (state == groupByUser) {
+                    if (state === groupByUser) {
                         return;
                     }
 
@@ -134,7 +134,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             },
             eventHandlers: {
                 onChange: function(value, state) {
-                    if (state == groupByProject) {
+                    if (state === groupByProject) {
                         return;
                     }
 
@@ -156,7 +156,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         if (uri === 'reset') {
             uri = null;
         }
-        if (uri == userUri) {
+        if (uri === userUri) {
             return;
         }
         console.log('****** user');
@@ -168,7 +168,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     };
 
     $scope.setProject = function(uri) {
-        if (uri == projectUri) {
+        if (uri === projectUri) {
             return;
         }
         console.log('****** project');
@@ -614,7 +614,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 //                console.log(task);
 //                console.log(location);
 
-                if (param.taskId.indexOf('/user') == 0) {
+                if (param.taskId.indexOf('/user') === 0) {
                     var width = 1280;
                     var height = 720;
                     var params = [
