@@ -1,0 +1,26 @@
+
+@TOP_PANE_HEIGHT: 50px;
+@TOP_PANE_MARGIN: 4px;
+
+#scheduleCbProject {
+  #topPane {
+    position: absolute;
+    left: 0px;
+    height: @TOP_PANE_HEIGHT;
+    width: 100%;
+    z-index: 1;
+    margin: @TOP_PANE_MARGIN;
+
+    .combo_group {
+      float: left;
+      label {
+        line-height: @TOP_PANE_HEIGHT/2 - @TOP_PANE_MARGIN;
+        margin: 0px;
+      }
+      .combo {
+        clear: both;
+      }
+      margin-right: 4px;
+    }
+  }
+}

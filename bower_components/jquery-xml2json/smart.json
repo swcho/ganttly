@@ -1,0 +1,8 @@
+{
+  "name": "sergeyt:jquery-xml2json",
+  "description": "jQuery plugin to convert XML to JSON.",
+  "homepage": "https://github.com/sergeyt/jquery-xml2json",
+  "author": "Josef van Niekerk, Sergey Todyshev",
+  "version": "0.0.8",
+  "git": "https://github.com/sergeyt/jquery-xml2json.git"
+}

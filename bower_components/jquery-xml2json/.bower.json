@@ -1,0 +1,30 @@
+{
+  "name": "jquery-xml2json",
+  "version": "0.0.8",
+  "main": "src/xml2json.js",
+  "maintainers": [
+    {
+      "name": "Sergey Todyshev",
+      "email": "stodyshev@gmail.com"
+    }
+  ],
+  "dependencies": {
+    "jquery": "*"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "components"
+  ],
+  "homepage": "https://github.com/sergeyt/jQuery-xml2json",
+  "_release": "0.0.8",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.0.8",
+    "commit": "2e3035b6a5760defce16acbe2c8c16495b75bc77"
+  },
+  "_source": "git://github.com/sergeyt/jQuery-xml2json.git",
+  "_target": "~0.0.8",
+  "_originalSource": "jquery-xml2json",
+  "_direct": true
+}
