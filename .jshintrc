@@ -35,6 +35,7 @@
         "dhtmlXCombo": true,
         "dhtmlXForm": true,
         "dhtmlx": true,
-        "dhtmlXWindows": true
+        "dhtmlXWindows": true,
+        "scheduler": true
     }
 }
