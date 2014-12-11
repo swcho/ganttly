@@ -68,7 +68,7 @@ angular.module('ganttly').directive('dhxSchedule', function () {
 //                x_step: 1,
 //                x_size: 20,
 //                x_start: 16,
-//                x_length: 20,
+                x_length: 3,
 //                y_unit: sections,
                 y_property: "section_id",
                 render: "tree",

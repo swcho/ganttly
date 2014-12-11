@@ -36,8 +36,8 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function (
                             key: g.uri,
                             label: g.name
                         });
-                        groupingKeyList.push(g.uri);
                     }
+                    groupingKeyList.push(g.uri);
                 });
             }
 
