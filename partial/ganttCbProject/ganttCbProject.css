@@ -1,7 +1,7 @@
 #ganttCbProject #topPane {
   position: absolute;
   left: 0px;
-  height: 50px;
+  height: 60px;
   width: 100%;
   z-index: 1;
   margin: 4px;
@@ -11,11 +11,16 @@
   margin-right: 4px;
 }
 #ganttCbProject #topPane .combo_group label {
-  line-height: 21px;
+  line-height: 26px;
   margin: 0px;
 }
 #ganttCbProject #topPane .combo_group .combo {
   clear: both;
+}
+#ganttCbProject #gantt {
+  height: 100%;
+  width: 100%;
+  padding-top: 60px;
 }
 .today.gantt_marker {
   background-color: rgba(0, 255, 0, 0.4);

@@ -95,12 +95,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     var options = [];
     if (projectUri) {
         options = [{
-                data: {
-                    name: 'by_user',
-                    type: 'checkbox',
-                    label: 'By user',
-                    checked: groupByUser
-                },
+                name: 'by_user',
+                type: 'checkbox',
+                label: 'By user',
+                checked: groupByUser,
                 eventHandlers: {
                     onChange: function (value, state) {
                         if (state === groupByUser) {
@@ -120,12 +118,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     }
     if (userUri) {
         options = [{
-                data: {
-                    name: 'by_project',
-                    type: 'checkbox',
-                    label: 'By project',
-                    checked: groupByProject
-                },
+                name: 'by_project',
+                type: 'checkbox',
+                label: 'By project',
+                checked: groupByProject,
                 eventHandlers: {
                     onChange: function (value, state) {
                         if (state === groupByProject) {
