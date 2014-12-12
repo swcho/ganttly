@@ -1,0 +1,23 @@
+{
+  "name": "dateformat",
+  "description": "Date format lib",
+  "version": "0.4.1",
+  "homepage": "https://github.com/firstandthird/dateformat",
+  "license": "MIT",
+  "copyright": "First + Third",
+  "main": "dist/dateformat.js",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "assert": "*",
+    "blanket": "*"
+  },
+  "ignore": [
+    "test",
+    "example",
+    "lib",
+    "Gruntfile.js",
+    "package.json",
+    "grunt"
+  ]
+}
