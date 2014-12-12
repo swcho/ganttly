@@ -2,6 +2,7 @@
 /// <reference path="../../typings/tsd.d.ts"/>
 
 declare var dhtmlXForm;
+declare var dateFormat;
 
 declare module dhx {
 
@@ -14,7 +15,7 @@ declare module dhx {
         inputTop?: number; // sets the top absolute offset of input. The attribute is applied only if the *position* is set as "absolute"
         name?: string; // the identification name. Used for referring to item
         type: string;
-        list?: any[]; // defines the array of nested elements
+        list?: TFormItem[]; // defines the array of nested elements
         offsetLeft?: number; // sets the left relative offset of item
         offsetTop?: number; // sets the top relative offset of item
         position?: string; // label-left, label-right, label-top or absolute, defines the position of label relative to block. As just labels are defined for block, just value absolute makes sense and is used for setting absolute label position
@@ -39,12 +40,27 @@ angular.module('ganttly').directive('dhxForm', function() {
             var formItems: dhx.TFormItem[] = $scope[$attrs['dhxFormItems']];
             var eventHandlers = {};
 
-            formItems.forEach(function(formItem) {
-                if (formItem.eventHandlers) {
-                    eventHandlers[formItem.name] = formItem.eventHandlers;
-                    delete formItem.eventHandlers;
-                }
-            });
+            function addEventHandler(formItems: dhx.TFormItem[]) {
+                formItems.forEach(function(formItem) {
+                    if (formItem.eventHandlers) {
+                        eventHandlers[formItem.name] = formItem.eventHandlers;
+                        delete formItem.eventHandlers;
+                    }
+                    if (formItem.type === 'block') {
+                        addEventHandler(formItem.list);
+                    }
+                    if (formItem.name) {
+                        $scope.$watch(formItem.name, (function(name) {
+                            return function(newDate) {
+                                if (newDate) {
+                                    myForm.getInput(name).value = dateFormat("%Y-%m-%d", newDate);
+                                }
+                            };
+                        }(formItem.name)), false);
+                    }
+                });
+            }
+            addEventHandler(formItems);
 
             var myForm = new dhtmlXForm(element[0], formItems);
 

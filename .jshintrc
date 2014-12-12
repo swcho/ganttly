@@ -37,6 +37,7 @@
         "dhtmlXCalendarObject": true,
         "dhtmlx": true,
         "dhtmlXWindows": true,
-        "scheduler": true
+        "scheduler": true,
+        "dateFormat": true
     }
 }

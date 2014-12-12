@@ -10,12 +10,27 @@ angular.module('ganttly').directive('dhxForm', function () {
             var formItems = $scope[$attrs['dhxFormItems']];
             var eventHandlers = {};
 
-            formItems.forEach(function (formItem) {
-                if (formItem.eventHandlers) {
-                    eventHandlers[formItem.name] = formItem.eventHandlers;
-                    delete formItem.eventHandlers;
-                }
-            });
+            function addEventHandler(formItems) {
+                formItems.forEach(function (formItem) {
+                    if (formItem.eventHandlers) {
+                        eventHandlers[formItem.name] = formItem.eventHandlers;
+                        delete formItem.eventHandlers;
+                    }
+                    if (formItem.type === 'block') {
+                        addEventHandler(formItem.list);
+                    }
+                    if (formItem.name) {
+                        $scope.$watch(formItem.name, (function (name) {
+                            return function (newDate) {
+                                if (newDate) {
+                                    myForm.getInput(name).value = dateFormat("%Y-%m-%d", newDate);
+                                }
+                            };
+                        }(formItem.name)), false);
+                    }
+                });
+            }
+            addEventHandler(formItems);
 
             var myForm = new dhtmlXForm(element[0], formItems);
 
