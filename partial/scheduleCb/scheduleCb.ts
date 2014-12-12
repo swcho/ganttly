@@ -1,4 +1,5 @@
 
+/// <reference path="../../directive/dhxForm/dhxForm.ts"/>
 /// <reference path="../../directive/dhxSchedule/dhxSchedule.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
@@ -7,6 +8,31 @@ declare var dhtmlXWindows;
 
 angular.module('ganttly').controller('ScheduleCbCtrl', function (
     $scope, $state, $stateParams, $calendar, $codeBeamer: cb.ICodeBeamer) {
+
+    var formItems: dhx.TFormItem[] = [{
+        type: "settings", position: "label-top"
+    }, {
+        type: 'block',
+        list: [{
+            name: 'start_date',
+            type:"calendar",
+            label:"Start Date",
+//            skin:"dhx_skyblue",
+//            enableTime:true,
+            dateFormat: "%Y-%m-%d"
+        }, {
+            type: "newcolumn"
+        }, {
+            name: 'end_date',
+            type:"calendar",
+            label: "End Date",
+            offesetLeft: 10,
+            inputLeft: 10,
+//            skin:"dhx_skyblue",
+            dateFormat: "%Y-%m-%d"
+        }]
+    }];
+    $scope.formItems = formItems;
 
     var paramProject = $stateParams.project || '/project/98';
     var paramGrouping = $stateParams.grouping || 'project';
@@ -42,7 +68,7 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function (
             }
 
             if (type) {
-                if (types.indexOf(type.name) == -1) {
+                if (types.indexOf(type.name) === -1) {
                     types.push(type.name);
                 }
                 groupingKeyList.forEach(function(gk) {

@@ -16,7 +16,6 @@ declare module dhx {
         text: string;
         section_id: string;
     }
-
 }
 
 angular.module('ganttly').directive('dhxSchedule', function () {
@@ -37,6 +36,15 @@ angular.module('ganttly').directive('dhxSchedule', function () {
             scheduler.config.details_on_create = true;
             scheduler.config.details_on_dblclick = true;
             scheduler.config.xml_date = "%Y-%m-%d %H:%i";
+
+            var padding_top = parseInt(element.css('padding-top'), 10);
+            if (padding_top) {
+                console.warn('padding-top: ' + padding_top);
+                var parent_height = element.parent().height();
+                console.warn('parent height: ' + parent_height);
+                var height = parent_height - padding_top * 2 - 1;
+                element.height(height);
+            }
 
             //===============
             //Configuration

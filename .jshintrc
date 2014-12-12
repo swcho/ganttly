@@ -34,6 +34,7 @@
         "dhtmlXMenuObject": true,
         "dhtmlXCombo": true,
         "dhtmlXForm": true,
+        "dhtmlXCalendarObject": true,
         "dhtmlx": true,
         "dhtmlXWindows": true,
         "scheduler": true

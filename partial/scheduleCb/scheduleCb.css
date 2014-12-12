@@ -1,0 +1,13 @@
+#scheduleCb .form {
+  position: absolute;
+  left: 0px;
+  height: 60px;
+  width: 100%;
+  z-index: 1;
+  margin: 4px;
+}
+#scheduleCb .dhx_cal_container {
+  height: 100%;
+  width: 100%;
+  padding-top: 60px;
+}

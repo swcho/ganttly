@@ -8,19 +8,22 @@ angular.module('ganttly').directive('dhxForm', function () {
         template: '<div ng-transclude></div>',
         link: function ($scope, element, $attrs, fn) {
             var formItems = $scope[$attrs['dhxFormItems']];
-            var formDataList = [];
             var eventHandlers = {};
 
             formItems.forEach(function (formItem) {
-                formDataList.push(formItem.data);
-                eventHandlers[formItem.data.name] = formItem.eventHandlers;
+                if (formItem.eventHandlers) {
+                    eventHandlers[formItem.name] = formItem.eventHandlers;
+                    delete formItem.eventHandlers;
+                }
             });
 
-            var myForm = new dhtmlXForm(element[0], formDataList);
+            var myForm = new dhtmlXForm(element[0], formItems);
 
             var eventAttachIds = [
                 myForm.attachEvent("onChange", function (name, value, state) {
-                    eventHandlers[name]['onChange'](value, state);
+                    if (eventHandlers[name] && eventHandlers[name]['onChange']) {
+                        eventHandlers[name]['onChange'](value, state);
+                    }
                 })
             ];
 
