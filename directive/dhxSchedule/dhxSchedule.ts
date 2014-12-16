@@ -37,6 +37,14 @@ angular.module('ganttly').directive('dhxSchedule', function () {
             scheduler.config.details_on_dblclick = true;
             scheduler.config.xml_date = "%Y-%m-%d %H:%i";
 
+            var format=scheduler.date.date_to_str("%Y-%m-%d %H:%i");
+            scheduler.templates.tooltip_text = function(start,end,event) {
+                return "<b>Summary:</b> "+ event.comment +"<br/>" +
+                    "<b>Event:</b> "+ event.text +"<br/>" +
+                    "<b>Start date:</b> "+ format(start) + "<br/>" +
+                    "<b>End date:</b> " + format(end);
+            };
+
             var padding_top = parseInt(element.css('padding-top'), 10);
             if (padding_top) {
                 console.warn('padding-top: ' + padding_top);
