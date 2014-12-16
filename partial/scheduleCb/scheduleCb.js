@@ -101,10 +101,10 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
                 groupingKeyList.forEach(function (gk) {
                     events.push({
                         section_id: gk + '/' + type.name,
-                        //                        section_id: gk,
                         start_date: new Date(task.startDate),
                         end_date: new Date(task.endDate),
-                        text: (text ? text.name : type.name)
+                        text: (text ? text.name : type.name),
+                        uri: task.uri
                     });
                 });
             }
@@ -129,6 +129,24 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
 
         $scope.start_date = schState.min_date;
         $scope.end_date = schState.max_date;
+
+        $scope.onEventClicked = function (scheduler, id) {
+            console.log('onEventClicked: ' + id);
+            var event = scheduler.getEvent(id);
+            console.log(event);
+
+            var url = event.uri;
+            var width = 1280;
+            var height = 720;
+            var params = [
+                'width=' + width,
+                'height=' + height,
+                'fullscreen=yes'
+            ].join(',');
+            var win = open(gConfig.cbBaseUrl + url, null, params);
+            win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+            win.resizeTo(width, height);
+        };
     });
 
     console.log('-------------------------');
