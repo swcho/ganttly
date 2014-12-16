@@ -1,0 +1,154 @@
+
+@ALPHA: 50%;
+@HIGHEST: #AA3939;
+@HIGHEST_ALPHA: fade(@HIGHEST, @ALPHA);
+@HIGH: #AA6D39;
+@HIGH_ALPHA: fade(@HIGH, @ALPHA);
+@NORMAL: #2D8633;
+@NORMAL_ALPHA: fade(@NORMAL, @ALPHA);
+@LOW: #226666;
+@LOW_ALPHA: fade(@LOW, @ALPHA);
+@LOWEST: #2E4172;
+@LOWEST_ALPHA: fade(@LOWEST, @ALPHA);
+
+@STATUS_NONE: #afafaf;
+@STATUS_NONE_ALPHA: fade(@STATUS_NONE, @ALPHA);
+@STATUS_NEW: #515151;
+@STATUS_NEW_ALPHA: fade(@STATUS_NEW, @ALPHA);
+@STATUS_SUSPENDED: #AA3939;
+@STATUS_SUSPENDED_ALPHA: fade(@STATUS_SUSPENDED, @ALPHA);
+@STATUS_IN_PROGRESS: #ffab46;
+@STATUS_IN_PROGRESS_ALPHA: fade(@STATUS_IN_PROGRESS, @ALPHA);
+@STATUS_PARTLY_COMPLETED: #00a85d;
+@STATUS_PARTLY_COMPLETED_ALPHA: fade(@STATUS_PARTLY_COMPLETED, @ALPHA);
+@STATUS_COMPLETED: #187a6d;
+@STATUS_COMPLETED_ALPHA: fade(@STATUS_COMPLETED, @ALPHA);
+
+.gantt_task_line {
+  &.priority_highest{
+    //    border:4px solid @HIGHEST_ALPHA;
+  }
+  &.priority_highest .gantt_task_progress{
+  }
+
+  &.priority_high{
+    //    border:4px solid @HIGH_ALPHA;
+  }
+  &.priority_high .gantt_task_progress{
+  }
+
+  &.priority_normal{
+    //    border:2px solid @NORMAL_ALPHA;
+  }
+  &.priority_normal .gantt_task_progress{
+  }
+
+  &.priority_low{
+    //    border:2px solid @LOW_ALPHA;
+  }
+  &.priority_low .gantt_task_progress{
+  }
+
+  &.priority_lowest{
+    //    border:2px solid @LOWEST_ALPHA;
+  }
+  &.priority_lowest .gantt_task_progress{
+  }
+
+  &.status_none {
+    border:2px solid @STATUS_NONE_ALPHA;
+    color: @STATUS_NONE_ALPHA;
+    background: @STATUS_NONE_ALPHA;
+    .gantt_task_progress{
+      background: @STATUS_NONE;
+    }
+  }
+
+  &.status_new {
+    border:2px solid @STATUS_NEW_ALPHA;
+    color: @STATUS_NEW_ALPHA;
+    background: @STATUS_NEW_ALPHA;
+    .gantt_task_progress{
+      background: @STATUS_NEW;
+    }
+  }
+
+  &.status_suspended {
+    border:2px solid @STATUS_SUSPENDED_ALPHA;
+    color: @STATUS_SUSPENDED_ALPHA;
+    background: @STATUS_SUSPENDED_ALPHA;
+    .gantt_task_progress{
+      background: @STATUS_SUSPENDED;
+    }
+    .gantt_task_content {
+      text-decoration: underline;
+      font-weight: bold;
+    }
+  }
+
+  &.status_in_progress {
+    border:2px solid @STATUS_IN_PROGRESS_ALPHA;
+    color: @STATUS_IN_PROGRESS_ALPHA;
+    background: @STATUS_IN_PROGRESS_ALPHA;
+    .gantt_task_progress{
+      background: @STATUS_IN_PROGRESS;
+    }
+  }
+  &.status_partly_completed {
+    border:2px solid @STATUS_PARTLY_COMPLETED_ALPHA;
+    color: @STATUS_PARTLY_COMPLETED_ALPHA;
+    background: @STATUS_PARTLY_COMPLETED_ALPHA;
+    .gantt_task_progress{
+      background: @STATUS_PARTLY_COMPLETED;
+    }
+  }
+  &.status_completed {
+    border:2px solid @STATUS_COMPLETED_ALPHA;
+    color: @STATUS_COMPLETED_ALPHA;
+    background: @STATUS_COMPLETED_ALPHA;
+    .gantt_task_progress{
+      background: @STATUS_COMPLETED;
+    }
+    .gantt_task_content {
+      text-decoration: line-through!important;
+    }
+  }
+}
+
+.gantt_tree_content {
+  width: 100%;
+  .status_none {
+    color: @STATUS_NONE;
+  }
+
+  .status_new {
+    color: @STATUS_NEW;
+  }
+  .status_suspended {
+    color: @STATUS_SUSPENDED;
+  }
+  .status_in_progress {
+    color: @STATUS_IN_PROGRESS;
+  }
+  .status_partly_completed {
+    color: @STATUS_PARTLY_COMPLETED;
+  }
+  .status_completed {
+    color: @STATUS_COMPLETED;
+    text-decoration: line-through!important;
+  }
+}
+
+.dhx_scale_bar.weekend{
+  background: #f4f7f4;
+}
+.dhx_scale_bar.holiday{
+  background: #f78f91;
+}
+
+.dhx_matrix_cell.weekend{
+  background: #f4f7f4;
+}
+.dhx_matrix_cell.holiday{
+  background: #f78f91;
+}

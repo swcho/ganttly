@@ -18,7 +18,7 @@ declare module dhx {
     }
 }
 
-angular.module('ganttly').directive('dhxSchedule', function () {
+angular.module('ganttly').directive('dhxSchedule', function ($calendar) {
     return {
         restrict: 'A',
         scope: false,
@@ -93,6 +93,26 @@ angular.module('ganttly').directive('dhxSchedule', function () {
                 section_autoheight: false,
                 dy: 32
             });
+
+            scheduler.templates.timeline_cell_class = function(evs, date, section){
+                if ($calendar.isHoliday(date)) {
+                    return "holiday";
+                }
+                if (date.getDay()===0 || date.getDay()===6){
+                    return "weekend"
+                }
+                return '';
+            };
+
+            scheduler.templates.timeline_scalex_class = function(date){
+                if ($calendar.isHoliday(date)) {
+                    return "holiday";
+                }
+                if (date.getDay()===0 || date.getDay()===6){
+                    return "weekend"
+                }
+                return '';
+            };
 
             //===============
             //Data loading

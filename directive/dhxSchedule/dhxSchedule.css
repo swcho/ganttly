@@ -1,0 +1,89 @@
+.gantt_task_line.status_none {
+  border: 2px solid rgba(175, 175, 175, 0.5);
+  color: rgba(175, 175, 175, 0.5);
+  background: rgba(175, 175, 175, 0.5);
+}
+.gantt_task_line.status_none .gantt_task_progress {
+  background: #afafaf;
+}
+.gantt_task_line.status_new {
+  border: 2px solid rgba(81, 81, 81, 0.5);
+  color: rgba(81, 81, 81, 0.5);
+  background: rgba(81, 81, 81, 0.5);
+}
+.gantt_task_line.status_new .gantt_task_progress {
+  background: #515151;
+}
+.gantt_task_line.status_suspended {
+  border: 2px solid rgba(170, 57, 57, 0.5);
+  color: rgba(170, 57, 57, 0.5);
+  background: rgba(170, 57, 57, 0.5);
+}
+.gantt_task_line.status_suspended .gantt_task_progress {
+  background: #aa3939;
+}
+.gantt_task_line.status_suspended .gantt_task_content {
+  text-decoration: underline;
+  font-weight: bold;
+}
+.gantt_task_line.status_in_progress {
+  border: 2px solid rgba(255, 171, 70, 0.5);
+  color: rgba(255, 171, 70, 0.5);
+  background: rgba(255, 171, 70, 0.5);
+}
+.gantt_task_line.status_in_progress .gantt_task_progress {
+  background: #ffab46;
+}
+.gantt_task_line.status_partly_completed {
+  border: 2px solid rgba(0, 168, 93, 0.5);
+  color: rgba(0, 168, 93, 0.5);
+  background: rgba(0, 168, 93, 0.5);
+}
+.gantt_task_line.status_partly_completed .gantt_task_progress {
+  background: #00a85d;
+}
+.gantt_task_line.status_completed {
+  border: 2px solid rgba(24, 122, 109, 0.5);
+  color: rgba(24, 122, 109, 0.5);
+  background: rgba(24, 122, 109, 0.5);
+}
+.gantt_task_line.status_completed .gantt_task_progress {
+  background: #187a6d;
+}
+.gantt_task_line.status_completed .gantt_task_content {
+  text-decoration: line-through !important;
+}
+.gantt_tree_content {
+  width: 100%;
+}
+.gantt_tree_content .status_none {
+  color: #afafaf;
+}
+.gantt_tree_content .status_new {
+  color: #515151;
+}
+.gantt_tree_content .status_suspended {
+  color: #aa3939;
+}
+.gantt_tree_content .status_in_progress {
+  color: #ffab46;
+}
+.gantt_tree_content .status_partly_completed {
+  color: #00a85d;
+}
+.gantt_tree_content .status_completed {
+  color: #187a6d;
+  text-decoration: line-through !important;
+}
+.dhx_scale_bar.weekend {
+  background: #f4f7f4;
+}
+.dhx_scale_bar.holiday {
+  background: #f78f91;
+}
+.dhx_matrix_cell.weekend {
+  background: #f4f7f4;
+}
+.dhx_matrix_cell.holiday {
+  background: #f78f91;
+}
