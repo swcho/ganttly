@@ -41,6 +41,7 @@ declare module cb {
         flags: number;
         id: number;
         name: string;
+        style?: string; // color code
     }
 
     interface TTask extends TItem {

@@ -111,7 +111,8 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function (
                         end_date: new Date(task.endDate),
                         text: (text ? text.name : type.name),
                         uri: task.uri,
-                        comment: task.name
+                        comment: task.name,
+                        color: task.status.style || 'red'
                     })
                 });
             }

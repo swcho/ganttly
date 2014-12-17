@@ -23,6 +23,10 @@ angular.module('ganttly').directive('dhxSchedule', function ($calendar) {
                 return "<b>Summary:</b> " + event.comment + "<br/>" + "<b>Event:</b> " + event.text + "<br/>" + "<b>Start date:</b> " + format(start) + "<br/>" + "<b>End date:</b> " + format(end);
             };
 
+            scheduler.templates.event_class = function (start, end, ev) {
+                return "";
+            };
+
             var padding_top = parseInt(element.css('padding-top'), 10);
             if (padding_top) {
                 console.warn('padding-top: ' + padding_top);
@@ -67,9 +71,10 @@ angular.module('ganttly').directive('dhxSchedule', function ($calendar) {
                 //                y_unit: sections,
                 y_property: "section_id",
                 render: "tree",
-                folder_dy: 32,
+                folder_dy: 24,
+                //                event_dy: 28,
                 section_autoheight: false,
-                dy: 32
+                dy: 24
             });
 
             scheduler.templates.timeline_cell_class = function (evs, date, section) {
