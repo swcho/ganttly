@@ -112,7 +112,7 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function (
                         text: (text ? text.name : type.name),
                         uri: task.uri,
                         comment: task.name,
-                        color: task.status.style || 'red'
+                        color: task.status.style || '#b31317'
                     })
                 });
             }
