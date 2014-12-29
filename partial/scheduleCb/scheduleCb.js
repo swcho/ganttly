@@ -4,12 +4,36 @@
 /// <reference path="../../service/codeBeamer.ts"/>
 
 angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state, $stateParams, $calendar, $codeBeamer) {
+    var paramProject = $stateParams.project || '/project/98';
+    var paramGrouping = $stateParams.grouping || 'project';
+    var paramType = $stateParams.type || 'test구분';
+    var paramText = $stateParams.text || 'test단계';
+    var paramStart = $stateParams.start;
+    var paramEnd = $stateParams.end;
+
+    if (!paramStart || !paramEnd) {
+        var start = new Date();
+        start.setDate(1);
+        var end = start.getTime() + 5 * 7 * 24 * 60 * 60 * 1000;
+
+        $state.go('scheduleCb', {
+            start: start.getTime(),
+            end: end
+        }, {
+            inherit: false
+        });
+        return;
+    }
+
     function updateRange(startDate, endDate) {
+        console.log(startDate, endDate);
         if (startDate < endDate) {
             scheduler.setCurrentView(startDate);
             var diff = (endDate - startDate) / (1000 * 60 * 60 * 24);
             scheduler['matrix'].timeline.x_size = Math.ceil(diff);
-            scheduler['update_view']();
+
+            //            scheduler.update_view();
+            scheduler.updateView();
             return true;
         }
         return false;
@@ -62,11 +86,6 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
         }];
     $scope.formItems = formItems;
 
-    var paramProject = $stateParams.project || '/project/98';
-    var paramGrouping = $stateParams.grouping || 'project';
-    var paramType = $stateParams.type || 'test구분';
-    var paramText = $stateParams.text || 'test단계';
-
     $codeBeamer.getTasks({
         projectUri: paramProject
     }, function (err, trackerUriList, tasks) {
@@ -112,7 +131,6 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
             }
         });
 
-        scheduler.deleteAllSections();
         sections.forEach(function (s) {
             s.children = [];
             scheduler.addSection(s, null);
@@ -126,12 +144,9 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
         scheduler.parse(events, 'json');
         scheduler.openAllSections();
 
-        scheduler.setCurrentView(new Date());
         var schState = scheduler.getState();
-
         $scope.start_date = schState.min_date;
         $scope.end_date = schState.max_date;
-
         $scope.onEventClicked = function (scheduler, id) {
             console.log('onEventClicked: ' + id);
             var event = scheduler.getEvent(id);
