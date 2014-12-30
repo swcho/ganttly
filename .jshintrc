@@ -38,6 +38,7 @@
         "dhtmlx": true,
         "dhtmlXWindows": true,
         "scheduler": true,
-        "dateFormat": true
+        "dateFormat": true,
+        "Http": true
     }
 }
