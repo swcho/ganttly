@@ -143,6 +143,7 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
         });
         scheduler.parse(events, 'json');
         scheduler.openAllSections();
+        updateRange(new Date(parseInt(paramStart, 10)), new Date(parseInt(paramEnd, 10)));
 
         var schState = scheduler.getState();
         $scope.start_date = schState.min_date;

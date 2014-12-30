@@ -22,6 +22,12 @@
     },
     "dhtmlxscheduler/dhtmlxscheduler.d.ts": {
       "commit": "1fb0d8c3e30156e69a86271d0532d68d71e0735c"
+    },
+    "rest/rest.d.ts": {
+      "commit": "a12472597c94a159811c61d41419d55400e6055a"
+    },
+    "when/when.d.ts": {
+      "commit": "a12472597c94a159811c61d41419d55400e6055a"
     }
   }
 }

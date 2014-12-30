@@ -5,7 +5,7 @@
 /// <reference path="../../service/codeBeamer.ts"/>
 
 declare var dhtmlXWindows;
-declare var dateFormat
+declare var dateFormat;
 
 angular.module('ganttly').controller('ScheduleCbCtrl', function (
     $scope, $state, $stateParams, $calendar, $codeBeamer: cb.ICodeBeamer) {
@@ -149,6 +149,7 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function (
         });
         scheduler.parse(events, 'json');
         scheduler.openAllSections();
+        updateRange(new Date(parseInt(paramStart, 10)), new Date(parseInt(paramEnd, 10)));
 
         var schState = scheduler.getState();
         $scope.start_date = schState.min_date;
