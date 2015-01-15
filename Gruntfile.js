@@ -196,7 +196,7 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('build', ['jshint', 'clean:before', 'less', 'dom_munger', 'ngtemplates', 'cssmin', 'concat', 'ngmin', 'uglify', 'copy', 'htmlmin', 'imagemin', 'clean:after']);
-    grunt.registerTask('serve', ['dom_munger:read', 'jshint', 'connect', 'watch']);
+    grunt.registerTask('serve', ['dom_munger:read', 'connect', 'watch']);
     grunt.registerTask('test', ['dom_munger:read', 'karma:all_tests']);
 
     grunt.event.on('watch', function (action, filepath) {
@@ -207,8 +207,8 @@ module.exports = function (grunt) {
         if (filepath.lastIndexOf('.js') !== -1 && filepath.lastIndexOf('.js') === filepath.length - 3) {
 
             //lint the changed js file
-            grunt.config('jshint.main.src', filepath);
-            tasksToRun.push('jshint');
+//            grunt.config('jshint.main.src', filepath);
+//            tasksToRun.push('jshint');
 
             //find the appropriate unit test for the changed file
             var spec = filepath;

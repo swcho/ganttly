@@ -78,6 +78,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                 if (aProgress) {
                     aProgress(msg);
                 }
+                console.info(msg);
             }
 
             var baseUri = '';
@@ -190,6 +191,11 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         get(uri, null, function (err, item) {
                             if (err) {
                                 cb(err);
+                                return;
+                            }
+
+                            if (!item.tracker) {
+                                cb();
                                 return;
                             }
 
