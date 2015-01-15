@@ -172,7 +172,7 @@ module Cb {
 
     function send(aMethod: string, aUrl, aParam, aCb) {
         var url = host + aUrl;
-        console.log(aMethod + ': ' + url);
+        console.info(aMethod + ': ' + url);
         var options: any  = {};
         options.url = url;
         if (aParam) {
@@ -246,9 +246,13 @@ module Cb {
             super('project');
         }
 
-//        getPageContainsString(aPageNo, aStr, aCb) {
-//            this.getPage(aPageNo, { filter: aStr }, aCb);
-//        }
+        getPage(aPageNo: number, aStr: string, aCb: (err, projectsPage: TProjectsPage) => void) {
+            if (aStr.length) {
+                aStr = aStr + '*';
+            }
+            getPageContainsString('/projects', aPageNo, aStr, aCb);
+        }
+
     }
 
     export class CTrackerTypeApi extends CRestApi {
