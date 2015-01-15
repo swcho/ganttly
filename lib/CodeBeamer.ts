@@ -134,6 +134,20 @@ module Cb {
         EWiki,
     }
 
+    export interface TPage {
+        page: number;
+        size: number;
+        total: number;
+    }
+
+    export interface TItemsPage extends TPage {
+        items: any[];
+    }
+
+    export interface TProjectsPage extends TPage {
+        projects: TProject[];
+    }
+
     var host = gConfig.cbBaseUrl + '/rest';
     var cbUser = gConfig.cbUser;
     var pass = gConfig.cbPass;
@@ -145,6 +159,13 @@ module Cb {
         credentials = btoa(cbUser + ':' + pass);
     }
 
+    function encodeQueryData(data) {
+        var ret = [];
+        for (var d in data)
+            ret.push(encodeURIComponent(d) + "=" + encodeURIComponent(data[d]));
+        return ret.join("&");
+    }
+
     function send(aMethod: string, aUrl, aParam, aCb) {
         var url = host + aUrl;
         console.log(aMethod + ': ' + url);
@@ -154,7 +175,7 @@ module Cb {
             if (aMethod === 'POST' || aMethod === 'PUT') {
                 options.body = aParam;
             } else {
-                options.params = aParam;
+                options.url = url + '?' + encodeQueryData(aParam);
             }
         }
         if (withCredentials) {
@@ -188,6 +209,10 @@ module Cb {
         getAll(aCb) {
             send('GET', '/' + this._base + 's', null, aCb);
         }
+
+        getPage(aPageNo, aParam, aCb) {
+            send('GET', '/' + this._base + '/' + aPageNo, aParam, aCb);
+        }
     }
 
     export class CUserApi extends CRestApi {
@@ -206,6 +231,10 @@ module Cb {
         constructor() {
             super('project');
         }
+
+        getPageContainsString(aPageNo, aStr, aCb) {
+            this.getPage(aPageNo, { filter: aStr }, aCb);
+        }
     }
 
     export class CTrackerTypeApi extends CRestApi {
@@ -217,6 +246,32 @@ module Cb {
     export class CTrackerApi extends CRestApi {
         constructor() {
             super('tracker');
+        }
+
+        /**
+         * Get a list of all trackers in a project
+         * @param aProjectUri
+         * @param aTypes
+         */
+
+        getTrackers(aProjectUri: string, aTypes: string[], aCb: (err, trackers: TTracker[]) => void) {
+            var typeList = aTypes.join(',');
+            var param = null;
+            if (typeList.length) {
+                param = { type: typeList };
+            }
+            send('GET', aProjectUri + '/trackers', param, aCb);
+        }
+
+        getTaskTrackers(aProjectUri: string, aCb: (err, trackers: TTracker[]) => void) {
+            this.getTrackers(aProjectUri, ['Task'], aCb);
+        }
+
+        /**
+         * Get a page of tracker items
+         */
+        getItemsPage(aTrackerUri: string, aPage: number, aCb: (err, items: TItemsPage) => void) {
+            send('GET', aTrackerUri + '/items/page/' + aPage, null, aCb);
         }
     }
 
@@ -297,10 +352,16 @@ module CbUtils {
 //        schemaToTypeScript('Tracker', resp);
 //    });
 
-    Cb.trackerType.getAll(function(err, resp) {
-        console.log(resp);
-    });
+//    Cb.trackerType.getAll(function(err, resp) {
+//        console.log(resp);
+//    });
 
+//    Cb.tracker.getTaskTrackers('/project/81', function(err, trackers) {
+//        console.log(trackers);
+//    });
 
+//    Cb.tracker.getItemsPage('/tracker/3802', 1, function(err, items) {
+//        console.log(items);
+//    });
 
 }

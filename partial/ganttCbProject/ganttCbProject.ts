@@ -3,6 +3,7 @@
 /// <reference path="../../directive/dhxForm/dhxForm.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
+/// <reference path="../../lib/CodeBeamer.ts"/>
 
 declare var dhtmlXWindows;
 
