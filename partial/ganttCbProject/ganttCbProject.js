@@ -18,6 +18,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     var groupByProject = $stateParams.groupByProject === 'true';
     var taskTrackerUriList;
 
+    /**
+    * Project & User selections
+    *
+    */
     $scope.cbUserItems = [];
     $scope.cbUserFilter = function (text, cb) {
         Cb.user.getPage(1, text, function (err, usersPage) {
@@ -626,6 +630,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     //        }
     //    });
     if (!userUri && !projectUri) {
+        //        CbUtils.getTasksByProject('/project/3', function(err, resp) {
+        //            gantt.clearAll();
+        //            gantt.parse(CbUtils.convertCbTasksToDhxData(resp), "json");
+        //        });
         return;
     }
 

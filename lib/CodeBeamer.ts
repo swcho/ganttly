@@ -1,6 +1,7 @@
 
 
 /// <reference path='../typings/tsd.d.ts'/>
+/// <reference path="../directive/dhxGantt/dhxGantt.ts"/>
 
 declare var Http;
 declare var gConfig;
@@ -132,6 +133,65 @@ module Cb {
         EPlain,
         EHtml,
         EWiki,
+    }
+
+    /**
+     *
+     */
+
+    export interface TEnum {
+        flags: number;
+        id: number;
+        name: string;
+        style?: string; // color code
+    }
+
+    export interface TItem {
+        uri: string;
+        name: string;
+    }
+
+    export interface TTask extends TItem {
+        descFormat?: string;
+        description?: string;
+        estimatedMillis?: number;
+        modifiedAt?: string; // Date
+        modifier?: TUser;
+        priority?: TEnum;
+        startDate?: string; // Date
+        endDate?: string; // Date
+        status?: TEnum;
+        submittedAt?: string; // Date
+        submitter?: TUser;
+        tracker?: TTracker;
+        version?: number;
+        parent?: TItem;
+        assignedTo?: TItem[]; // users
+        associations?: TAssociation[];
+        spentEstimatedHours?: number;
+        spentMillis?: number;
+    }
+
+    export interface TRelease extends TItem {
+        parent?: TItem;
+        tracker?: TItem;
+        status?: TEnum;
+        plannedReleaseDate?: string; // Date
+        submittedAt?: string; // Date
+        submitter?: TUser;
+        modifiedAt?: string; // Date
+        modifier?: TUser;
+        description?: string;
+        descFormat?: string;
+    }
+
+    export interface TAssociation extends TItem {
+        from: TItem; // uri
+        to: TItem; // uri
+        type: any; // uri
+        propagatingSuspects: boolean;
+        description: string;
+        descFormat: string;
     }
 
     export interface TPage {
@@ -285,6 +345,10 @@ module Cb {
             this.getTrackers(aProjectUri, ['Task'], aCb);
         }
 
+        getItems(aTrackerUri: string, aCb: (err, itemsPage: any[]) => void) {
+            send('GET', aTrackerUri + '/items', null, aCb);
+        }
+
         /**
          * Get a page of tracker items
          */
@@ -295,7 +359,7 @@ module Cb {
 
     export class CTrackerItemApi extends CRestApi {
         constructor() {
-            super('tracker/type/1');
+            super(null);
         }
     }
 
@@ -386,4 +450,101 @@ module CbUtils {
 //        console.log(items);
 //    });
 
+
+    export function getTasksByTrackers(aTrackers: Cb.TTracker[], aCb: (err, tasks: Cb.TTask[]) => void) {
+        aTrackers = aTrackers || [];
+        var p = [];
+        var tasks = [];
+        aTrackers.forEach(function(tracker) {
+            if (tracker.type.name == 'Task') {
+                p.push(function(done) {
+                    Cb.tracker.getItems(tracker.uri, function(err, items) {
+                        tasks = tasks.concat(items);
+                        done(err);
+                    });
+                });
+            }
+        });
+
+        async.parallel(p, function(err) {
+            aCb(err, tasks);
+        });
+    }
+
+    export function getTasksByProject(aProjectUri: string, aCb: (err, tasks: Cb.TTask[]) => void) {
+        var s = [];
+        var task_trackers;
+        var result_tasks;
+        s.push(function(done) {
+            Cb.tracker.getTaskTrackers(aProjectUri, function(err, trackers) {
+                task_trackers = trackers;
+                done(err);
+            });
+        });
+        s.push(function(done) {
+            getTasksByTrackers(task_trackers, function(err, tasks) {
+                result_tasks = tasks;
+                done(err);
+            });
+        });
+        async.series(s, function(err) {
+            aCb(err, result_tasks);
+        });
+    }
+
+    var unitDay = 1000 * 60 * 60 * 24;
+    var unitHour = 1000 * 60 * 60;
+    var unitWorkingDay = gConfig.workingHours ? gConfig.workingHours * unitHour: unitDay;
+    var holidayAwareness = gConfig.holidayAwareness;
+
+    export function covertCbTaskToDhxTask(aCbTask: Cb.TTask, parentUri?: string): dhx.TTask {
+        var dhxTask: dhx.TTask = {
+            id: aCbTask.uri,
+            text: aCbTask.name,
+            start_date: new Date(aCbTask.startDate || aCbTask.modifiedAt),
+            progress: aCbTask.spentEstimatedHours || 0,
+            priority: aCbTask.priority ? aCbTask.priority.name: 'Noraml',
+            status: aCbTask.status ? aCbTask.status.name: 'None',
+            estimatedMillis: aCbTask.estimatedMillis,
+            estimatedDays: Math.ceil(aCbTask.estimatedMillis / unitWorkingDay)
+        };
+
+        var userNames = [];
+        var userIdList = [];
+        if (aCbTask.assignedTo) {
+            aCbTask.assignedTo.forEach(function(user) {
+                userNames.push(user.name);
+                userIdList.push(user.uri);
+            });
+        }
+        dhxTask.user = userNames.join(',');
+        dhxTask.userIdList = userIdList;
+
+        if (aCbTask.endDate) {
+            dhxTask.end_date = new Date(aCbTask.endDate);
+        }
+
+        // This is required to display adjustment icon
+        if (!dhxTask.duration || dhxTask.duration < 1) {
+            dhxTask.duration = 1;
+        }
+
+        if (parentUri) {
+            dhxTask.parent = parentUri;
+        } else if (aCbTask.parent) {
+            dhxTask.parent = aCbTask.parent.uri;
+        }
+        return dhxTask;
+    }
+
+    export function convertCbTasksToDhxData(aCbTasks: Cb.TTask[]): dhx.TData {
+        var dhxTasks = [];
+        aCbTasks.forEach(function(cbTask) {
+            dhxTasks.push(covertCbTaskToDhxTask(cbTask));
+        });
+        return {
+            data: dhxTasks,
+            links: []
+        };
+    }
 }

@@ -32,7 +32,7 @@ declare module dhx {
     }
 
     interface TData {
-        tasks: TTask[];
+        data: TTask[];
         links: TLink[];
     }
 
