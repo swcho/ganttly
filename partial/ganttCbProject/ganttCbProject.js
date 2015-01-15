@@ -20,20 +20,20 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
     $scope.cbUserItems = [];
     $scope.cbUserFilter = function (text, cb) {
-        console.log(text);
-        $codeBeamer.getUserList({
-            page: 1,
-            filter: text
-        }, function (err, resp) {
+        Cb.user.getPage(1, text, function (err, usersPage) {
             if (err) {
                 return;
             }
 
             var items = [];
-            resp.users.forEach(function (user) {
+            console.log(usersPage);
+            var reName = /^(.*)\(/;
+            usersPage.users.forEach(function (user) {
+                var match = reName.exec(user.firstName);
+                var name = match ? match[1] + '(' + user.name + ')' : user.name;
                 items.push({
                     id: user.uri,
-                    text: user.name
+                    text: name
                 });
             });
             cb(items);

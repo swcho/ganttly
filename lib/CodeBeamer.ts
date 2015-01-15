@@ -148,6 +148,10 @@ module Cb {
         projects: TProject[];
     }
 
+    export interface TUsersPage extends TPage {
+        users: TUser[];
+    }
+
     var host = gConfig.cbBaseUrl + '/rest';
     var cbUser = gConfig.cbUser;
     var pass = gConfig.cbPass;
@@ -194,6 +198,12 @@ module Cb {
         });
     }
 
+    function getPageContainsString(aUri: string, aPageNo: number, aStr: string, aCb: (err, resp) => void) {
+        send('GET', aUri + '/page/' + aPageNo, {
+            filter: aStr
+        }, aCb);
+    }
+
     export class CRestApi {
 
         private _base: string;
@@ -206,18 +216,22 @@ module Cb {
             send('GET', '/' + this._base + '/schema', null, aCb);
         }
 
-        getAll(aCb) {
-            send('GET', '/' + this._base + 's', null, aCb);
-        }
-
-        getPage(aPageNo, aParam, aCb) {
-            send('GET', '/' + this._base + '/' + aPageNo, aParam, aCb);
-        }
+//        getAll(aCb) {
+//            send('GET', '/' + this._base + 's', null, aCb);
+//        }
+//
+//        getPage(aPageNo, aParam, aCb) {
+//            send('GET', '/' + this._base + 's/page/' + aPageNo, aParam, aCb);
+//        }
     }
 
     export class CUserApi extends CRestApi {
         constructor() {
             super('user');
+        }
+
+        getPage(aPageNo: number, aStr: string, aCb: (err, usersPage: TUsersPage) => void) {
+            getPageContainsString('/users', aPageNo, aStr, aCb);
         }
     }
 
@@ -232,9 +246,9 @@ module Cb {
             super('project');
         }
 
-        getPageContainsString(aPageNo, aStr, aCb) {
-            this.getPage(aPageNo, { filter: aStr }, aCb);
-        }
+//        getPageContainsString(aPageNo, aStr, aCb) {
+//            this.getPage(aPageNo, { filter: aStr }, aCb);
+//        }
     }
 
     export class CTrackerTypeApi extends CRestApi {
@@ -270,7 +284,7 @@ module Cb {
         /**
          * Get a page of tracker items
          */
-        getItemsPage(aTrackerUri: string, aPage: number, aCb: (err, items: TItemsPage) => void) {
+        getItemsPage(aTrackerUri: string, aPage: number, aCb: (err, itemsPage: TItemsPage) => void) {
             send('GET', aTrackerUri + '/items/page/' + aPage, null, aCb);
         }
     }
@@ -336,6 +350,10 @@ module CbUtils {
 //        schemaToTypeScript('User', resp);
 //    });
 //
+//    Cb.user.getPage(1, 'cho', function(err, resp) {
+//        console.log(resp);
+//    });
+
 //    Cb.role.getSchema(function(err, resp) {
 //        schemaToTypeScript('Role', resp);
 //    });
