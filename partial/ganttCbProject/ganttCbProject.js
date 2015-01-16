@@ -76,8 +76,18 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             text: 'By release'
         }];
     $scope.cbGrouping1st = '';
+    var groupTypeById = {
+        'group_by_user': 1 /* ByUser */,
+        'group_by_project': 2 /* ByProject */,
+        'group_by_release': 3 /* BySprint */
+    };
     $scope.setGrouping1st = function (selected) {
         console.log('setGrouping1St: ' + selected);
+        var groupType = groupTypeById[selected];
+        CbUtils.UiUtils.getDhxDataByProject(projectUri, [groupType], function (err, resp) {
+            gantt.clearAll();
+            gantt.parse(resp, "json");
+        });
     };
     $scope.cbGrouping2nd = '';
     $scope.setGrouping2nd = function (selected) {
@@ -516,7 +526,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
     showModal('Getting information...');
 
-    CbUtils.UiUtils.getDhxDataByProject(projectUri, function (err, resp) {
+    CbUtils.UiUtils.getDhxDataByProject(projectUri, [], function (err, resp) {
         gantt.clearAll();
         gantt.parse(resp, "json");
         closeModal();

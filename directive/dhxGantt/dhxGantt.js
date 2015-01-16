@@ -1,5 +1,16 @@
 /// <reference path="../../typings/tsd.d.ts"/>
 
+var dhxDef;
+(function (dhxDef) {
+    (function (TTaskType) {
+        TTaskType[TTaskType["None"] = 0] = "None";
+        TTaskType[TTaskType["User"] = 1] = "User";
+        TTaskType[TTaskType["Project"] = 2] = "Project";
+        TTaskType[TTaskType["Sprint"] = 3] = "Sprint";
+    })(dhxDef.TTaskType || (dhxDef.TTaskType = {}));
+    var TTaskType = dhxDef.TTaskType;
+})(dhxDef || (dhxDef = {}));
+
 var GanttUtils;
 (function (GanttUtils) {
     function setParentOpen(aTask) {

@@ -83,8 +83,18 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         text: 'By release'
     }];
     $scope.cbGrouping1st = '';
+    var groupTypeById = {
+        'group_by_user': CbUtils.TGroupType.ByUser,
+        'group_by_project': CbUtils.TGroupType.ByProject,
+        'group_by_release': CbUtils.TGroupType.BySprint
+    }
     $scope.setGrouping1st = function(selected) {
         console.log('setGrouping1St: ' + selected);
+        var groupType = groupTypeById[selected];
+        CbUtils.UiUtils.getDhxDataByProject(projectUri, [groupType], function(err, resp) {
+            gantt.clearAll();
+            gantt.parse(resp, "json");
+        });
     };
     $scope.cbGrouping2nd = '';
     $scope.setGrouping2nd = function(selected) {
@@ -530,12 +540,12 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     showModal('Getting information...');
 
-    CbUtils.UiUtils.getDhxDataByProject(projectUri, function(err, resp) {
+    CbUtils.UiUtils.getDhxDataByProject(projectUri, [], function(err, resp) {
         gantt.clearAll();
         gantt.parse(resp, "json");
         closeModal();
     });
-    
+
 
     return;
     $codeBeamer.getTasks(param, function(err, trackerUriList: string[], items: cb.TTask[]) {

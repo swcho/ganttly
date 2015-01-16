@@ -5,6 +5,18 @@
 
 declare var dhtmlXMenuObject;
 declare var dhtmlx;
+
+module dhxDef {
+
+    export enum TTaskType {
+        None,
+        User,
+        Project,
+        Sprint
+    }
+
+}
+
 declare module dhx {
 
     interface TTask {
@@ -23,6 +35,7 @@ declare module dhx {
         estimatedDays?: number;
         depends?: string[];
         color?: string;
+        _type?: dhxDef.TTaskType;
     }
 
     interface TLink {
