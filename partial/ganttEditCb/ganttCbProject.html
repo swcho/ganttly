@@ -1,0 +1,50 @@
+<div id="ganttCbProject" style="height:100%; width:100%;" ng-controller="GanttCbProjectCtrl">
+
+    <div id="topPane">
+        <div class="combo_group">
+            <label>프로젝트</label>
+            <div dhx-combo style="width:180px;" class="combo"
+                 dhx-data="cbProjectItems"
+                 dhx-filter="cbProjectFilter"
+                 dhx-selected="cbProjectSelected"
+                 dhx-change="setProject"></div>
+        </div>
+
+        <div class="combo_group">
+            <label>사용자</label>
+            <div dhx-combo style="width:120px;" class="combo"
+                 dhx-data="cbUserItems"
+                 dhx-filter="cbUserFilter"
+                 dhx-selected="cbUserSelected"
+                 dhx-change="setUser"></div>
+        </div>
+
+        <div class="combo_group">
+            <label>기간</label>
+            <div dhx-combo style="width:80px;" class="combo"
+                 dhx-data="cbScaleItems"
+                 dhx-selected="scale"
+                 ></div>
+        </div>
+
+        <div dhx-form style="width:80px;height: 50px;" class="form"
+                dhx-form-items="options"></div>
+
+    </div>
+
+    <div dhx-gantt
+         id="gantt"
+         dhx-data="tasks"
+         dhx-scale="scale"
+         dhx-task-shift-clicked="onTaskShiftClicked"
+         dhx-task-add="onTaskAdd"
+         dhx-task-update="onTaskUpdate"
+         dhx-task-delete="onTaskDelete"
+         dhx-task-opened="onTaskOpened"
+         dhx-task-closed="onTaskClosed"
+         dhx-link-add="onLinkAdd"
+         dhx-link-update="onLinkUpdate"
+         dhx-link-delete="onLinkDelete"
+         dhx-context-menu="contextMenu"
+            ></div>
+</div>

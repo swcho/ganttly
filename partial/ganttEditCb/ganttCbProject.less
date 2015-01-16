@@ -1,0 +1,56 @@
+
+@TOP_PANE_HEIGHT: 60px;
+@TOP_PANE_MARGIN: 4px;
+
+#ganttCbProject {
+  #topPane {
+    position: absolute;
+    left: 0px;
+    height: @TOP_PANE_HEIGHT;
+    width: 100%;
+    z-index: 1;
+    margin: @TOP_PANE_MARGIN;
+
+    .combo_group {
+      float: left;
+      label {
+        line-height: @TOP_PANE_HEIGHT/2 - @TOP_PANE_MARGIN;
+        margin: 0px;
+      }
+      .combo {
+        clear: both;
+      }
+      margin-right: 4px;
+    }
+  }
+  #gantt {
+    height: 100%;
+    width: 100%;
+    padding-top: @TOP_PANE_HEIGHT;
+  }
+}
+
+.today {
+  &.gantt_marker {
+    background-color: rgba(0, 255, 0, 0.4);
+    .gantt_marker_content {
+
+    }
+  }
+}
+.release {
+  &.gantt_marker {
+    background-color: rgba(255, 0, 0, 0.4);
+    .gantt_marker_content {
+
+    }
+  }
+}
+.sprint {
+  &.gantt_marker {
+    background-color: rgba(0, 0, 255, 0.4);
+    .gantt_marker_content {
+
+    }
+  }
+}

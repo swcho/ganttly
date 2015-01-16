@@ -1,36 +1,30 @@
-
 /// <reference path="../../directive/dhxGantt/dhxGantt.ts"/>
 /// <reference path="../../directive/dhxForm/dhxForm.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
 /// <reference path="../../lib/CodeBeamer.ts"/>
 
-declare var dhtmlXWindows;
-
-angular.module('ganttly').controller('GanttCbProjectCtrl', function (
-    $scope, $state, $stateParams, $calendar, $codeBeamer: cb.ICodeBeamer) {
-
+angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $state, $stateParams, $calendar, $codeBeamer) {
     console.log($stateParams);
 
     var unitDay = 1000 * 60 * 60 * 24;
     var unitHour = 1000 * 60 * 60;
-    var unitWorkingDay = gConfig.workingHours ? gConfig.workingHours * unitHour: unitDay;
+    var unitWorkingDay = gConfig.workingHours ? gConfig.workingHours * unitHour : unitDay;
     var holidayAwareness = gConfig.holidayAwareness;
 
     var userUri = $stateParams.user;
     var projectUri = $stateParams.project;
     var groupByUser = $stateParams.groupByUser === 'true';
     var groupByProject = $stateParams.groupByProject === 'true';
-    var taskTrackerUriList: string[];
-
+    var taskTrackerUriList;
 
     /**
-     * Project & User selections
-     *
-     */
+    * Project & User selections
+    *
+    */
     $scope.cbUserItems = [];
-    $scope.cbUserFilter = function(text, cb) {
-        Cb.user.getPage(1, text, function(err, usersPage) {
+    $scope.cbUserFilter = function (text, cb) {
+        Cb.user.getPage(1, text, function (err, usersPage) {
             if (err) {
                 return;
             }
@@ -38,9 +32,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             var items = [];
             console.log(usersPage);
             var reName = /^(.*)\(/;
-            usersPage.users.forEach(function(user) {
+            usersPage.users.forEach(function (user) {
                 var match = reName.exec(user.firstName);
-                var name = match ? match[1] + '(' + user.name + ')': user.name;
+                var name = match ? match[1] + '(' + user.name + ')' : user.name;
                 items.push({
                     id: user.uri,
                     text: name
@@ -51,13 +45,13 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     };
 
     function getProjectList(text, cb) {
-        Cb.project.getPage(1, text, function(err, projectsPage) {
+        Cb.project.getPage(1, text, function (err, projectsPage) {
             if (err) {
                 return;
             }
 
             var items = [];
-            projectsPage.projects.forEach(function(project) {
+            projectsPage.projects.forEach(function (project) {
                 items.push({
                     id: project.uri,
                     text: project.name
@@ -68,87 +62,86 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     }
 
     $scope.cbProjectItems = [];
-    $scope.cbProjectFilter = function(text, cb) {
+    $scope.cbProjectFilter = function (text, cb) {
         getProjectList(text, cb);
     };
-    getProjectList('', function(items) {
+    getProjectList('', function (items) {
         $scope.cbProjectItems = items;
         $scope.$apply();
     });
 
-    $scope.cbScaleItems = [{
-        id: 'Day',
-        text: '일'
-    }, {
-        id: 'Week',
-        text: '주'
-    }, {
-        id: 'Month',
-        text: '월'
-    }, {
-        id: 'Year',
-        text: '년'
-    }];
+    $scope.cbScaleItems = [
+        {
+            id: 'Day',
+            text: '일'
+        }, {
+            id: 'Week',
+            text: '주'
+        }, {
+            id: 'Month',
+            text: '월'
+        }, {
+            id: 'Year',
+            text: '년'
+        }];
 
     $scope.scale = 'Week';
     $scope.tasks = {
-        data: [
-        ],
-        links: [
-        ]
+        data: [],
+        links: []
     };
 
-    var options: dhx.TFormItem[] = [];
+    var options = [];
     if (projectUri) {
         options = [{
-            name: 'by_user',
-            type: 'checkbox',
-            label: 'By user',
-            checked: groupByUser,
-            eventHandlers: {
-                onChange: function(value, state) {
-                    if (state === groupByUser) {
-                        return;
-                    }
+                name: 'by_user',
+                type: 'checkbox',
+                label: 'By user',
+                checked: groupByUser,
+                eventHandlers: {
+                    onChange: function (value, state) {
+                        if (state === groupByUser) {
+                            return;
+                        }
 
-                    console.log('****** by_user');
-                    $state.go('ganttCbProject', {
-                        project: projectUri,
-                        groupByUser: state ? 'true': 'false'
-                    }, {
-                        inherit: false
-                    });
+                        console.log('****** by_user');
+                        $state.go('ganttCbProject', {
+                            project: projectUri,
+                            groupByUser: state ? 'true' : 'false'
+                        }, {
+                            inherit: false
+                        });
+                    }
                 }
-            }
-        }];
+            }];
     }
     if (userUri) {
         options = [{
-            name: 'by_project',
-            type: 'checkbox',
-            label: 'By project',
-            checked: groupByProject,
-            eventHandlers: {
-                onChange: function(value, state) {
-                    if (state === groupByProject) {
-                        return;
-                    }
+                name: 'by_project',
+                type: 'checkbox',
+                label: 'By project',
+                checked: groupByProject,
+                eventHandlers: {
+                    onChange: function (value, state) {
+                        if (state === groupByProject) {
+                            return;
+                        }
 
-                    console.log('****** by_project');
-                    $state.go('ganttCbProject', {
-                        user: userUri,
-                        groupByProject: state ? 'true': 'false'
-                    }, {
-                        inherit: false
-                    });
+                        console.log('****** by_project');
+                        $state.go('ganttCbProject', {
+                            user: userUri,
+                            groupByProject: state ? 'true' : 'false'
+                        }, {
+                            inherit: false
+                        });
+                    }
                 }
-            }
-        }];
+            }];
     }
 
     $scope.options = options;
 
-    $scope.setUser = function(uri) {
+    $scope.setUser = function (uri) {
         if (uri === 'reset') {
             uri = null;
         }
@@ -163,7 +156,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         });
     };
 
-    $scope.setProject = function(uri) {
+    $scope.setProject = function (uri) {
         if (uri === projectUri) {
             return;
         }
@@ -175,10 +168,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         });
     };
 
-    function findTask(id: string): dhx.TTask {
-        var t: dhx.TTask = null;
-        var i, len=$scope.tasks.data.length;
-        for (i=0; i<len; i++) {
+    function findTask(id) {
+        var t = null;
+        var i, len = $scope.tasks.data.length;
+        for (i = 0; i < len; i++) {
             t = $scope.tasks.data[i];
             if (t.id === id) {
                 return t;
@@ -187,10 +180,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         return t;
     }
 
-    function updateTask(task: dhx.TTask) {
-        var t: dhx.TTask = null;
-        var i, len=$scope.tasks.data.length;
-        for (i=0; i<len; i++) {
+    function updateTask(task) {
+        var t = null;
+        var i, len = $scope.tasks.data.length;
+        for (i = 0; i < len; i++) {
             t = $scope.tasks.data[i];
             if (t.id === task.id) {
                 $scope.tasks.data[i] = task;
@@ -200,7 +193,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         return false;
     }
 
-    function setParentOpen(task: dhx.TTask) {
+    function setParentOpen(task) {
         if (task.parent) {
             var parentTask = findTask(task.parent);
             if (parentTask) {
@@ -210,13 +203,13 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     }
 
-    function doDependsTasks(aTask: dhx.TTask, aCb, aLoopFunc: (aPrecedentTask: dhx.TTask, aTask: dhx.TTask, aCb) => void) {
+    function doDependsTasks(aTask, aCb, aLoopFunc) {
         var series = [];
         if (aTask.depends) {
-            aTask.depends.forEach(function(taskId: string) {
-                var task =gantt.getTask(taskId);
-                series.push(function(cb) {
-                    aLoopFunc(aTask, task, function(err) {
+            aTask.depends.forEach(function (taskId) {
+                var task = gantt.getTask(taskId);
+                series.push(function (cb) {
+                    aLoopFunc(aTask, task, function (err) {
                         if (err) {
                             cb(err);
                             return;
@@ -226,20 +219,20 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                 });
             });
         }
-        async.series(series, function(err) {
+        async.series(series, function (err) {
             aCb(err);
         });
     }
 
-    function covertCbTaskToDhxTask(cbTask: cb.TTask, parentUri?: string): dhx.TTask {
+    function covertCbTaskToDhxTask(cbTask, parentUri) {
         console.log(cbTask);
-        var task: dhx.TTask = {
+        var task = {
             id: cbTask.uri,
             text: cbTask.name,
             start_date: new Date(cbTask.startDate || cbTask.modifiedAt),
             progress: cbTask.spentEstimatedHours || 0,
-            priority: cbTask.priority ? cbTask.priority.name: 'Noraml',
-            status: cbTask.status ? cbTask.status.name: 'None',
+            priority: cbTask.priority ? cbTask.priority.name : 'Noraml',
+            status: cbTask.status ? cbTask.status.name : 'None',
             estimatedMillis: cbTask.estimatedMillis,
             estimatedDays: Math.ceil(cbTask.estimatedMillis / unitWorkingDay)
         };
@@ -247,7 +240,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         var userNames = [];
         var userIdList = [];
         if (cbTask.assignedTo) {
-            cbTask.assignedTo.forEach(function(user) {
+            cbTask.assignedTo.forEach(function (user) {
                 userNames.push(user.name);
                 userIdList.push(user.uri);
             });
@@ -259,10 +252,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             task.end_date = new Date(cbTask.endDate);
         }
 
-//        if (cbTask.estimatedMillis) {
-//            task.duration = (cbTask.estimatedMillis || 0) / gConfig.workingHours * unitHour;
-//        }
-
+        //        if (cbTask.estimatedMillis) {
+        //            task.duration = (cbTask.estimatedMillis || 0) / gConfig.workingHours * unitHour;
+        //        }
         // This is required to display adjustment icon
         if (!task.duration || task.duration < 1) {
             task.duration = 1;
@@ -277,7 +269,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     var hdxWins = new dhtmlXWindows();
     hdxWins.attachViewportTo('ganttCbProject');
     var dialog;
-    function showModal(aMessage: string) {
+    function showModal(aMessage) {
         dialog = hdxWins.createWindow({
             id: 'progress',
             left: 20,
@@ -291,33 +283,29 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         });
         dialog.setModal(true);
         dialog.progressOn();
-        dialog.attachHTMLString('<p>' + aMessage +'</p>');
+        dialog.attachHTMLString('<p>' + aMessage + '</p>');
         dialog.show();
     }
     function closeModal() {
         dialog.close();
     }
 
-    var contextWin: any = (function() {
-
+    var contextWin = (function () {
         var wins = {};
-        setInterval(function() {
+        setInterval(function () {
             var key, winInfo;
             for (key in wins) {
                 winInfo = wins[key];
                 if (!winInfo.win.closed) {
-                    if (!winInfo.geo ||
-                        winInfo.geo.x !== winInfo.win.screenX ||
-                        winInfo.geo.y !== winInfo.win.screenY ||
-                        winInfo.geo.width !== winInfo.win.outerWidth ||
-                        winInfo.geo.height !== winInfo.win.outerHeight) {
+                    if (!winInfo.geo || winInfo.geo.x !== winInfo.win.screenX || winInfo.geo.y !== winInfo.win.screenY || winInfo.geo.width !== winInfo.win.outerWidth || winInfo.geo.height !== winInfo.win.outerHeight) {
                         winInfo.geo = {
                             x: winInfo.win.screenX,
                             y: winInfo.win.screenY,
                             width: winInfo.win.outerWidth,
                             height: winInfo.win.outerHeight
                         };
-//                        console.log(winInfo.geo);
+
+                        //                        console.log(winInfo.geo);
                         window.localStorage.setItem('contextWin.' + key, JSON.stringify(winInfo.geo));
                     }
                 }
@@ -325,21 +313,21 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }, 250);
 
         return {
-            show: function(aName, aUrl) {
-//                console.log('contextWin.show: [' + aName + ']' + aUrl);
+            show: function (aName, aUrl) {
+                //                console.log('contextWin.show: [' + aName + ']' + aUrl);
                 if (wins[aName] && !wins[aName].win.closed) {
                     wins[aName].win.location.href = 'about:blank';
                     wins[aName].win.location.href = aUrl;
                 } else {
                     var prevGeo;
-                    try {
+                    try  {
                         prevGeo = JSON.parse(window.localStorage.getItem('contextWin.' + aName));
                     } catch (e) {
                     }
                     var width = 1280;
                     var height = 720;
-                    var x = (screen.width - width)/2;
-                    var y = (screen.height - height)/2;
+                    var x = (screen.width - width) / 2;
+                    var y = (screen.height - height) / 2;
                     if (prevGeo) {
                         width = prevGeo.width;
                         height = prevGeo.height;
@@ -347,11 +335,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                         y = prevGeo.y;
                     }
                     var params = [
-                            'width=' + width,
-                            'height=' + height,
-                        'fullscreen=yes' // only works in IE, but here for completeness
+                        'width=' + width,
+                        'height=' + height,
+                        'fullscreen=yes'
                     ].join(',');
-                    var win: Window = open(aUrl, null, params);
+                    var win = open(aUrl, null, params);
                     win.moveTo(x, y);
                     win.resizeTo(width, height);
                     wins[aName] = {
@@ -362,23 +350,23 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         };
     }());
 
-    function get_holiday_awared_task(aTask: dhx.TTask, aMode: string): cb.TTask {
-        var holidayAwared = holidayAwareness? $calendar.getStartAndEndDate(aTask.start_date, aTask.estimatedMillis): {
+    function get_holiday_awared_task(aTask, aMode) {
+        var holidayAwared = holidayAwareness ? $calendar.getStartAndEndDate(aTask.start_date, aTask.estimatedMillis) : {
             start: aTask.start_date,
             end: aTask.end_date
         };
 
-        var task: any = {
+        var task = {
             uri: aTask.id,
             name: aTask.text,
             startDate: holidayAwared.start
         };
-        if (aMode === 'resize') { // by dragging end date only changes end date
+        if (aMode === 'resize') {
             task.endDate = aTask.end_date;
-        } else if (aMode === 'move') { // by dragging task bar, apply holiday awareness by estimatedMillis
+        } else if (aMode === 'move') {
             task.endDate = holidayAwared.end;
-        } else if (aMode === 'progress') { // by dragging progress bar, do nothing
-        } else { // by duration change in light box, apply holiday awareness
+        } else if (aMode === 'progress') {
+        } else {
             task.estimatedMillis = aTask.duration * unitWorkingDay;
             if (holidayAwareness) {
                 task.endDate = $calendar.getStartAndEndDate(aTask.start_date, aTask.duration * unitWorkingDay).end;
@@ -393,14 +381,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     }
 
     /**
-     * Task Add
-     * @param gantt
-     * @param id
-     * @param item
-     */
-    $scope.onTaskAdd = function(gantt, id, item: dhx.TTask) {
+    * Task Add
+    * @param gantt
+    * @param id
+    * @param item
+    */
+    $scope.onTaskAdd = function (gantt, id, item) {
         if (taskTrackerUriList) {
-            var param: cb.TParamCreateTask = {
+            var param = {
                 tracker: taskTrackerUriList[0],
                 name: item.text,
                 startDate: item.start_date,
@@ -419,7 +407,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                     console.log(err);
                     return;
                 }
-//                gantt.changeTaskId(id, resp.uri);
+
+                //                gantt.changeTaskId(id, resp.uri);
                 var task = covertCbTaskToDhxTask(resp, item.parent);
                 $scope.tasks.data.unshift(task);
                 gantt.clearAll();
@@ -429,7 +418,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     };
 
-    $scope.onTaskShiftClicked = function(gantt, id) {
+    $scope.onTaskShiftClicked = function (gantt, id) {
         var match = /\/(\d+)$/.exec(id);
         if (match) {
             contextWin.show('task_details', gConfig.cbBaseUrl + id);
@@ -437,10 +426,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     };
 
-    $scope.onTaskUpdate = function(id, item: dhx.TTask, mode: string) {
+    $scope.onTaskUpdate = function (id, item, mode) {
         var task = get_holiday_awared_task(item, mode);
         showModal("Updating task");
-        $codeBeamer.updateTask(task, function(err, resp) {
+        $codeBeamer.updateTask(task, function (err, resp) {
             if (err) {
                 console.log(err);
                 return;
@@ -451,23 +440,24 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             item.progress = task.progress;
             item.end_date = task.end_date;
             gantt.refreshTask(item.id);
-//            gantt.refreshData();
-//            gantt.selectTask(task.id);
+
+            //            gantt.refreshData();
+            //            gantt.selectTask(task.id);
             closeModal();
         });
     };
 
-    $scope.onTaskDelete = function(gantt, id, item) {
+    $scope.onTaskDelete = function (gantt, id, item) {
         console.log('onTaskDelete');
-        var i, len=$scope.tasks.data.length, task: dhx.TTask;
-        for (i=0; i<len; i++) {
+        var i, len = $scope.tasks.data.length, task;
+        for (i = 0; i < len; i++) {
             task = $scope.tasks.data[i];
             if (task.id === id) {
                 $scope.tasks.data.splice(i, 1);
                 break;
             }
         }
-        $codeBeamer.deleteTask(id, function(err) {
+        $codeBeamer.deleteTask(id, function (err) {
             if (err) {
                 console.log(err);
                 return;
@@ -476,7 +466,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         });
     };
 
-    $scope.onTaskOpened = function(gantt, id) {
+    $scope.onTaskOpened = function (gantt, id) {
         var task = findTask(id);
         if (task) {
             task.open = true;
@@ -484,7 +474,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         return true;
     };
 
-    $scope.onTaskClosed = function(gantt, id) {
+    $scope.onTaskClosed = function (gantt, id) {
         var task = findTask(id);
         if (task) {
             task.open = false;
@@ -493,19 +483,18 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     };
 
     /**
-     * Link add
-     * @param id
-     * @param item
-     */
-
+    * Link add
+    * @param id
+    * @param item
+    */
     function adjustStartTime(gantt, toId, fromId) {
-        var taskTo: dhx.TTask = gantt.getTask(toId);
-        var taskFrom: dhx.TTask = gantt.getTask(fromId);
+        var taskTo = gantt.getTask(toId);
+        var taskFrom = gantt.getTask(fromId);
         if (taskTo.duration) {
             taskFrom.start_date = new Date(taskTo.start_date.getTime() + taskTo.duration * unitDay);
             taskFrom.end_date = new Date(taskFrom.start_date.getTime() + taskFrom.duration * unitDay);
             gantt.updateTask(fromId);
-            $scope.tasks.links.forEach(function(link) {
+            $scope.tasks.links.forEach(function (link) {
                 if (link.source === fromId) {
                     adjustStartTime(gantt, fromId, link.target);
                 }
@@ -513,15 +502,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     }
 
-    $scope.onLinkAdd = function(gantt, id, item: dhx.TLink) {
+    $scope.onLinkAdd = function (gantt, id, item) {
         console.log(id, item);
         if (item.type === '0') {
-
             showModal("Adding association");
             $codeBeamer.createAssociation({
                 from: item.target,
                 to: item.source
-            }, function(err, association) {
+            }, function (err, association) {
                 if (err) {
                     return;
                 }
@@ -531,7 +519,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                     target: item.target,
                     type: '0'
                 });
-//                adjustStartTime(gantt, item.source, item.target);
+
+                //                adjustStartTime(gantt, item.source, item.target);
                 gantt.refreshData();
                 closeModal();
             });
@@ -541,53 +530,51 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     };
 
-    $scope.onLinkUpdate = function(gantt, id, item) {
+    $scope.onLinkUpdate = function (gantt, id, item) {
         console.log(id);
         console.log(item);
     };
 
-    $scope.onLinkDelete = function(gantt, id, item) {
-        $codeBeamer.deleteAssociation(id, function(err, resp) {
-
+    $scope.onLinkDelete = function (gantt, id, item) {
+        $codeBeamer.deleteAssociation(id, function (err, resp) {
         });
     };
 
     /**
-     * Context menu
-     * @type {{menuItems: {id: string, text: string, cb: (function(dhx.TContextCbParam): undefined)}[]}}
-     */
-    var contextMenu: dhx.TContextMenu = {
-        menuItems: [{
-            id: 'open_task',
-            text: '새창에서 열기',
-            cb: function(param: dhx.TContextCbParam) {
-                var url = param.taskId || param.linkId;
-                var width = 1280;
-                var height = 720;
-                var params = [
-                    'width=' + width,
-                    'height=' + height,
-                    'fullscreen=yes' // only works in IE, but here for completeness
-                ].join(',');
-                var win = open(gConfig.cbBaseUrl + url, null, params);
-                win.moveTo((screen.width - width)/2, (screen.height - height)/2);
-                win.resizeTo(width, height);
-            }
-        }, {
-            id: 'adjust_schedule',
-            text: '연관 작업 일정 조정',
-            cb: function(param: dhx.TContextCbParam) {
-//                console.log(param);
-                var task = gantt.getTask(param.taskId);
-                showModal("Rescheduling tasks");
-                doDependsTasks(task,
-                    function() {
+    * Context menu
+    * @type {{menuItems: {id: string, text: string, cb: (function(dhx.TContextCbParam): undefined)}[]}}
+    */
+    var contextMenu = {
+        menuItems: [
+            {
+                id: 'open_task',
+                text: '새창에서 열기',
+                cb: function (param) {
+                    var url = param.taskId || param.linkId;
+                    var width = 1280;
+                    var height = 720;
+                    var params = [
+                        'width=' + width,
+                        'height=' + height,
+                        'fullscreen=yes'
+                    ].join(',');
+                    var win = open(gConfig.cbBaseUrl + url, null, params);
+                    win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+                    win.resizeTo(width, height);
+                }
+            }, {
+                id: 'adjust_schedule',
+                text: '연관 작업 일정 조정',
+                cb: function (param) {
+                    //                console.log(param);
+                    var task = gantt.getTask(param.taskId);
+                    showModal("Rescheduling tasks");
+                    doDependsTasks(task, function () {
                         closeModal();
-                    },
-                    function(precedentTask: dhx.TTask, task: dhx.TTask, aCb) {
+                    }, function (precedentTask, task, aCb) {
                         task.start_date = precedentTask.end_date;
                         var adjusted_task = get_holiday_awared_task(task, "move");
-                        $codeBeamer.updateTask(adjusted_task, function(err, resp) {
+                        $codeBeamer.updateTask(adjusted_task, function (err, resp) {
                             if (!err) {
                                 var task_from_cb = covertCbTaskToDhxTask(resp, task.parent);
                                 task.start_date = task_from_cb.start_date;
@@ -598,103 +585,100 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                             }
                             aCb(err);
                         });
-                    }
-                );
-            }
-        }, {
-            id: 'open_user_view',
-            text: '사용자 작업 보기',
-            cb: function(param: dhx.TContextCbParam) {
-
-//                var task = gantt.getTask(param.taskId);
-//                console.log(task);
-//                console.log(location);
-
-                if (param.taskId.indexOf('/user') === 0) {
-                    var width = 1280;
-                    var height = 720;
-                    var params = [
+                    });
+                }
+            }, {
+                id: 'open_user_view',
+                text: '사용자 작업 보기',
+                cb: function (param) {
+                    //                var task = gantt.getTask(param.taskId);
+                    //                console.log(task);
+                    //                console.log(location);
+                    if (param.taskId.indexOf('/user') === 0) {
+                        var width = 1280;
+                        var height = 720;
+                        var params = [
                             'width=' + width,
                             'height=' + height,
-                        'fullscreen=yes' // only works in IE, but here for completeness
-                    ].join(',');
+                            'fullscreen=yes'
+                        ].join(',');
 
-                    var win = open(location['origin'] + location.pathname + '/#/ganttCbProject?user=' + param.taskId, null, params);
-                    win.moveTo((screen.width - width)/2, (screen.height - height)/2);
-                    win.resizeTo(width, height);
+                        var win = open(location['origin'] + location.pathname + '/#/ganttCbProject?user=' + param.taskId, null, params);
+                        win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+                        win.resizeTo(width, height);
+                    }
                 }
-            }
-        }]
+            }]
     };
 
     $scope.contextMenu = contextMenu;
 
-//    $codeBeamer.getUserList({
-//        page: 1
-//    }, function(err, resp) {
-//        if (err) {
-//            return;
-//        }
-//        $scope.userList = resp.users;
-//
-//        if (userUri) {
-//            $scope.userList.forEach(function(user: cb.TUser) {
-//                if (user.uri === userUri) {
-//                    $scope.selectedUser = user.name;
-//                }
-//            });
-//        }
-//    });
-
+    //    $codeBeamer.getUserList({
+    //        page: 1
+    //    }, function(err, resp) {
+    //        if (err) {
+    //            return;
+    //        }
+    //        $scope.userList = resp.users;
+    //
+    //        if (userUri) {
+    //            $scope.userList.forEach(function(user: cb.TUser) {
+    //                if (user.uri === userUri) {
+    //                    $scope.selectedUser = user.name;
+    //                }
+    //            });
+    //        }
+    //    });
     if (!userUri && !projectUri) {
         return;
     }
 
     /**
-     * Display Tasks
-     * @type {{}}
-     */
-    var param: cb.TParamGetTask = {};
+    * Display Tasks
+    * @type {{}}
+    */
+    var param = {};
     if (userUri) {
         param.userUri = userUri;
-        $codeBeamer.getByUri(userUri, function(err, resp) {
+        $codeBeamer.getByUri(userUri, function (err, resp) {
             if (err) {
                 return;
             }
-            $scope.cbUserItems = [{
-                id: 'reset',
-                text: '모두'
-            }, {
-                id: resp.uri,
-                text: resp.name
-            }];
+            $scope.cbUserItems = [
+                {
+                    id: 'reset',
+                    text: '모두'
+                }, {
+                    id: resp.uri,
+                    text: resp.name
+                }];
             $scope.cbUserSelected = resp.uri;
-//            $scope.$apply();
+            //            $scope.$apply();
         });
     }
     if (projectUri) {
         param.projectUri = projectUri;
-        $codeBeamer.getByUri(projectUri, function(err, resp) {
+        $codeBeamer.getByUri(projectUri, function (err, resp) {
             if (err) {
                 return;
             }
             $scope.cbProjectItems = [{
-                id: resp.uri,
-                text: resp.name
-            }];
+                    id: resp.uri,
+                    text: resp.name
+                }];
             $scope.cbProjectSelected = resp.uri;
-//            $scope.$apply();
+            //            $scope.$apply();
         });
 
         $codeBeamer.getReleases({
             projectUri: projectUri
-        }, function(err, trackerUriList, resp) {
+        }, function (err, trackerUriList, resp) {
             if (err) {
                 return;
             }
-            resp.forEach(function(release) {
+            resp.forEach(function (release) {
                 console.log(release.name);
-                var date = release.plannedReleaseDate ? new Date(release.plannedReleaseDate): new Date(release.modifiedAt);
+                var date = release.plannedReleaseDate ? new Date(release.plannedReleaseDate) : new Date(release.modifiedAt);
                 var date_to_str = gantt.date.date_to_str(gantt.config.task_date);
                 gantt.addMarker({
                     start_date: date,
@@ -708,14 +692,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     showModal('Getting information...');
 
-    CbUtils.getTasksByProject(projectUri, function(err, resp) {
+    CbUtils.getTasksByProject('/project/3', function(err, resp) {
         gantt.clearAll();
         gantt.parse(CbUtils.convertCbTasksToDhxData(resp), "json");
-        closeModal();
     });
 
     return;
-    $codeBeamer.getTasks(param, function(err, trackerUriList: string[], items: cb.TTask[]) {
+
+    $codeBeamer.getTasks(param, function (err, trackerUriList, items) {
         if (err) {
             console.log(err);
             return;
@@ -723,11 +707,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
         taskTrackerUriList = trackerUriList;
 
-        var taskUris = [], tasks: dhx.TTask[] = [], links: dhx.TLink[] = [];
+        var taskUris = [], tasks = [], links = [];
         var projects = {};
         var assignedUser = {};
 
-        items.forEach(function(item) {
+        items.forEach(function (item) {
             taskUris.push(item.uri);
             tasks.push(covertCbTaskToDhxTask(item));
             if (groupByProject) {
@@ -740,11 +724,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             }
         });
 
-        items.forEach(function(item, i) {
+        items.forEach(function (item, i) {
             if (item.associations) {
-                item.associations.forEach(function (association:cb.TAssociation) {
-                    var indexTo = association.to ? taskUris.indexOf(association.to.uri): -1;
-                    var indexFrom = association.from ? taskUris.indexOf(association.from.uri): -1;
+                item.associations.forEach(function (association) {
+                    var indexTo = association.to ? taskUris.indexOf(association.to.uri) : -1;
+                    var indexFrom = association.from ? taskUris.indexOf(association.from.uri) : -1;
                     if (indexTo !== -1) {
                         if (association.type.name === 'depends') {
                             links.push({
@@ -780,7 +764,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             }
         });
 
-        Object.keys(projects).forEach(function(key) {
+        Object.keys(projects).forEach(function (key) {
             tasks.push({
                 id: projects[key].uri,
                 text: projects[key].name,
@@ -790,7 +774,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
         var assignedUserKeys = Object.keys(assignedUser);
         if (assignedUserKeys.length) {
-            assignedUserKeys.forEach(function(key) {
+            assignedUserKeys.forEach(function (key) {
                 tasks.push({
                     id: assignedUser[key].uri,
                     text: assignedUser[key].name,
@@ -813,10 +797,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         gantt.parse($scope.tasks, "json");
 
         closeModal();
-    }, function(msg) {
+    }, function (msg) {
         dhtmlx.message(msg);
     });
 
     console.log('-------------------------');
-
 });
+//# sourceMappingURL=ganttCbProject.js.map

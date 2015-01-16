@@ -534,6 +534,23 @@ module CbUtils {
         } else if (aCbTask.parent) {
             dhxTask.parent = aCbTask.parent.uri;
         }
+
+        // color
+        console.log(aCbTask);
+        if (aCbTask.status.style) {
+            console.error(aCbTask.status.style);
+            dhxTask.color = aCbTask.status.style;
+        } else {
+            var default_color = {
+                'New': '#b31317',
+                'In progress': '#ffab46',
+                'Partly completed': '',
+                'Completed': '#00a85d',
+                'Suspended': '#00a85d'
+            };
+            dhxTask.color = default_color[aCbTask.status.name];
+        }
+
         return dhxTask;
     }
 

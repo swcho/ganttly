@@ -22,6 +22,7 @@ declare module dhx {
         estimatedMillis?: number;
         estimatedDays?: number;
         depends?: string[];
+        color?: string;
     }
 
     interface TLink {
@@ -90,26 +91,15 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             {name:"add", width: 40 }
         ];
 
+        gantt.config.row_height = 26;
+
+        gantt.config.readonly = true;
+
         // Autosize
 //        gantt.config.autosize = true;
 
         // Set task bar's class by priority
         gantt.templates.task_class  = function(start, end, task){
-            var classes_priority = {
-                'Highest': 'priority_highest',
-                'High': 'priority_high',
-                'Normal': 'priority_normal',
-                'Low': 'priority_low',
-                'Lowest': 'priority_lowest'
-            };
-            var classes_status = {
-                'None': 'status_none',
-                'New': 'status_new',
-                'Suspended': 'status_suspended',
-                'In progress': 'status_in_progress',
-                'Partly completed': 'status_partly_completed',
-                'Completed': 'status_completed'
-            };
             return classes_priority[task.priority] + ' ' + classes_status[task.status];
         };
         gantt.templates.task_row_class = function(start, end, task) {

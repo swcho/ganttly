@@ -630,10 +630,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     //        }
     //    });
     if (!userUri && !projectUri) {
-        //        CbUtils.getTasksByProject('/project/3', function(err, resp) {
-        //            gantt.clearAll();
-        //            gantt.parse(CbUtils.convertCbTasksToDhxData(resp), "json");
-        //        });
         return;
     }
 
@@ -695,6 +691,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     }
 
     showModal('Getting information...');
+
+    CbUtils.getTasksByProject(projectUri, function (err, resp) {
+        gantt.clearAll();
+        gantt.parse(CbUtils.convertCbTasksToDhxData(resp), "json");
+        closeModal();
+    });
+
+    return;
     $codeBeamer.getTasks(param, function (err, trackerUriList, items) {
         if (err) {
             console.log(err);
