@@ -170,6 +170,7 @@ module Cb {
         associations?: TAssociation[];
         spentEstimatedHours?: number;
         spentMillis?: number;
+        _associations: TAssociation[];
     }
 
     export interface TRelease extends TItem {
@@ -293,6 +294,10 @@ module Cb {
         getPage(aPageNo: number, aStr: string, aCb: (err, usersPage: TUsersPage) => void) {
             getPageContainsString('/users', aPageNo, aStr, aCb);
         }
+
+        getByUri(aUserUri: string, aCb: (err, user: TUser) => void) {
+            send('GET', aUserUri, null, aCb);
+        }
     }
 
     export class CRoleApi extends CRestApi {
@@ -363,11 +368,31 @@ module Cb {
         }
     }
 
+    export class CAssociationApi extends CRestApi {
+        constructor() {
+            super(null);
+        }
+
+        getAllAssociation(aItemUri: string, aCb: (err, associations: TAssociation[]) => void) {
+            send('GET', aItemUri + '/associations', {
+                inout: true
+            }, aCb);
+        }
+
+        getAllAssociationByTypes(aItemUri: string, aTypes: string[], aCb: (err, associations: TAssociation[]) => void) {
+            send('GET', aItemUri + '/associations', {
+                type: aTypes.join(','),
+                inout: true
+            }, aCb);
+        }
+    }
+
     export var user = new CUserApi();
     export var role = new CRoleApi();
     export var project = new CProjectApi();
     export var trackerType = new CTrackerTypeApi();
     export var tracker = new CTrackerApi();
+    export var association = new CAssociationApi();
 }
 
 module CbUtils {
@@ -451,7 +476,7 @@ module CbUtils {
 //    });
 
 
-    export function getTasksByTrackers(aTrackers: Cb.TTracker[], aCb: (err, tasks: Cb.TTask[]) => void) {
+    function getTasksByTrackers(aTrackers: Cb.TTracker[], aCb: (err, tasks: Cb.TTask[]) => void) {
         aTrackers = aTrackers || [];
         var p = [];
         var tasks = [];
@@ -471,10 +496,18 @@ module CbUtils {
         });
     }
 
-    export function getTasksByProject(aProjectUri: string, aCb: (err, tasks: Cb.TTask[]) => void) {
+    export interface TTaskMap {
+        [taskUri: string]: Cb.TTask;
+    }
+
+    function getTaskMapAndListByProject(aProjectUri: string, aCb: (err, taskMap: TTaskMap, tasks: Cb.TTask[]) => void) {
+
+        console.log('getTaskMapAndListByProject');
+
         var s = [];
         var task_trackers;
-        var result_tasks;
+        var taskMap: TTaskMap = {};
+        var tasks = [];
         s.push(function(done) {
             Cb.tracker.getTaskTrackers(aProjectUri, function(err, trackers) {
                 task_trackers = trackers;
@@ -482,86 +515,229 @@ module CbUtils {
             });
         });
         s.push(function(done) {
-            getTasksByTrackers(task_trackers, function(err, tasks) {
-                result_tasks = tasks;
+            getTasksByTrackers(task_trackers, function(err, ts) {
+                ts.forEach(function(t) {
+                    taskMap[t.uri] = t;
+                    tasks.push(t);
+                });
                 done(err);
             });
         });
         async.series(s, function(err) {
-            aCb(err, result_tasks);
+            aCb(err, taskMap, tasks);
         });
     }
 
-    var unitDay = 1000 * 60 * 60 * 24;
-    var unitHour = 1000 * 60 * 60;
-    var unitWorkingDay = gConfig.workingHours ? gConfig.workingHours * unitHour: unitDay;
-    var holidayAwareness = gConfig.holidayAwareness;
+    export interface TUserMap {
+        [userUri: string]: Cb.TUser;
+    }
 
-    export function covertCbTaskToDhxTask(aCbTask: Cb.TTask, parentUri?: string): dhx.TTask {
-        var dhxTask: dhx.TTask = {
-            id: aCbTask.uri,
-            text: aCbTask.name,
-            start_date: new Date(aCbTask.startDate || aCbTask.modifiedAt),
-            progress: aCbTask.spentEstimatedHours || 0,
-            priority: aCbTask.priority ? aCbTask.priority.name: 'Noraml',
-            status: aCbTask.status ? aCbTask.status.name: 'None',
-            estimatedMillis: aCbTask.estimatedMillis,
-            estimatedDays: Math.ceil(aCbTask.estimatedMillis / unitWorkingDay)
-        };
+    function getUsersMapFromTasks(aTasks: Cb.TTask[], aCb: (err, users: TUserMap ) => void) {
 
-        var userNames = [];
-        var userIdList = [];
-        if (aCbTask.assignedTo) {
-            aCbTask.assignedTo.forEach(function(user) {
-                userNames.push(user.name);
-                userIdList.push(user.uri);
+        console.log('getUsersMapFromTasks');
+
+        var userMap: TUserMap = {};
+
+        aTasks.forEach(function(task) {
+            if (task.assignedTo) {
+                task.assignedTo.forEach(function(u) {
+                    userMap[u.uri] = null;
+                });
+            }
+        });
+
+        var p = [];
+        Object.keys(userMap).forEach(function(key) {
+            p.push(function(done) {
+                Cb.user.getByUri(key, function(err, user) {
+                    userMap[key] = user;
+                    done(err);
+                });
+            });
+        });
+
+        async.parallel(p, function(err) {
+            aCb(err, userMap);
+        });
+
+    }
+
+    function populateAssociation(aTasks: Cb.TTask[], aCb: (err) => void) {
+
+        console.log('populateAssociation');
+
+        var p = [];
+
+        aTasks.forEach(function(t) {
+            p.push(function(done) {
+                Cb.association.getAllAssociationByTypes(t.uri, ['depends', 'child', 'parent'], function(err, a) {
+                    if (a && a.length) {
+                        t._associations = a;
+                    }
+                    done(err);
+                });
+            });
+        });
+
+        async.parallel(p, function(err) {
+            aCb(err);
+        });
+    }
+
+    export interface TCachedProjectInfo {
+        taskMap: TTaskMap;
+        tasks: Cb.TTask[];
+        userMap: TUserMap;
+    }
+
+    export class CCbCache {
+
+        _cache: { [projectUri: string]: TCachedProjectInfo; } = {};
+
+        constructor() {
+
+        }
+
+        getCachedProjectInfo(aProjectUri: string, aCb: (err, cached: TCachedProjectInfo) => void) {
+
+            console.log('getCachedProjectInfo');
+
+            if (this._cache[aProjectUri]) {
+                aCb(null, this._cache[aProjectUri]);
+                return;
+            }
+
+            var s = [];
+
+            var taskMap: TTaskMap = {};
+            var tasks: Cb.TTask[] = [];
+            s.push(function(done) {
+                getTaskMapAndListByProject(aProjectUri, function(err, tm, ts) {
+                    taskMap = tm;
+                    tasks = ts;
+                    done(err)
+                });
+            });
+
+            s.push(function(done) {
+                populateAssociation(tasks, function(err) {
+                    done(err);
+                });
+            });
+
+            var userMap: TUserMap = {};
+            s.push(function(done) {
+                getUsersMapFromTasks(tasks, function(err, resp) {
+                    userMap = resp;
+                    done(err);
+                });
+            });
+
+            async.series(s, (err) => {
+
+                var ret: TCachedProjectInfo = {
+                    taskMap: taskMap,
+                    tasks: tasks,
+                    userMap: userMap
+                };
+
+                this._cache[aProjectUri] = ret;
+
+                aCb(err, ret);
             });
         }
-        dhxTask.user = userNames.join(',');
-        dhxTask.userIdList = userIdList;
 
-        if (aCbTask.endDate) {
-            dhxTask.end_date = new Date(aCbTask.endDate);
-        }
-
-        // This is required to display adjustment icon
-        if (!dhxTask.duration || dhxTask.duration < 1) {
-            dhxTask.duration = 1;
-        }
-
-        if (parentUri) {
-            dhxTask.parent = parentUri;
-        } else if (aCbTask.parent) {
-            dhxTask.parent = aCbTask.parent.uri;
-        }
-
-        // color
-        console.log(aCbTask);
-        if (aCbTask.status.style) {
-            console.error(aCbTask.status.style);
-            dhxTask.color = aCbTask.status.style;
-        } else {
-            var default_color = {
-                'New': '#b31317',
-                'In progress': '#ffab46',
-                'Partly completed': '',
-                'Completed': '#00a85d',
-                'Suspended': '#00a85d'
-            };
-            dhxTask.color = default_color[aCbTask.status.name];
-        }
-
-        return dhxTask;
     }
 
-    export function convertCbTasksToDhxData(aCbTasks: Cb.TTask[]): dhx.TData {
-        var dhxTasks = [];
-        aCbTasks.forEach(function(cbTask) {
-            dhxTasks.push(covertCbTaskToDhxTask(cbTask));
-        });
-        return {
-            data: dhxTasks,
-            links: []
-        };
+    export var cache = new CCbCache();
+
+    export module UiUtils {
+        var unitDay = 1000 * 60 * 60 * 24;
+        var unitHour = 1000 * 60 * 60;
+        var unitWorkingDay = gConfig.workingHours ? gConfig.workingHours * unitHour: unitDay;
+        var holidayAwareness = gConfig.holidayAwareness;
+        var reName = /^(.*)\(/;
+
+        function getUserName(aUser: Cb.TUser) {
+            console.log(aUser);
+            var match = reName.exec(aUser.firstName);
+            return match ? match[1]: aUser.name;
+        }
+
+        function covertCbTaskToDhxTask(aUserMap: TUserMap, aCbTask: Cb.TTask, parentUri?: string): dhx.TTask {
+            var dhxTask: dhx.TTask = {
+                id: aCbTask.uri,
+                text: aCbTask.name,
+                start_date: new Date(aCbTask.startDate || aCbTask.modifiedAt),
+                progress: aCbTask.spentEstimatedHours || 0,
+                priority: aCbTask.priority ? aCbTask.priority.name: 'Noraml',
+                status: aCbTask.status ? aCbTask.status.name: 'None',
+                estimatedMillis: aCbTask.estimatedMillis,
+                estimatedDays: Math.ceil(aCbTask.estimatedMillis / unitWorkingDay)
+            };
+
+            var userNames = [];
+            var userIdList = [];
+            if (aCbTask.assignedTo) {
+                aCbTask.assignedTo.forEach(function(user) {
+                    userNames.push(getUserName(aUserMap[user.uri]));
+                    userIdList.push(user.uri);
+                });
+            }
+            dhxTask.user = userNames.join(',');
+            dhxTask._userIdList = userIdList;
+
+            if (aCbTask.endDate) {
+                dhxTask.end_date = new Date(aCbTask.endDate);
+            }
+
+            // This is required to display adjustment icon
+            if (!dhxTask.duration || dhxTask.duration < 1) {
+                dhxTask.duration = 1;
+            }
+
+            if (parentUri) {
+                dhxTask.parent = parentUri;
+            } else if (aCbTask.parent) {
+                dhxTask.parent = aCbTask.parent.uri;
+            }
+
+            // color
+            console.log(aCbTask);
+            if (aCbTask.status.style) {
+                console.error(aCbTask.status.style);
+                dhxTask.color = aCbTask.status.style;
+            } else {
+                var default_color = {
+                    'New': '#b31317',
+                    'In progress': '#ffab46',
+                    'Partly completed': '',
+                    'Completed': '#00a85d',
+                    'Suspended': '#00a85d'
+                };
+                dhxTask.color = default_color[aCbTask.status.name];
+            }
+
+            return dhxTask;
+        }
+
+        function convertCbTasksToDhxData(aUserMap: TUserMap, aCbTasks: Cb.TTask[]): dhx.TData {
+            var dhxTasks = [];
+            aCbTasks.forEach(function(cbTask) {
+                dhxTasks.push(covertCbTaskToDhxTask(aUserMap, cbTask));
+            });
+            return {
+                data: dhxTasks,
+                links: []
+            };
+        }
+
+        export function getDhxDataByProject(aProjectUri: string, aCb: (err, aDhxData: dhx.TData) => void ) {
+
+            cache.getCachedProjectInfo(aProjectUri, function(err, cached) {
+                console.log('getDhxDataByProject');
+                aCb(err, convertCbTasksToDhxData(cached.userMap, cached.tasks));
+            });
+        }
     }
 }

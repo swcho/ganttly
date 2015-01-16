@@ -2,7 +2,7 @@
 
     <div id="topPane">
         <div class="combo_group">
-            <label>프로젝트</label>
+            <label>Project</label>
             <div dhx-combo style="width:180px;" class="combo"
                  dhx-data="cbProjectItems"
                  dhx-filter="cbProjectFilter"
@@ -11,12 +11,19 @@
         </div>
 
         <div class="combo_group">
-            <label>사용자</label>
+            <label>1st grouping</label>
             <div dhx-combo style="width:120px;" class="combo"
-                 dhx-data="cbUserItems"
-                 dhx-filter="cbUserFilter"
-                 dhx-selected="cbUserSelected"
-                 dhx-change="setUser"></div>
+                 dhx-data="cbGrouping"
+                 dhx-selected="cbGrouping1st"
+                 dhx-change="setGrouping1st"></div>
+        </div>
+
+        <div class="combo_group">
+            <label>2nd grouping</label>
+            <div dhx-combo style="width:120px;" class="combo"
+                 dhx-data="cbGrouping"
+                 dhx-selected="cbGrouping2nd"
+                 dhx-change="setGrouping2nd"></div>
         </div>
 
         <div class="combo_group">
@@ -27,14 +34,10 @@
                  ></div>
         </div>
 
-        <div dhx-form style="width:80px;height: 50px;" class="form"
-                dhx-form-items="options"></div>
-
     </div>
 
     <div dhx-gantt
          id="gantt"
-         dhx-data="tasks"
          dhx-scale="scale"
          dhx-task-shift-clicked="onTaskShiftClicked"
          dhx-task-add="onTaskAdd"

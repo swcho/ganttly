@@ -18,7 +18,7 @@ declare module dhx {
         open?: boolean;
         parent?: string;
         user?: string;
-        userIdList?: string[];
+        _userIdList?: string[];
         estimatedMillis?: number;
         estimatedDays?: number;
         depends?: string[];
@@ -53,6 +53,40 @@ declare module dhx {
     interface TContextMenu {
         menuItems: TContextMenuItem[];
     }
+}
+
+module GanttUtils {
+    export function setParentOpen(aTask: dhx.TTask) {
+        if (aTask.parent) {
+            var parentTask = gantt.getTask(aTask.id);
+            if (parentTask) {
+                parentTask.open = true;
+                setParentOpen(parentTask);
+            }
+        }
+    }
+
+    export function doDependsTasks(aTask: dhx.TTask, aCb, aLoopFunc: (aPrecedentTask: dhx.TTask, aTask: dhx.TTask, aCb) => void) {
+        var series = [];
+        if (aTask.depends) {
+            aTask.depends.forEach(function(taskId: string) {
+                var task =gantt.getTask(taskId);
+                series.push(function(cb) {
+                    aLoopFunc(aTask, task, function(err) {
+                        if (err) {
+                            cb(err);
+                            return;
+                        }
+                        doDependsTasks(task, cb, aLoopFunc);
+                    });
+                });
+            });
+        }
+        async.series(series, function(err) {
+            aCb(err);
+        });
+    }
+
 }
 
 angular.module('ganttly').directive('dhxGantt', function ($calendar) {
@@ -334,9 +368,9 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 //                gantt.parse(collection, "json");
 //            }, false);
 
-//            $scope.$watch($attrs['dhxScale'], function(scale){
-//                setScale(scale);
-//            }, true);
+            $scope.$watch($attrs['dhxScale'], function(scale){
+                setScale(scale);
+            }, true);
 
             var taskChangeMode;
             var moveStartDate;

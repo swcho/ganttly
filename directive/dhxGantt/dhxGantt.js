@@ -1,5 +1,41 @@
 /// <reference path="../../typings/tsd.d.ts"/>
 
+var GanttUtils;
+(function (GanttUtils) {
+    function setParentOpen(aTask) {
+        if (aTask.parent) {
+            var parentTask = gantt.getTask(aTask.id);
+            if (parentTask) {
+                parentTask.open = true;
+                setParentOpen(parentTask);
+            }
+        }
+    }
+    GanttUtils.setParentOpen = setParentOpen;
+
+    function doDependsTasks(aTask, aCb, aLoopFunc) {
+        var series = [];
+        if (aTask.depends) {
+            aTask.depends.forEach(function (taskId) {
+                var task = gantt.getTask(taskId);
+                series.push(function (cb) {
+                    aLoopFunc(aTask, task, function (err) {
+                        if (err) {
+                            cb(err);
+                            return;
+                        }
+                        doDependsTasks(task, cb, aLoopFunc);
+                    });
+                });
+            });
+        }
+        async.series(series, function (err) {
+            aCb(err);
+        });
+    }
+    GanttUtils.doDependsTasks = doDependsTasks;
+})(GanttUtils || (GanttUtils = {}));
+
 angular.module('ganttly').directive('dhxGantt', function ($calendar) {
     var unitDay = 1000 * 60 * 60 * 24;
     var unitHour = 1000 * 60 * 60;
@@ -272,9 +308,10 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             //                gantt.clearAll();
             //                gantt.parse(collection, "json");
             //            }, false);
-            //            $scope.$watch($attrs['dhxScale'], function(scale){
-            //                setScale(scale);
-            //            }, true);
+            $scope.$watch($attrs['dhxScale'], function (scale) {
+                setScale(scale);
+            }, true);
+
             var taskChangeMode;
             var moveStartDate;
             var eventAttachIds = [
