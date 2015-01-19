@@ -1066,10 +1066,11 @@ module CbUtils {
             };
         };
 
-        function processGrouping(aAllMaps: TAllMaps, aTasks: Cb.TTask[], aGroupings: TGroupType[], aParentId?: string): TGroupTask[] {
-            var type = aGroupings.shift();
+        function processGrouping(aAllMaps: TAllMaps, aTasks: Cb.TTask[], aGroupings: TGroupType[], aDepth: number, aParentId?: string): TGroupTask[] {
+            var type = aGroupings[aDepth];
             var ret = [];
             if (type) {
+                console.log('processGrouping: ' + type);
                 ret = [];
                 var groupKeyIdentifier = KGroupKeyIndentifiers[type];
                 var map = {};
@@ -1090,7 +1091,16 @@ module CbUtils {
                         ret.push(unknownTask);
                     } else {
                         var task: TGroupTask = groupConverter(aAllMaps, key);
-                        task.child = processGrouping(aAllMaps, map[key], aGroupings, task.id);
+                        if (aParentId) {
+                            task.parent = aParentId;
+                            task.id = aParentId + '>' + task.id;
+                        }
+                        task.child = processGrouping(
+                            aAllMaps,
+                            map[key],
+                            aGroupings,
+                            aDepth + 1,
+                            task.id);
                         ret.push(task);
                     }
                 });
@@ -1135,7 +1145,7 @@ module CbUtils {
 
                 var allMaps = cache.getAllMaps();
 
-                var groupTasks = processGrouping(allMaps, cachedProjectInfo.tasks, aGroupings);
+                var groupTasks = processGrouping(allMaps, cachedProjectInfo.tasks, aGroupings, 0);
 
                 tasks = getTasks(groupTasks);
 
@@ -1153,16 +1163,16 @@ module CbUtils {
                     text: 'Today'
                 }];
 
-                Object.keys(cachedProjectInfo.releaseMap).forEach(function(releaseUri) {
-                    var release = cachedProjectInfo.releaseMap[releaseUri];
-                    var date = release.plannedReleaseDate ? new Date(release.plannedReleaseDate): new Date(release.modifiedAt);
-                    markers.push({
-                        start_date: date,
-                        css: "release",
-                        title: date_to_str(date),
-                        text: release.name
-                    });
-                });
+//                Object.keys(cachedProjectInfo.releaseMap).forEach(function(releaseUri) {
+//                    var release = cachedProjectInfo.releaseMap[releaseUri];
+//                    var date = release.plannedReleaseDate ? new Date(release.plannedReleaseDate): new Date(release.modifiedAt);
+//                    markers.push({
+//                        start_date: date,
+//                        css: "release",
+//                        title: date_to_str(date),
+//                        text: release.name
+//                    });
+//                });
 
                 aCb(err, {
                     data: tasks,

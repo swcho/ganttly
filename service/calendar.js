@@ -22,24 +22,12 @@ angular.module('ganttly').factory('$calendar', function ($http) {
 
     var isHolidayCache = {};
     function isHoliday(aDate) {
-        var date = new Date(aDate.getFullYear(), aDate.getMonth(), aDate.getDate());
-        var dateKey = date.toString();
-        var ret = null;
+        var date = roundDay(aDate);
+        var dateKey = date.getTime();
         if (isHolidayCache[dateKey]) {
             return isHolidayCache[dateKey];
-        } else {
-            var i, len = calEntries.length, entry;
-            for (i = 0; i < len; i++) {
-                entry = calEntries[i];
-                if (entry.start <= date && date < entry.end) {
-                    console.log(entry);
-                    ret = entry;
-                    break;
-                }
-            }
-            isHolidayCache[dateKey] = ret;
         }
-        return ret;
+        return null;
     }
 
     function getEndDate(aStartTime, aDuration) {
@@ -141,6 +129,14 @@ angular.module('ganttly').factory('$calendar', function ($http) {
         //        getStartAndEndDate(s_10_02, workingHours * unitHour * 3);
         var s_09_05 = new Date(2014, 8, 6);
         getStartAndEndDate(s_09_05, workingHours * unitHour * 2);
+        calEntries.forEach(function (e) {
+            var start = roundDay(e.start);
+            var end = roundDay(e.end);
+            while (start < end) {
+                isHolidayCache[start.getTime()] = e;
+                start = addDays(start, 1);
+            }
+        });
         //
         //        var s_09_08 = new Date(2014, 8, 8);
         //        isHoliday(s_09_08);
@@ -154,6 +150,8 @@ angular.module('ganttly').factory('$calendar', function ($http) {
                         start: roundDay(new Date(entry['gd:when']['$']['startTime'])),
                         end: roundDay(new Date(entry['gd:when']['$']['endTime']))
                     });
+                    //                    var date = new Date(aDate.getFullYear(), aDate.getMonth(), aDate.getDate());
+                    //                    var dateKey = date.toString();
                 });
                 calEntries.sort(function (e1, e2) {
                     return e1.start.getTime() - e2.start.getTime();
