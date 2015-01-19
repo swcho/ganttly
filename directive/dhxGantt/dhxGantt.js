@@ -60,20 +60,21 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             'Lowest': 'priority_lowest'
         };
         var classes_status = {
-            'None': 'status_none',
-            'New': 'status_new',
-            'Suspended': 'status_suspended',
-            'In progress': 'status_in_progress',
-            'Partly completed': 'status_partly_completed',
+            //            'None': 'status_none',
+            //            'New': 'status_new',
+            //            'Suspended': 'status_suspended',
+            //            'In progress': 'status_in_progress',
+            //            'Partly completed': 'status_partly_completed',
             'Completed': 'status_completed',
             'Closed': 'status_completed'
         };
 
-        function myFunc(task) {
+        function columnTaskRender(task) {
             var classNames = [];
-            if (classes_priority[task.priority]) {
-                classNames.push(classes_priority[task.priority]);
-            }
+
+            //            if (classes_priority[task.priority]) {
+            //                classNames.push(classes_priority[task.priority]);
+            //            }
             if (classes_status[task.status]) {
                 classNames.push(classes_status[task.status]);
             }
@@ -83,13 +84,12 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 styles.push('color: ' + task.color);
             }
 
-            console.error(task.color);
             return "<div class='" + classNames.join(' ') + "' style='" + styles.join(';') + "'>" + task.text + "</div>";
         }
 
         // Column configurations
         gantt.config.columns = [
-            { name: "text", tree: true, label: "작업", template: myFunc, width: 200, resize: true },
+            { name: "text", tree: true, label: "작업", template: columnTaskRender, width: 200, resize: true },
             { name: "user", label: "담당자", align: "center", width: 60, resize: true },
             { name: "start_date", label: "시작일", align: "center", width: 90, resize: true },
             { name: "duration", label: "기간", align: "center", width: 40, resize: true },
@@ -103,13 +103,12 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
         // Autosize
         //        gantt.config.autosize = true;
         // Set task bar's class by priority
-        gantt.templates.task_class = function (start, end, task) {
-            return classes_priority[task.priority] + ' ' + classes_status[task.status];
-        };
-        gantt.templates.task_row_class = function (start, end, task) {
-            return classes_priority[task.priority] + ' ' + classes_status[task.status];
-        };
-
+        //        gantt.templates.task_class  = function(start, end, task){
+        //            return classes_priority[task.priority] + ' ' + classes_status[task.status];
+        //        };
+        //        gantt.templates.task_row_class = function(start, end, task) {
+        //            return classes_priority[task.priority] + ' ' + classes_status[task.status];
+        //        };
         // Highlight weekend
         gantt.templates.scale_cell_class = function (date) {
             if ($calendar.isHoliday(date)) {
@@ -143,14 +142,6 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
         };
 
         // Mark today
-        var date_to_str = gantt.date.date_to_str(gantt.config.task_date);
-        gantt.addMarker({
-            start_date: new Date(),
-            css: "today",
-            title: date_to_str(new Date()),
-            text: '오늘'
-        });
-
         gantt.config.lightbox.sections = [
             { name: "description", height: 38, map_to: "text", type: "textarea", focus: true },
             //            {name: "priority", height: 22, map_to: "priority", type: "select", options: [

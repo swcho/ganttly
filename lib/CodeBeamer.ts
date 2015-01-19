@@ -352,8 +352,12 @@ module Cb {
             }, aCb);
         }
 
-        getItems(aCmdbUri: string, aCb: (err, items: any[]) => void) {
+        getItemsByCmdb(aCmdbUri: string, aCb: (err, items: any[]) => void) {
             send('GET', aCmdbUri + '/items', null, aCb);
+        }
+
+        getItem(aReleaseUri: string, aCb: (err, item: TRelease) => void) {
+            send('GET', aReleaseUri, null, aCb);
         }
     }
 
@@ -531,14 +535,40 @@ module CbUtils {
         [releaseUri: string]: Cb.TRelease;
     }
 
-    function getReleaseByCmdbList(aCmdbList: Cb.TCmdb[], aCb: (err, tasks: Cb.TRelease[]) => void) {
+    function getReleases(aReleaseUriList: string[], aCb: (err, releases: Cb.TRelease[], map: TReleaseMap) => void) {
+
+        console.log('getReleases');
+
+        var p = [];
+        var releases = [];
+        var releaseMap: TReleaseMap = {};
+        aReleaseUriList.forEach(function(uri) {
+            p.push(function(done) {
+                Cb.cmdb.getItem(uri, function(err, r) {
+                    releases.push(r);
+                    releaseMap[uri] = r;
+                    done(err);
+                });
+            });
+        });
+
+        async.parallel(p, function(err) {
+
+            aCb(err, releases, releaseMap);
+        });
+    }
+
+    function getReleasesByCmdbList(aCmdbList: Cb.TCmdb[], aCb: (err, tasks: Cb.TRelease[]) => void) {
+
+        console.log('getReleasesByCmdbList');
+
         aCmdbList = aCmdbList || [];
         var p = [];
         var releases = [];
         aCmdbList.forEach(function(cmdb) {
             if (cmdb.type.name == 'Release') {
                 p.push(function(done) {
-                    Cb.cmdb.getItems(cmdb.uri, function(err, items) {
+                    Cb.cmdb.getItemsByCmdb(cmdb.uri, function(err, items) {
                         releases = releases.concat(items);
                         done(err);
                     });
@@ -552,6 +582,9 @@ module CbUtils {
     }
 
     function getTasksByTrackers(aTrackers: Cb.TTracker[], aCb: (err, tasks: Cb.TTask[]) => void) {
+
+        console.log('getTasksByTrackers');
+
         aTrackers = aTrackers || [];
         var p = [];
         var tasks = [];
@@ -571,13 +604,14 @@ module CbUtils {
         });
     }
 
-    function getReleasesByProject(aProjectUri: string, aCb: (err, cmdbMap: TCmdbMap, releaseMap: TReleaseMap) => void) {
+    function getReleasesByProject(aProjectUri: string, aCb: (err, cmdbMap: TCmdbMap, releases: Cb.TRelease[], releaseMap: TReleaseMap) => void) {
 
         console.log('getReleasesByProject');
 
         var s = [];
         var cmdbList;
         var cmdbMap: TCmdbMap = {};
+        var releases = [];
         var releaseMap: TReleaseMap = {};
         s.push(function(done) {
             Cb.cmdb.getReleaseCmdbList(aProjectUri, function(err, list) {
@@ -590,21 +624,22 @@ module CbUtils {
             });
         });
         s.push(function(done) {
-            getReleaseByCmdbList(cmdbList, function(err, ts) {
-                ts.forEach(function(t) {
-                    releaseMap[t.uri] = t;
+            getReleasesByCmdbList(cmdbList, function(err, rlist) {
+                rlist.forEach(function(r) {
+                    releaseMap[r.uri] = r;
                 });
+                releases = rlist;
                 done(err);
             });
         });
         async.series(s, function(err) {
-            aCb(err, cmdbMap, releaseMap);
+            aCb(err, cmdbMap, releases, releaseMap);
         });
     }
 
     function getTaskInfoByProject(aProjectUri: string, aCb: (err, trackerMap: TTrackerMap, taskMap: TTaskMap, tasks: Cb.TTask[]) => void) {
 
-        console.log('getTaskMapAndListByProject');
+        console.log('getTaskInfoByProject');
 
         var s = [];
         var task_trackers;
@@ -690,7 +725,7 @@ module CbUtils {
     export interface TCachedProjectInfo {
         cmdbMap: TCmdbMap;
         trackerMap: TTrackerMap;
-        releaseMap: TReleaseMap;
+//        releaseMap: TReleaseMap;
         taskMap: TTaskMap;
         tasks: Cb.TTask[];
     }
@@ -702,10 +737,26 @@ module CbUtils {
         trackerMap: TTrackerMap;
     }
 
+    var KReleaseProps = ['release', '업무구분'];
+    function getReleaseUriListFromTask(aTask: Cb.TTask): string[] {
+        var i, len = KReleaseProps.length, p, uriList = [];
+        for (i=0; i<len; i++) {
+            p = KReleaseProps[i];
+            if (aTask[p] && aTask[p].length) {
+                aTask[p].forEach(function(v) {
+                    uriList.push(v.uri)
+                });
+                return uriList;
+            }
+        }
+        return null;
+    }
+
     export class CCbCache {
 
         _cache: { [projectUri: string]: TCachedProjectInfo; } = {};
         _projectMap: TProjectMap = {};
+        _releaseMap: TReleaseMap = {};
         _userMap: TUserMap = {};
 
         constructor() {
@@ -719,9 +770,6 @@ module CbUtils {
             Object.keys(this._cache).forEach((projectUri) => {
                 var info = this._cache[projectUri];
                 if (info) {
-                    Object.keys(info.releaseMap).forEach(function(releaseUri) {
-                        releaseMap[releaseUri] = info.releaseMap[releaseUri];
-                    });
                     Object.keys(info.trackerMap).forEach(function(trackerUri) {
                         trackerMap[trackerUri] = info.trackerMap[trackerUri];
                     });
@@ -731,7 +779,7 @@ module CbUtils {
             return {
                 projectMap: this._projectMap,
                 userMap: this._userMap,
-                releaseMap: releaseMap,
+                releaseMap: this._releaseMap,
                 trackerMap: trackerMap
             }
         }
@@ -749,6 +797,7 @@ module CbUtils {
 
             var cmdbMap: TCmdbMap;
             var trackerMap: TTrackerMap;
+            var releases: Cb.TRelease[];
             var releaseMap: TReleaseMap;
             var taskMap: TTaskMap = {};
             var tasks: Cb.TTask[] = [];
@@ -761,19 +810,40 @@ module CbUtils {
             });
 
             s.push(function(done) {
-                getReleasesByProject(aProjectUri, function (err, cm, rm) {
-                    cmdbMap = cm;
-                    releaseMap = rm;
+                getReleasesByProject(aProjectUri, function (err, cmap, rlist, rmap) {
+                    cmdbMap = cmap;
+                    releases = rlist;
+                    releaseMap = rmap;
                     done();
                 });
             });
 
+            var external_releases = [];
             s.push(function(done) {
                 getTaskInfoByProject(aProjectUri, function(err, trkM, tm, ts) {
                     trackerMap = trkM;
                     taskMap = tm;
                     tasks = ts;
-                    done(err)
+
+                    tasks.forEach(function(t) {
+                        var releaseUriList = getReleaseUriListFromTask(t);
+                        if (releaseUriList) {
+                            releaseUriList.forEach(function(uri) {
+                                if (!releaseMap[uri]) {
+                                    external_releases.push(uri);
+                                }
+                            });
+                        }
+                    });
+
+                    done(err);
+                });
+            });
+
+            s.push(function(done) {
+                getReleases(external_releases, function(err, rlist, rmap) {
+                    releases = releases.concat(rlist);
+                    done(err);
                 });
             });
 
@@ -802,6 +872,10 @@ module CbUtils {
                     tasks: tasks
                 };
 
+                releases.forEach((r) => {
+                    this._releaseMap[r.uri] = r;
+                });
+
                 this._cache[aProjectUri] = ret;
 
                 aCb(err, ret);
@@ -828,12 +902,20 @@ module CbUtils {
         var reName = /^(.*)\(/;
 
         function getUserName(aUser: Cb.TUser) {
-            var match = reName.exec(aUser.firstName);
-            return match ? match[1]: aUser.name;
+            var name = aUser.name;
+            if (aUser.firstName) {
+                name = aUser.firstName;
+                var match = reName.exec(aUser.firstName);
+                if (match) {
+                    name = match[1];
+                }
+            }
+
+            return name;
         }
 
-        function covertCbTaskToDhxTask(aAllMaps: TAllMaps, aCbTask: Cb.TTask, aParentUri?: string): dhx.TTask {
-            var dhxTask: dhx.TTask = {
+        function covertCbTaskToDhxTask(aAllMaps: TAllMaps, aCbTask: Cb.TTask, aParentUri?: string): DhxGantt.TTask {
+            var dhxTask: DhxGantt.TTask = {
                 id: aCbTask.uri,
                 text: aCbTask.name,
                 start_date: new Date(aCbTask.startDate || aCbTask.modifiedAt),
@@ -891,7 +973,7 @@ module CbUtils {
             return dhxTask;
         }
 
-        function convertCbTasksToDhxTasks(aAllMaps: TAllMaps, aCbTasks: Cb.TTask[], aParentUri?: string): dhx.TTask[] {
+        function convertCbTasksToDhxTasks(aAllMaps: TAllMaps, aCbTasks: Cb.TTask[], aParentUri?: string): DhxGantt.TTask[] {
             var dhxTasks = [];
             aCbTasks.forEach(function(cbTask) {
                 dhxTasks.push(covertCbTaskToDhxTask(aAllMaps, cbTask, aParentUri));
@@ -899,7 +981,7 @@ module CbUtils {
             return dhxTasks;
         }
 
-        interface TGroupTask extends dhx.TTask {
+        interface TGroupTask extends DhxGantt.TTask {
             groupType?: TGroupType;
             child?: TGroupTask[];
         }
@@ -910,6 +992,10 @@ module CbUtils {
             var ret = KUnknownIdentifier;
             if (aTask.assignedTo) {
                 ret = aTask.assignedTo[0].uri;
+                if (aTask.assignedTo.length != 1) {
+                    console.warn('More than one user');
+                    console.warn(aTask);
+                }
             }
             return ret;
         };
@@ -918,34 +1004,43 @@ module CbUtils {
         };
         KGroupKeyIndentifiers[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aTask: Cb.TTask) {
             var ret = KUnknownIdentifier;
-            if (aTask.release) {
-                ret = aTask.release[0].uri;
+            var releaseUriList = getReleaseUriListFromTask(aTask);
+            if (releaseUriList) {
+                ret = releaseUriList[0];
+                if (releaseUriList.length != 1) {
+                    console.warn('More than one release');
+                    console.warn(aTask);
+                }
             }
             return ret;
         };
 
         var KGroupConverter = {};
-        KGroupConverter[TGroupType.ByUser] = function(aAllMaps: TAllMaps, aUserUri: string): dhx.TTask {
+        KGroupConverter[TGroupType.ByUser] = function(aAllMaps: TAllMaps, aUserUri: string): DhxGantt.TTask {
             var user = aAllMaps.userMap[aUserUri];
             return {
                 id: user.uri,
                 text: getUserName(user),
+                user: '-',
                 _type: dhxDef.TTaskType.User
             };
         };
-        KGroupConverter[TGroupType.ByProject] = function(aAllMaps: TAllMaps, aProjectUri: string): dhx.TTask {
+        KGroupConverter[TGroupType.ByProject] = function(aAllMaps: TAllMaps, aProjectUri: string): DhxGantt.TTask {
             var project = aAllMaps.projectMap[aProjectUri];
+            console.log(project);
             return {
                 id: project.uri,
                 text: project.name,
+                user: '-',
                 _type: dhxDef.TTaskType.Project
             };
         };
-        KGroupConverter[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aReleaseUri: string): dhx.TTask {
+        KGroupConverter[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aReleaseUri: string): DhxGantt.TTask {
             var release = aAllMaps.releaseMap[aReleaseUri];
             return {
                 id: release.uri,
                 text: release.name,
+                user: '-',
                 _type: dhxDef.TTaskType.Sprint
             };
         };
@@ -955,6 +1050,7 @@ module CbUtils {
             return {
                 id: '__unknown_user__',
                 text: 'Not assigned',
+                user: '-',
                 _type: dhxDef.TTaskType.User
             };
         };
@@ -965,6 +1061,7 @@ module CbUtils {
             return {
                 id: '__unknown_user__',
                 text: 'Not assigned',
+                user: '-',
                 _type: dhxDef.TTaskType.Sprint
             };
         };
@@ -1005,7 +1102,7 @@ module CbUtils {
         }
 
         function getTasks(groupTasks: TGroupTask[]) {
-            var tasks: dhx.TTask[] = [];
+            var tasks: DhxGantt.TTask[] = [];
             groupTasks.forEach(function(t) {
                 tasks.push(t);
                 if (t.child) {
@@ -1015,7 +1112,10 @@ module CbUtils {
             return tasks;
         }
 
-        export function getDhxDataByProject(aProjectUri: string, aGroupings: TGroupType[], aCb: (err, aDhxData: dhx.TData) => void ) {
+        export function getDhxDataByProject(
+                aProjectUri: string,
+                aGroupings: TGroupType[],
+                aCb: (err, aDhxData: DhxGantt.TData, aDhxMarkerList: DhxGantt.TMarker[]) => void ) {
 
             var s = [];
 
@@ -1043,10 +1143,31 @@ module CbUtils {
             });
 
             async.series(s, function(err) {
+
+                var date_to_str = gantt.date.date_to_str(gantt.config.task_date);
+
+                var markers: DhxGantt.TMarker[] = [{
+                    start_date: new Date(),
+                    css: 'today',
+                    title:date_to_str( new Date()),
+                    text: 'Today'
+                }];
+
+                Object.keys(cachedProjectInfo.releaseMap).forEach(function(releaseUri) {
+                    var release = cachedProjectInfo.releaseMap[releaseUri];
+                    var date = release.plannedReleaseDate ? new Date(release.plannedReleaseDate): new Date(release.modifiedAt);
+                    markers.push({
+                        start_date: date,
+                        css: "release",
+                        title: date_to_str(date),
+                        text: release.name
+                    });
+                });
+
                 aCb(err, {
                     data: tasks,
                     links: []
-                });
+                }, markers);
             });
 
         }

@@ -503,32 +503,35 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             $scope.cbProjectSelected = resp.uri;
             //            $scope.$apply();
         });
-
-        $codeBeamer.getReleases({
-            projectUri: projectUri
-        }, function (err, trackerUriList, resp) {
-            if (err) {
-                return;
-            }
-            resp.forEach(function (release) {
-                console.log(release.name);
-                var date = release.plannedReleaseDate ? new Date(release.plannedReleaseDate) : new Date(release.modifiedAt);
-                var date_to_str = gantt.date.date_to_str(gantt.config.task_date);
-                gantt.addMarker({
-                    start_date: date,
-                    css: "release",
-                    title: date_to_str(date),
-                    text: release.name
-                });
-            });
-        });
+        //        $codeBeamer.getReleases({
+        //            projectUri: projectUri
+        //        }, function(err, trackerUriList, resp) {
+        //            if (err) {
+        //                return;
+        //            }
+        //            resp.forEach(function(release) {
+        //                console.log(release.name);
+        //                var date = release.plannedReleaseDate ? new Date(release.plannedReleaseDate): new Date(release.modifiedAt);
+        //                var date_to_str = gantt.date.date_to_str(gantt.config.task_date);
+        //                gantt.addMarker({
+        //                    start_date: date,
+        //                    css: "release",
+        //                    title: date_to_str(date),
+        //                    text: release.name
+        //                });
+        //            });
+        //        });
     }
 
     showModal('Getting information...');
 
-    CbUtils.UiUtils.getDhxDataByProject(projectUri, [], function (err, resp) {
+    CbUtils.UiUtils.getDhxDataByProject(projectUri, [], function (err, resp, markers) {
         gantt.clearAll();
+        markers.forEach(function (m) {
+            gantt.addMarker(m);
+        });
         gantt.parse(resp, "json");
+
         closeModal();
     });
 
