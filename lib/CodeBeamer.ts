@@ -871,17 +871,21 @@ module CbUtils {
             }
 
             // color
-            if (aCbTask.status.style) {
-                dhxTask.color = aCbTask.status.style;
+            if (aCbTask.status) {
+                if (aCbTask.status.style) {
+                    dhxTask.color = aCbTask.status.style;
+                } else {
+                    var default_color = {
+                        'New': '#b31317',
+                        'In progress': '#ffab46',
+                        'Partly completed': '',
+                        'Completed': '#00a85d',
+                        'Suspended': '#00a85d'
+                    };
+                    dhxTask.color = default_color[aCbTask.status.name];
+                }
             } else {
-                var default_color = {
-                    'New': '#b31317',
-                    'In progress': '#ffab46',
-                    'Partly completed': '',
-                    'Completed': '#00a85d',
-                    'Suspended': '#00a85d'
-                };
-                dhxTask.color = default_color[aCbTask.status.name];
+                dhxTask.color = 'white';
             }
 
             return dhxTask;
@@ -1013,20 +1017,38 @@ module CbUtils {
 
         export function getDhxDataByProject(aProjectUri: string, aGroupings: TGroupType[], aCb: (err, aDhxData: dhx.TData) => void ) {
 
-            cache.getCachedProjectInfo(aProjectUri, function(err, cached) {
-                console.log('getDhxDataByProject');
+            var s = [];
+
+            var cachedProjectInfo;
+            s.push(function(done) {
+                cache.getCachedProjectInfo(aProjectUri, function(err, cached) {
+                    console.log('getDhxDataByProject');
+
+                    cachedProjectInfo = cached;
+
+                    done(err);
+                });
+            });
+
+            var tasks;
+            s.push(function(done) {
 
                 var allMaps = cache.getAllMaps();
 
-                var groupTasks = processGrouping(allMaps, cached.tasks, aGroupings);
+                var groupTasks = processGrouping(allMaps, cachedProjectInfo.tasks, aGroupings);
 
-                var tasks = getTasks(groupTasks);
+                tasks = getTasks(groupTasks);
 
+                done();
+            });
+
+            async.series(s, function(err) {
                 aCb(err, {
                     data: tasks,
                     links: []
                 });
             });
+
         }
     }
 }
