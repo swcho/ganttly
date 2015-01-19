@@ -1049,7 +1049,7 @@ module CbUtils {
         KUnknownConverter[TGroupType.ByUser] = function() {
             return {
                 id: '__unknown_user__',
-                text: 'Not assigned',
+                text: 'User not assigned',
                 user: '-',
                 _type: dhxDef.TTaskType.User
             };
@@ -1059,8 +1059,8 @@ module CbUtils {
         };
         KUnknownConverter[TGroupType.BySprint] = function() {
             return {
-                id: '__unknown_user__',
-                text: 'Not assigned',
+                id: '__unknown_release__',
+                text: 'Relase not assigned',
                 user: '-',
                 _type: dhxDef.TTaskType.Sprint
             };
@@ -1086,23 +1086,24 @@ module CbUtils {
                 var groupConverter = KGroupConverter[type];
                 var unknownTask: TGroupTask = KUnknownConverter[type]();
                 Object.keys(map).forEach(function(key) {
+
+                    var task: TGroupTask;
                     if (key == KUnknownIdentifier) {
-                        unknownTask.child = convertCbTasksToDhxTasks(aAllMaps, map[key], unknownTask.id);
-                        ret.push(unknownTask);
+                        task = unknownTask;
                     } else {
-                        var task: TGroupTask = groupConverter(aAllMaps, key);
-                        if (aParentId) {
-                            task.parent = aParentId;
-                            task.id = aParentId + '>' + task.id;
-                        }
-                        task.child = processGrouping(
-                            aAllMaps,
-                            map[key],
-                            aGroupings,
-                            aDepth + 1,
-                            task.id);
-                        ret.push(task);
+                        task = groupConverter(aAllMaps, key);
                     }
+                    if (aParentId) {
+                        task.parent = aParentId;
+                        task.id = aParentId + '>' + task.id;
+                    }
+                    task.child = processGrouping(
+                        aAllMaps,
+                        map[key],
+                        aGroupings,
+                            aDepth + 1,
+                        task.id);
+                    ret.push(task);
                 });
 
             } else {

@@ -17,8 +17,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     var unitWorkingDay = gConfig.workingHours ? gConfig.workingHours * unitHour: unitDay;
     var holidayAwareness = gConfig.holidayAwareness;
 
+    var paramProjectUri = $stateParams.project;
+    var paramGroupings: string[] = $stateParams.groupings ? $stateParams.groupings.split(',') : [];
+
     var userUri = $stateParams.user;
-    var projectUri = $stateParams.project;
     var groupByUser = $stateParams.groupByUser === 'true';
     var groupByProject = $stateParams.groupByProject === 'true';
     var taskTrackerUriList: string[];
@@ -56,7 +58,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     });
 
     $scope.setProject = function(uri) {
-        if (uri === projectUri) {
+        if (uri === paramProjectUri) {
             return;
         }
         console.log('****** project');
@@ -72,7 +74,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
      *
      */
 
-    $scope.cbGrouping = [{
+    var cbGroupingData = [{
+        id: 'group_by_none',
+        text: 'None'
+    }, {
         id: 'group_by_user',
         text: 'By user'
     }, {
@@ -82,30 +87,45 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         id: 'group_by_release',
         text: 'By release'
     }];
-    $scope.cbGrouping1st = '';
-    var groupTypeById = {
-        'group_by_user': CbUtils.TGroupType.ByUser,
-        'group_by_project': CbUtils.TGroupType.ByProject,
-        'group_by_release': CbUtils.TGroupType.BySprint
+
+    $scope.cb1Data = cbGroupingData;
+    console.log(paramGroupings);
+    $scope.cb1Selected = paramGroupings.length ? paramGroupings[0]: 'group_by_none';
+    $scope.cb1Disabled = paramProjectUri ? false: true;
+    $scope.cb1SetGrouping = function(selected) {
+        console.error('cb1SetGrouping: ' + selected);
+        if (paramGroupings[0] != selected) {
+            $state.go('ganttCbProject', {
+                project: paramProjectUri,
+                groupings: selected
+            }, {
+                inherit: false
+            });
+        }
     };
-    var group1st;
-    $scope.setGrouping1st = function(selected) {
-        console.log('setGrouping1St: ' + selected);
-        var groupType = groupTypeById[selected];
-        group1st = groupType;
-        CbUtils.UiUtils.getDhxDataByProject(projectUri, [groupType], function(err, resp) {
-            gantt.clearAll();
-            gantt.parse(resp, "json");
+
+    var cb2Data = [];
+    if (paramGroupings.length) {
+        cbGroupingData.forEach(function(d) {
+            if (paramGroupings[0] != d.id) {
+                cb2Data.push(d);
+            }
         });
-    };
-    $scope.cbGrouping2nd = '';
-    $scope.setGrouping2nd = function(selected) {
-        console.log('setGrouping2nd: ' + selected);
-        var groupType = groupTypeById[selected];
-        CbUtils.UiUtils.getDhxDataByProject(projectUri, [group1st, groupType], function(err, resp) {
-            gantt.clearAll();
-            gantt.parse(resp, "json");
-        });
+    }
+    $scope.cb2Data = cb2Data;
+    $scope.cb2Selected = paramGroupings.length > 1 ? paramGroupings[1]: 'group_by_none';
+    $scope.cb2Disabled = paramGroupings.length > 0 && paramGroupings[0] != 'group_by_none' ? false: true;
+    $scope.cb2SetGrouping = function(selected) {
+        console.error('cb2SetGrouping: ' + selected);
+        if (paramGroupings[1] != selected) {
+            paramGroupings[1] = selected;
+            $state.go('ganttCbProject', {
+                project: paramProjectUri,
+                groupings: paramGroupings.join(',')
+            }, {
+                inherit: false
+            });
+        }
     };
 
     /**
@@ -502,7 +522,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 //        }
 //    });
 
-    if (!userUri && !projectUri) {
+    if (!userUri && !paramProjectUri) {
         return;
     }
 
@@ -511,9 +531,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
      * @type {{}}
      */
     var param: cb.TParamGetTask = {};
-    if (projectUri) {
-        param.projectUri = projectUri;
-        $codeBeamer.getByUri(projectUri, function(err, resp) {
+    if (paramProjectUri) {
+        param.projectUri = paramProjectUri;
+        $codeBeamer.getByUri(paramProjectUri, function(err, resp) {
             if (err) {
                 return;
             }
@@ -547,7 +567,19 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     showModal('Getting information...');
 
-    CbUtils.UiUtils.getDhxDataByProject(projectUri, [], function(err, resp, markers) {
+    var groupTypeById = {
+        'group_by_user': CbUtils.TGroupType.ByUser,
+        'group_by_project': CbUtils.TGroupType.ByProject,
+        'group_by_release': CbUtils.TGroupType.BySprint
+    };
+    var groupings = [];
+    paramGroupings.forEach(function(groupingId) {
+        if (groupTypeById[groupingId]) {
+            groupings.push(groupTypeById[groupingId]);
+        }
+    });
+
+    CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, function(err, resp, markers) {
         gantt.clearAll();
         markers.forEach(function(m) {
             gantt.addMarker(m);

@@ -44,6 +44,14 @@ angular.module('ganttly').directive('dhxCombo', function () {
                 }
             });
 
+            $scope.$watch($attrs['dhxDisabled'], function (disabled) {
+                if (disabled) {
+                    combo.disable();
+                } else {
+                    combo.enable();
+                }
+            });
+
             $scope.$watch($attrs['dhxSelected'], function (selected) {
                 if (selected) {
                     combo.setComboValue(selected);
@@ -52,7 +60,7 @@ angular.module('ganttly').directive('dhxCombo', function () {
 
             var eventAttachIds = [
                 combo.attachEvent("onChange", function () {
-                    console.log('onChange');
+                    //                    console.log('onChange');
                     if ($attrs['dhxSelected']) {
                         $scope[$attrs['dhxSelected']] = combo.getSelectedValue();
                         if (!$scope.$$phase) {
@@ -66,7 +74,7 @@ angular.module('ganttly').directive('dhxCombo', function () {
             ];
 
             $scope.$on('$destroy', function () {
-                console.log('dhxCombo destroy');
+                //                console.log('dhxCombo destroy');
                 eventAttachIds.forEach(function (id) {
                     combo.detachEvent(id);
                 });
