@@ -121,12 +121,26 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             'Suspended': 'status_suspended',
             'In progress': 'status_in_progress',
             'Partly completed': 'status_partly_completed',
-            'Completed': 'status_completed'
+            'Completed': 'status_completed',
+            'Closed': 'status_completed'
         };
 
         function myFunc(task){
-            var classNames = classes_priority[task.priority] + ' ' + classes_status[task.status]
-            return "<div class='" + classNames + "'>"+ task.text + "</div>";
+            var classNames = [];
+            if (classes_priority[task.priority]) {
+                classNames.push(classes_priority[task.priority]);
+            }
+            if (classes_status[task.status]) {
+                classNames.push(classes_status[task.status]);
+            }
+
+            var styles = [];
+            if (task.color) {
+                styles.push('color: ' + task.color);
+            }
+
+            console.error(task.color);
+            return "<div class='" + classNames.join(' ') + "' style='" + styles.join(';') + "'>"+ task.text + "</div>";
         }
 
         // Column configurations
@@ -179,7 +193,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start),
                 "<b>End date:</b> " + gantt.templates.tooltip_date_format(end),
                 "<b>Duration:</b> " + task.duration,
-                "<b>Est. Days:</b> " + task.estimatedDays,
+                "<b>Est. Days:</b> " + (task.estimatedDays || 0),
                 "<b>Progress:</b> " + (task.progress ? task.progress.toFixed(2) : 0)
             ];
 
@@ -188,7 +202,12 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 
         // Mark today
         var date_to_str = gantt.date.date_to_str(gantt.config.task_date);
-        gantt.addMarker({ start_date: new Date(), css: "today", title:date_to_str( new Date()), text:'오늘'});
+        gantt.addMarker({
+            start_date: new Date(),
+            css: "today",
+            title:date_to_str( new Date()),
+            text:'오늘'
+        });
 
         gantt.config.lightbox.sections = [
             {name: "description", height: 38, map_to: "text", type: "textarea", focus: true},
