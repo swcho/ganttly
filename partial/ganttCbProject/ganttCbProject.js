@@ -509,6 +509,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     //        }
     //    });
     if (!userUri && !paramProjectUri) {
+        try  {
+            gantt.clearAll();
+        } catch (e) {
+        }
         return;
     }
 
@@ -570,7 +574,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             gantt.addMarker(m);
         });
         gantt.parse(resp, "json");
-
         closeModal();
     });
 

@@ -523,6 +523,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 //    });
 
     if (!userUri && !paramProjectUri) {
+        try {
+            gantt.clearAll();
+        } catch(e) {
+
+        }
         return;
     }
 
@@ -585,10 +590,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             gantt.addMarker(m);
         });
         gantt.parse(resp, "json");
-
         closeModal();
     });
-
 
     return;
     $codeBeamer.getTasks(param, function(err, trackerUriList: string[], items: cb.TTask[]) {
