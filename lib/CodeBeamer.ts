@@ -759,9 +759,10 @@ module CbUtils {
     export interface TCachedProjectInfo {
         cmdbMap: TCmdbMap;
         trackerMap: TTrackerMap;
-//        releaseMap: TReleaseMap;
+        releaseMap: TReleaseMap;
         taskMap: TTaskMap;
         tasks: Cb.TTask[];
+        externalTasks: Cb.TTask[];
     }
 
     export interface TAllMaps {
@@ -790,8 +791,10 @@ module CbUtils {
 
         _cache: { [projectUri: string]: TCachedProjectInfo; } = {};
         _projectMap: TProjectMap = {};
+        _trackerMap: TTrackerMap = {};
         _releaseMap: TReleaseMap = {};
         _userMap: TUserMap = {};
+        _itemMap: TItemMap = {};
 
         constructor() {
 
@@ -814,7 +817,7 @@ module CbUtils {
                 projectMap: this._projectMap,
                 userMap: this._userMap,
                 releaseMap: this._releaseMap,
-                trackerMap: trackerMap
+                trackerMap: this._trackerMap
             };
         }
 
@@ -838,13 +841,6 @@ module CbUtils {
             var tasks: Cb.TTask[] = [];
 
             s.push(function(done) {
-                Cb.project.getProject(aProjectUri, function (err, p) {
-                    project = p;
-                    done(err);
-                });
-            });
-
-            s.push(function(done) {
                 getReleasesByProject(aProjectUri, function (err, cmap, rlist, rmap) {
                     cmdbMap = cmap;
                     releases = rlist;
@@ -853,6 +849,7 @@ module CbUtils {
                 });
             });
 
+            var userUriList;
             var external_releases = [];
             s.push(function(done) {
                 getTaskInfoByProject(aProjectUri, function(err, trkM, tm, ts) {
@@ -860,7 +857,15 @@ module CbUtils {
                     taskMap = tm;
                     tasks = ts;
 
+                    var mapUser = {};
                     tasks.forEach(function(t) {
+
+                        if (t.assignedTo) {
+                            t.assignedTo.forEach(function(u) {
+                                mapUser[u.uri] = null;
+                            });
+                        }
+
                         var releaseUriList = getReleaseUriListFromTask(t);
                         if (releaseUriList) {
                             releaseUriList.forEach(function(uri) {
@@ -870,6 +875,8 @@ module CbUtils {
                             });
                         }
                     });
+
+                    userUriList = Object.keys(mapUser);
 
                     done(err);
                 });
@@ -882,52 +889,106 @@ module CbUtils {
                 });
             });
 
-            var itemsMap = {};
+            var externalItemUriList;
             s.push(function(done) {
                 populateAssociation(tasks, function(err, alist) {
 
+                    var map = {};
                     alist.forEach(function(a) {
 
                         if (a.from) {
-                            itemsMap[a.from.uri] = null;
+                            map[a.from.uri] = null;
                         }
 
                         if (a.to) {
-                            itemsMap[a.to.uri] = null;
+                            map[a.to.uri] = null;
                         }
 
                     });
+                    externalItemUriList = Object.keys(map);
 
                     done(err);
                 });
             });
 
+            var externalItemMap = this._itemMap;
+            var externalItems;
+            var externalTrackerUriList;
+            var externalProjectUriList;
+            var externalUserUriList;
             s.push(function(done) {
-                getItems(Object.keys(itemsMap), function(err, ilist, imap) {
-                    itemsMap = imap;
+                getItems(externalItemUriList, function(err, ilist, imap) {
+                    var mapTracker = {};
+                    var mapProject = {};
+                    var mapUser = {};
+                    ilist.forEach(function(item) {
+                        mapTracker[item['tracker'].uri] = null;
+                        mapProject[item['tracker'].project.uri] = null;
+                        externalItemMap[item.uri] = item;
+                        if (item['assignedTo']) {
+                            item['assignedTo'].forEach(function(u) {
+                                mapUser[u.uri] = null;
+                            });
+                        }
+                    });
+                    externalItems = ilist;
+                    externalTrackerUriList = Object.keys(mapTracker);
+                    externalProjectUriList = Object.keys(mapProject);
+                    externalUserUriList = Object.keys(mapUser);
                     done();
                 });
             });
 
-            s.push((done) => {
-                getUsersMapFromTasks(tasks, (err, resp) => {
-                    Object.keys(resp).forEach((userUri) => {
-                        this._userMap[userUri] = resp[userUri];
+            var externalTrackerMap = this._trackerMap;
+            s.push(function(done) {
+                console.log(externalTrackerUriList);
+                getItems(externalTrackerUriList, function(err, ilist, imap) {
+                    ilist.forEach(function(tracker) {
+                        externalTrackerMap[tracker.uri] = <Cb.TTracker><any>tracker;
                     });
                     done(err);
+                });
+            });
+
+            var userMap = this._userMap;
+            s.push(function(done) {
+                var uriList = userUriList.concat(externalUserUriList);
+                getItems(uriList, function(err, ilist, imap) {
+                    ilist.forEach(function(i) {
+                        userMap[i.uri] = <Cb.TUser><any>i;
+                    });
+                    done();
+                });
+            });
+
+            var projectMap = this._projectMap;
+            s.push(function(done) {
+                var uriList = [aProjectUri].concat(externalProjectUriList);
+                getItems(uriList, function(err, ilist, imap) {
+                    ilist.forEach(function(i) {
+                        projectMap[i.uri] = <Cb.TProject><any>i;
+                    });
+                    done();
                 });
             });
 
             async.series(s, (err) => {
 
-                this._projectMap[aProjectUri] = project;
+                var externalTasks = [];
+                externalItems.forEach((item) => {
+                    var tracker = externalTrackerMap[item.tracker.uri];
+                    if (tracker.type.name == 'Task') {
+                        externalTasks.push(item);
+                    }
+                });
 
                 var ret: TCachedProjectInfo = {
                     cmdbMap: cmdbMap,
                     trackerMap: trackerMap,
                     releaseMap: releaseMap,
                     taskMap: taskMap,
-                    tasks: tasks
+                    tasks: tasks,
+                    externalTasks: externalTasks
                 };
 
                 releases.forEach((r) => {
@@ -973,6 +1034,7 @@ module CbUtils {
         }
 
         function covertCbTaskToDhxTask(aAllMaps: TAllMaps, aCbTask: Cb.TTask, aParentUri?: string): DhxGantt.TTask {
+
             var dhxTask: DhxGantt.TTask = {
                 id: aCbTask.uri,
                 text: aCbTask.name,
@@ -1205,7 +1267,7 @@ module CbUtils {
 
             var s = [];
 
-            var cachedProjectInfo;
+            var cachedProjectInfo: TCachedProjectInfo;
             s.push(function(done) {
                 cache.getCachedProjectInfo(aProjectUri, function(err, cached) {
                     console.log('getDhxDataByProject');
@@ -1221,7 +1283,9 @@ module CbUtils {
 
                 var allMaps = cache.getAllMaps();
 
-                var groupTasks = processGrouping(allMaps, cachedProjectInfo.tasks, aGroupings, 0);
+                var cbTasks = cachedProjectInfo.tasks.concat(cachedProjectInfo.externalTasks);
+
+                var groupTasks = processGrouping(allMaps, cbTasks, aGroupings, 0);
 
                 tasks = getTasks(groupTasks);
 

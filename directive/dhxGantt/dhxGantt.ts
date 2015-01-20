@@ -36,7 +36,7 @@ declare module DhxGantt {
         depends?: string[];
         color?: string;
         _type?: DhxGanttDef.TTaskType;
-        _data: any;
+        _data?: any;
     }
 
     interface TLink {
