@@ -765,8 +765,8 @@ module CbUtils {
 
         getAllMaps(): TAllMaps {
 
-            var releaseMap: TReleaseMap = {};
             var trackerMap: TTrackerMap = {};
+
             Object.keys(this._cache).forEach((projectUri) => {
                 var info = this._cache[projectUri];
                 if (info) {
@@ -781,7 +781,7 @@ module CbUtils {
                 userMap: this._userMap,
                 releaseMap: this._releaseMap,
                 trackerMap: trackerMap
-            }
+            };
         }
 
         getCachedProjectInfo(aProjectUri: string, aCb: (err, cached: TCachedProjectInfo) => void) {
@@ -795,6 +795,7 @@ module CbUtils {
 
             var s = [];
 
+            var project: Cb.TProject;
             var cmdbMap: TCmdbMap;
             var trackerMap: TTrackerMap;
             var releases: Cb.TRelease[];
@@ -802,9 +803,9 @@ module CbUtils {
             var taskMap: TTaskMap = {};
             var tasks: Cb.TTask[] = [];
 
-            s.push((done) => {
-                Cb.project.getProject(aProjectUri, (err, project) => {
-                    this._projectMap[aProjectUri] = project;
+            s.push(function(done) {
+                Cb.project.getProject(aProjectUri, function (err, p) {
+                    project = p;
                     done(err);
                 });
             });
@@ -863,6 +864,8 @@ module CbUtils {
             });
 
             async.series(s, (err) => {
+
+                this._projectMap[aProjectUri] = project;
 
                 var ret: TCachedProjectInfo = {
                     cmdbMap: cmdbMap,
@@ -986,9 +989,20 @@ module CbUtils {
             child?: TGroupTask[];
         }
 
+//        interface FnInnerGroupingHandlers {
+//            (allMaps: TAllMaps): TGroupTask[];
+//        }
+//
+//        var KInnerGroupingHandlers: { [type: TGroupType]: FnInnerGroupingHandlers } = {};
+//        KInnerGroupingHandler[TGroupType.BySprint] = function(aAllMaps: TAllMaps): TGroupTask[] {
+//            var ret: TGroupTask[] = [];
+//
+//            return ret;
+//        };
+
         var KUnknownIdentifier = 'UNKNOWN';
-        var KGroupKeyIndentifiers = {};
-        KGroupKeyIndentifiers[TGroupType.ByUser] = function(aAllMaps: TAllMaps, aTask: Cb.TTask) {
+        var KGroupKeyIdentifiers = {};
+        KGroupKeyIdentifiers[TGroupType.ByUser] = function(aAllMaps: TAllMaps, aTask: Cb.TTask) {
             var ret = KUnknownIdentifier;
             if (aTask.assignedTo) {
                 ret = aTask.assignedTo[0].uri;
@@ -999,10 +1013,10 @@ module CbUtils {
             }
             return ret;
         };
-        KGroupKeyIndentifiers[TGroupType.ByProject] = function(aAllMaps: TAllMaps, aTask: Cb.TTask) {
+        KGroupKeyIdentifiers[TGroupType.ByProject] = function(aAllMaps: TAllMaps, aTask: Cb.TTask) {
             return aAllMaps.trackerMap[aTask.tracker.uri].project.uri;
         };
-        KGroupKeyIndentifiers[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aTask: Cb.TTask) {
+        KGroupKeyIdentifiers[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aTask: Cb.TTask) {
             var ret = KUnknownIdentifier;
             var releaseUriList = getReleaseUriListFromTask(aTask);
             if (releaseUriList) {
@@ -1015,8 +1029,8 @@ module CbUtils {
             return ret;
         };
 
-        var KGroupConverter = {};
-        KGroupConverter[TGroupType.ByUser] = function(aAllMaps: TAllMaps, aUserUri: string): DhxGantt.TTask {
+        var KGroupConverters = {};
+        KGroupConverters[TGroupType.ByUser] = function(aAllMaps: TAllMaps, aUserUri: string): DhxGantt.TTask {
             var user = aAllMaps.userMap[aUserUri];
             return {
                 id: user.uri,
@@ -1025,7 +1039,7 @@ module CbUtils {
                 _type: dhxDef.TTaskType.User
             };
         };
-        KGroupConverter[TGroupType.ByProject] = function(aAllMaps: TAllMaps, aProjectUri: string): DhxGantt.TTask {
+        KGroupConverters[TGroupType.ByProject] = function(aAllMaps: TAllMaps, aProjectUri: string): DhxGantt.TTask {
             var project = aAllMaps.projectMap[aProjectUri];
             console.log(project);
             return {
@@ -1035,14 +1049,20 @@ module CbUtils {
                 _type: dhxDef.TTaskType.Project
             };
         };
-        KGroupConverter[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aReleaseUri: string): DhxGantt.TTask {
+        KGroupConverters[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aReleaseUri: string, aParentId?: string): DhxGantt.TTask {
             var release = aAllMaps.releaseMap[aReleaseUri];
-            return {
+            console.log(release);
+            var ret: DhxGantt.TTask = {
                 id: release.uri,
                 text: release.name,
                 user: '-',
                 _type: dhxDef.TTaskType.Sprint
             };
+            if (release.parent) {
+                var parentId = aParentId ? aParentId + '>' : '';
+                ret.parent = parentId + release.parent.uri;
+            }
+            return ret;
         };
 
         var KUnknownConverter = {};
@@ -1070,9 +1090,9 @@ module CbUtils {
             var type = aGroupings[aDepth];
             var ret = [];
             if (type) {
-                console.log('processGrouping: ' + type);
-                ret = [];
-                var groupKeyIdentifier = KGroupKeyIndentifiers[type];
+                console.log('processGrouping: ' + aDepth + ':' + type);
+
+                var groupKeyIdentifier = KGroupKeyIdentifiers[type];
                 var map = {};
                 aTasks.forEach(function(t) {
                     var key = groupKeyIdentifier(aAllMaps, t);
@@ -1083,7 +1103,7 @@ module CbUtils {
                     }
                 });
 
-                var groupConverter = KGroupConverter[type];
+                var groupConverter = KGroupConverters[type];
                 var unknownTask: TGroupTask = KUnknownConverter[type]();
                 Object.keys(map).forEach(function(key) {
 
@@ -1091,7 +1111,7 @@ module CbUtils {
                     if (key == KUnknownIdentifier) {
                         task = unknownTask;
                     } else {
-                        task = groupConverter(aAllMaps, key);
+                        task = groupConverter(aAllMaps, key, aParentId);
                     }
                     if (aParentId) {
                         task.parent = aParentId;
@@ -1101,7 +1121,7 @@ module CbUtils {
                         aAllMaps,
                         map[key],
                         aGroupings,
-                            aDepth + 1,
+                        aDepth + 1,
                         task.id);
                     ret.push(task);
                 });
