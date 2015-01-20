@@ -7545,6 +7545,18 @@ button.close {
 .gantt_tooltip {
   width: 200px;
 }
+.gantt_tree_icon.task_type_release {
+  background-image: url('images/icons/ico_filled_flag.png');
+  background-size: 18px;
+}
+.gantt_tree_icon.task_type_user {
+  background-image: url('images/icons/ico_user.png');
+  background-size: 18px;
+}
+.gantt_tree_icon.task_type_project {
+  background-image: url('images/icons/ico_services.png');
+  background-size: 18px;
+}
 .gantt_task_line.status_none {
   border: 2px solid rgba(175, 175, 175, 0.5);
   color: rgba(175, 175, 175, 0.5);

@@ -1,15 +1,15 @@
 /// <reference path="../../typings/tsd.d.ts"/>
 
-var dhxDef;
-(function (dhxDef) {
+var DhxGanttDef;
+(function (DhxGanttDef) {
     (function (TTaskType) {
         TTaskType[TTaskType["None"] = 0] = "None";
         TTaskType[TTaskType["User"] = 1] = "User";
         TTaskType[TTaskType["Project"] = 2] = "Project";
         TTaskType[TTaskType["Sprint"] = 3] = "Sprint";
-    })(dhxDef.TTaskType || (dhxDef.TTaskType = {}));
-    var TTaskType = dhxDef.TTaskType;
-})(dhxDef || (dhxDef = {}));
+    })(DhxGanttDef.TTaskType || (DhxGanttDef.TTaskType = {}));
+    var TTaskType = DhxGanttDef.TTaskType;
+})(DhxGanttDef || (DhxGanttDef = {}));
 
 var GanttUtils;
 (function (GanttUtils) {
@@ -161,6 +161,23 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 type: "duration"
             }
         ];
+
+        // Tree icons: ref:http://docs.dhtmlx.com/gantt/desktop__tree_column.html
+        var task_class_names = {};
+        task_class_names[2 /* Project */] = 'task_type_project';
+        task_class_names[1 /* User */] = 'task_type_user';
+        task_class_names[3 /* Sprint */] = 'task_type_release';
+
+        gantt.templates.grid_folder = function (item) {
+            var icon_class_by_type = task_class_names[item._type];
+            var icon_class = icon_class_by_type || 'gantt_folder_' + (item.$open ? "open" : "closed");
+            return "<div class='gantt_tree_icon " + icon_class + "'></div>";
+        };
+        gantt.templates.grid_file = function (item) {
+            var icon_class_by_type = task_class_names[item._type];
+            var icon_class = icon_class_by_type || 'gantt_file';
+            return "<div class='gantt_tree_icon " + icon_class + "'></div>";
+        };
 
         //init gantt
         gantt.init($element[0]);

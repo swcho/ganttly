@@ -6,7 +6,7 @@
 declare var dhtmlXMenuObject;
 declare var dhtmlx;
 
-module dhxDef {
+module DhxGanttDef {
 
     export enum TTaskType {
         None,
@@ -35,7 +35,7 @@ declare module DhxGantt {
         estimatedDays?: number;
         depends?: string[];
         color?: string;
-        _type?: dhxDef.TTaskType;
+        _type?: DhxGanttDef.TTaskType;
     }
 
     interface TLink {
@@ -226,6 +226,23 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 type:"duration"
             }
         ];
+
+        // Tree icons: ref:http://docs.dhtmlx.com/gantt/desktop__tree_column.html
+        var task_class_names = {};
+        task_class_names[DhxGanttDef.TTaskType.Project] = 'task_type_project';
+        task_class_names[DhxGanttDef.TTaskType.User] = 'task_type_user';
+        task_class_names[DhxGanttDef.TTaskType.Sprint] = 'task_type_release';
+
+        gantt.templates.grid_folder = function(item) {
+            var icon_class_by_type = task_class_names[item._type];
+            var icon_class = icon_class_by_type || 'gantt_folder_' + (item.$open ? "open" : "closed");
+            return "<div class='gantt_tree_icon " + icon_class + "'></div>";
+        };
+        gantt.templates.grid_file = function(item) {
+            var icon_class_by_type = task_class_names[item._type];
+            var icon_class = icon_class_by_type || 'gantt_file';
+            return "<div class='gantt_tree_icon " + icon_class + "'></div>";
+        };
 
         //init gantt
         gantt.init($element[0]);
