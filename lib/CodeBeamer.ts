@@ -1262,6 +1262,31 @@ module CbUtils {
             return tasks;
         }
 
+        function processLinks(aAllMaps: TAllMaps, aTasks: Cb.TTask[]): DhxGantt.TLink[] {
+            var ret: DhxGantt.TLink[] = [];
+
+            aTasks.forEach(function(task) {
+                if (task._associations) {
+                    task._associations.forEach(function(a) {
+                        if (a.type.name == 'depends') {
+                            try {
+                                ret.push({
+                                    id: a.uri,
+                                    source: a.to.uri,
+                                    target: a.from.uri,
+                                    type: '0'
+                                });
+                            } catch(e) {
+                                console.error(task);
+                            }
+                        }
+                    });
+                }
+            });
+
+            return ret;
+        }
+
         export function getDhxDataByProject(
                 aProjectUri: string,
                 aGroupings: TGroupType[],
@@ -1281,6 +1306,7 @@ module CbUtils {
             });
 
             var tasks;
+            var links;
             s.push(function(done) {
 
                 var allMaps = cache.getAllMaps();
@@ -1290,6 +1316,8 @@ module CbUtils {
                 var groupTasks = processGrouping(allMaps, cbTasks, aGroupings, 0);
 
                 tasks = getTasks(groupTasks);
+
+                links = processLinks(allMaps, cbTasks);
 
                 done();
             });
@@ -1318,7 +1346,7 @@ module CbUtils {
 
                 aCb(err, {
                     data: tasks,
-                    links: []
+                    links: links
                 }, markers);
             });
 
