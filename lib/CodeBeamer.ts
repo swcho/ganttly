@@ -397,9 +397,13 @@ module Cb {
         }
     }
 
-    export class CTrackerItemApi extends CRestApi {
+    export class CItemApi extends CRestApi {
         constructor() {
             super(null);
+        }
+
+        getItem(aReleaseUri: string, aCb: (err, item: TItem) => void) {
+            send('GET', aReleaseUri, null, aCb);
         }
     }
 
@@ -428,6 +432,7 @@ module Cb {
     export var trackerType = new CTrackerTypeApi();
     export var cmdb = new CCmdbApi();
     export var tracker = new CTrackerApi();
+    export var item = new CItemApi();
     export var association = new CAssociationApi();
 }
 
@@ -533,6 +538,32 @@ module CbUtils {
 
     export interface TReleaseMap {
         [releaseUri: string]: Cb.TRelease;
+    }
+
+    export interface TItemMap {
+        [itemUri: string]: Cb.TItem;
+    }
+
+    function getItems(aItemUriList: string[], aCb: (err, items: Cb.TItem[], itemMap: TItemMap) => void) {
+
+        console.log('getItems');
+
+        var p = [];
+        var items = [];
+        var itemMap: TItemMap = {};
+        aItemUriList.forEach(function(uri) {
+            p.push(function(done) {
+               Cb.item.getItem(uri, function(err, i) {
+                   items.push(i);
+                   itemMap[uri] = i;
+                   done(err);
+               });
+            });
+        });
+
+        async.parallel(p, function(err) {
+           aCb(err, items, itemMap);
+        });
     }
 
     function getReleases(aReleaseUriList: string[], aCb: (err, releases: Cb.TRelease[], map: TReleaseMap) => void) {
@@ -700,17 +731,20 @@ module CbUtils {
 
     }
 
-    function populateAssociation(aTasks: Cb.TTask[], aCb: (err) => void) {
+    function populateAssociation(aTasks: Cb.TTask[], aCb: (err, associations: Cb.TAssociation[]) => void) {
 
         console.log('populateAssociation');
 
         var p = [];
+
+        var associations = [];
 
         aTasks.forEach(function(t) {
             p.push(function(done) {
                 Cb.association.getAllAssociationByTypes(t.uri, ['depends', 'child', 'parent'], function(err, a) {
                     if (a && a.length) {
                         t._associations = a;
+                        associations = associations.concat(a);
                     }
                     done(err);
                 });
@@ -718,7 +752,7 @@ module CbUtils {
         });
 
         async.parallel(p, function(err) {
-            aCb(err);
+            aCb(err, associations);
         });
     }
 
@@ -848,9 +882,30 @@ module CbUtils {
                 });
             });
 
+            var itemsMap = {};
             s.push(function(done) {
-                populateAssociation(tasks, function(err) {
+                populateAssociation(tasks, function(err, alist) {
+
+                    alist.forEach(function(a) {
+
+                        if (a.from) {
+                            itemsMap[a.from.uri] = null;
+                        }
+
+                        if (a.to) {
+                            itemsMap[a.to.uri] = null;
+                        }
+
+                    });
+
                     done(err);
+                });
+            });
+
+            s.push(function(done) {
+                getItems(Object.keys(itemsMap), function(err, ilist, imap) {
+                    itemsMap = imap;
+                    done();
                 });
             });
 
@@ -1036,7 +1091,7 @@ module CbUtils {
                 id: user.uri,
                 text: getUserName(user),
                 user: '-',
-                _type: dhxDef.TTaskType.User
+                _type: DhxGanttDef.TTaskType.User
             };
         };
         KGroupConverters[TGroupType.ByProject] = function(aAllMaps: TAllMaps, aProjectUri: string): DhxGantt.TTask {
@@ -1046,7 +1101,7 @@ module CbUtils {
                 id: project.uri,
                 text: project.name,
                 user: '-',
-                _type: dhxDef.TTaskType.Project
+                _type: DhxGanttDef.TTaskType.Project
             };
         };
         KGroupConverters[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aReleaseUri: string, aParentId?: string): DhxGantt.TTask {
@@ -1056,7 +1111,7 @@ module CbUtils {
                 id: release.uri,
                 text: release.name,
                 user: '-',
-                _type: dhxDef.TTaskType.Sprint
+                _type: DhxGanttDef.TTaskType.Sprint
             };
             if (release.parent) {
                 var parentId = aParentId ? aParentId + '>' : '';
@@ -1071,7 +1126,7 @@ module CbUtils {
                 id: '__unknown_user__',
                 text: 'User not assigned',
                 user: '-',
-                _type: dhxDef.TTaskType.User
+                _type: DhxGanttDef.TTaskType.User
             };
         };
         KUnknownConverter[TGroupType.ByProject] = function() {
@@ -1082,7 +1137,7 @@ module CbUtils {
                 id: '__unknown_release__',
                 text: 'Relase not assigned',
                 user: '-',
-                _type: dhxDef.TTaskType.Sprint
+                _type: DhxGanttDef.TTaskType.Sprint
             };
         };
 
