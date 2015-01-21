@@ -1434,7 +1434,7 @@ module CbUtils {
 
                 var allMaps = cache.getAllMaps();
 
-                var cbTasks: any[] = cachedProjectInfo.releases.splice(0);
+                var cbTasks: any[] = cachedProjectInfo.releases.slice(0);
                 cbTasks = cbTasks.concat(cachedProjectInfo.tasks);
                 cbTasks = cbTasks.concat(cachedProjectInfo.externalTasks);
 
