@@ -599,7 +599,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         filters = filters | filterTypeById[filterId];
     });
 
-    CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, filters, function(err, resp, markers) {
+    var sorting: CbUtils.TSortingType = CbUtils.TSortingType.ByStartTime;
+
+    CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, filters,  sorting, function(err, resp, markers) {
         gantt.clearAll();
         markers.forEach(function(m) {
             gantt.addMarker(m);

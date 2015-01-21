@@ -1017,6 +1017,12 @@ module CbUtils {
         ByFromPast2Weeks = 0x02
     }
 
+    export enum TSortingType {
+        None = 0x00,
+        ByStartTime = 0x01,
+        ByUser = 0x02
+    }
+
     export module UiUtils {
 
         var unitDay = 1000 * 60 * 60 * 24;
@@ -1305,12 +1311,12 @@ module CbUtils {
         }
 
 
-        function generatePropertyFilter(aPropList: string[], aValues: any[], aInclude: boolean) {
+        function generatePropertyFilter(aPropOrder: string[], aValues: any[], aInclude: boolean) {
             return function(obj) {
-                var match = false, i, len = aPropList.length, p, v;
+                var match = false, i, len = aPropOrder.length;
 
                 for (i=0; i<len; i++) {
-                    obj = obj[aPropList[i]];
+                    obj = obj[aPropOrder[i]];
                     if (typeof obj == 'undefined') {
                         break;
                     }
@@ -1330,10 +1336,34 @@ module CbUtils {
             }
         }
 
+        function generatePropertySorter(aPropOrder: string[], aAscending: boolean, aCompare) {
+            return function(objA, objB) {
+                var i, len = aPropOrder.length;
+
+                for (i=0; i<len; i++) {
+                    objA = objA[aPropOrder[i]];
+                    objB = objB[aPropOrder[i]];
+                    if (typeof objA == 'undefined') {
+                        return 1;
+                    }
+                    if (typeof objB == 'undefined') {
+                        return -1;
+                    }
+                }
+
+                if (i == len) {
+                    return aCompare ? aCompare(objA, objB) : objA - objB;
+                }
+
+                return 0;
+            }
+        }
+
         export function getDhxDataByProject(
                 aProjectUri: string,
                 aGroupings: TGroupType[],
                 aFilter: TFilterType,
+                aSorting: TSortingType,
                 aCb: (err, aDhxData: DhxGantt.TData, aDhxMarkerList: DhxGantt.TMarker[]) => void ) {
 
             var s = [];
@@ -1364,6 +1394,13 @@ module CbUtils {
                 filters.forEach(function(f) {
                     cbTasks = cbTasks.filter(f);
                 });
+
+                if (aSorting & TSortingType.ByStartTime) {
+                    var s = generatePropertySorter(['startDate'], true, function(a, b) {
+                        return (new Date(a)).getTime() - (new Date(b)).getTime();
+                    });
+                    cbTasks = cbTasks.sort(s);
+                }
 
                 var groupTasks = processGrouping(allMaps, cbTasks, aGroupings, 0);
 
