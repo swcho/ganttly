@@ -567,7 +567,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         }
     });
 
-    CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, function (err, resp, markers) {
+    CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, 1 /* ByWithoutCompletedTask */, function (err, resp, markers) {
         gantt.clearAll();
         markers.forEach(function (m) {
             gantt.addMarker(m);

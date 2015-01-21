@@ -1011,6 +1011,12 @@ module CbUtils {
         BySprint
     }
 
+    export enum TFilterType {
+        None = 0x00,
+        ByWithoutCompletedTask = 0x01,
+        ByFromPast2Weeks = 0x02
+    }
+
     export module UiUtils {
 
         var unitDay = 1000 * 60 * 60 * 24;
@@ -1298,9 +1304,36 @@ module CbUtils {
             return ret;
         }
 
+
+        function generatePropertyFilter(aPropList: string[], aValues: any[], aInclude: boolean) {
+            return function(obj) {
+                var match = false, i, len = aPropList.length, p, v;
+
+                for (i=0; i<len; i++) {
+                    obj = obj[aPropList[i]];
+                    if (typeof obj == 'undefined') {
+                        break;
+                    }
+                }
+
+                if (i == len) {
+                    len = aValues.length;
+                    for (i=0; i<len; i++) {
+                        if (obj == aValues[i]) {
+                            match = true;
+                            break;
+                        }
+                    }
+                }
+
+                return aInclude ? match: !match;
+            }
+        }
+
         export function getDhxDataByProject(
                 aProjectUri: string,
                 aGroupings: TGroupType[],
+                aFilter: TFilterType,
                 aCb: (err, aDhxData: DhxGantt.TData, aDhxMarkerList: DhxGantt.TMarker[]) => void ) {
 
             var s = [];
@@ -1323,6 +1356,14 @@ module CbUtils {
                 var allMaps = cache.getAllMaps();
 
                 var cbTasks = cachedProjectInfo.tasks.concat(cachedProjectInfo.externalTasks);
+
+                var filters = [];
+                if (aFilter & TFilterType.ByWithoutCompletedTask) {
+                    filters.push(generatePropertyFilter(['status', 'name'], ['Closed', 'Completed'], false));
+                }
+                filters.forEach(function(f) {
+                    cbTasks = cbTasks.filter(f);
+                });
 
                 var groupTasks = processGrouping(allMaps, cbTasks, aGroupings, 0);
 
