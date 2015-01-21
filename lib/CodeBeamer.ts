@@ -156,10 +156,18 @@ module Cb {
         style?: string; // color code
     }
 
+    export enum TItemType {
+        Unknown,
+        Task,
+        Release
+    }
+
     export interface TItem {
         uri: string;
         name: string;
         _associations?: TAssociation[];
+        _references?: TItem[];
+        _type?: TItemType;
     }
 
     export interface TTask extends TItem {
@@ -402,8 +410,12 @@ module Cb {
             super(null);
         }
 
-        getItem(aReleaseUri: string, aCb: (err, item: TItem) => void) {
-            send('GET', aReleaseUri, null, aCb);
+        getItem(aItemUri: string, aCb: (err, item: TItem) => void) {
+            send('GET', aItemUri, null, aCb);
+        }
+
+        getReferences(aItemUri: string, aCb: (err, item: TItem[]) => void) {
+            send('GET', aItemUri + '/references', null, aCb);
         }
     }
 
@@ -634,7 +646,7 @@ module CbUtils {
         });
     }
 
-    function getReleasesInfoByProject(aProjectUri: string, aCb: (err, cmdbList: Cb.TCmdb[], releases: Cb.TRelease[], associations: Cb.TAssociation[]) => void) {
+    function getReleasesInfoByProject(aProjectUri: string, aCb: (err, cmdbList: Cb.TCmdb[], releases: Cb.TRelease[], associations: Cb.TAssociation[], outerItemUriList: string[]) => void) {
 
         console.log('getReleasesInfoByProject');
 
@@ -657,16 +669,42 @@ module CbUtils {
             });
         });
 
-
+        var outerReleasesUriList: string[];
         s.push(function(done) {
             populateAssociation(releases, function(err, alist) {
                 associations = alist;
+                var mapRelease = {};
+                alist.forEach(function(a) {
+                    if (a.type.name == 'derived') {
+                        mapRelease[a.to.uri] = null;
+                    }
+                });
+                outerReleasesUriList = Object.keys(mapRelease);
+                done(err);
+            });
+        });
+
+        var outerReleases;
+        s.push(function(done) {
+            getItems(outerReleasesUriList, function(err, items) {
+                releases = releases.concat(items);
+                outerReleases = items;
+                done(err);
+            });
+        });
+
+        var outerItemUriList = [];
+        s.push(function(done) {
+            populateReferences(outerReleases, function(err, references) {
+                references.forEach(function(i) {
+                    outerItemUriList.push(i.uri);
+                });
                 done(err);
             });
         });
 
         async.series(s, function(err) {
-            aCb(err, cmdbList, releases, associations);
+            aCb(err, cmdbList, releases, associations, outerItemUriList);
         });
     }
 
@@ -745,10 +783,10 @@ module CbUtils {
 
         aItems.forEach(function(i) {
             p.push(function(done) {
-                Cb.association.getAllAssociationByTypes(i.uri, ['depends', 'child', 'parent'], function(err, a) {
-                    if (a && a.length) {
-                        i._associations = a;
-                        associations = associations.concat(a);
+                Cb.association.getAllAssociationByTypes(i.uri, ['depends', 'child', 'parent', 'derived'], function(err, items) {
+                    if (items && items.length) {
+                        i._associations = items;
+                        associations = associations.concat(items);
                     }
                     done(err);
                 });
@@ -760,12 +798,36 @@ module CbUtils {
         });
     }
 
+    function populateReferences(aItems: Cb.TItem[], aCb: (err, references: Cb.TItem[]) => void) {
+
+        console.log('populateReferences');
+
+        var p = [];
+
+        var references = [];
+
+        aItems.forEach(function(i) {
+            p.push(function(done) {
+                Cb.item.getReferences(i.uri, function(err, items) {
+                    i._references = items;
+                    references = references.concat(items);
+                    done();
+                });
+            });
+        });
+
+        async.parallel(p, function(err) {
+            aCb(err, references);
+        });
+    }
+
     interface TProjectInfo {
         releaseCmdbList: Cb.TCmdb[];
         releaseList: Cb.TRelease[];
         taskTrackerList: Cb.TTracker[];
         tasks: Cb.TTask[];
         associations: Cb.TAssociation[];
+        outerItemUriList: string[];
     }
 
     function getProjectInfo(aProjectUri, aCb: (err, projectInfo: TProjectInfo) => void) {
@@ -773,15 +835,17 @@ module CbUtils {
         var p = [];
         var releaseCmdbList: Cb.TCmdb[];
         var releaseList: Cb.TRelease[];
+        var outerItemUriList: string[];
         var taskTrackerList: Cb.TTracker[];
         var tasks: Cb.TTask[];
         var associations: Cb.TAssociation[] = [];
 
         p.push(function(done) {
-            getReleasesInfoByProject(aProjectUri, function(err, clist, rlist, alist) {
+            getReleasesInfoByProject(aProjectUri, function(err, clist, rlist, alist, urilist) {
                 releaseCmdbList = clist;
                 releaseList = rlist;
                 associations = associations.concat(alist);
+                outerItemUriList = urilist;
                 done(err);
             });
         });
@@ -802,7 +866,8 @@ module CbUtils {
                 releaseList: releaseList,
                 taskTrackerList: taskTrackerList,
                 tasks: tasks,
-                associations: associations
+                associations: associations,
+                outerItemUriList: outerItemUriList
             });
 
         });
@@ -812,7 +877,7 @@ module CbUtils {
     export interface TCachedProjectInfo {
         releases: Cb.TRelease[];
         tasks: Cb.TTask[];
-        externalTasks: Cb.TTask[];
+        outerTasks: Cb.TTask[];
     }
 
     export interface TAllMaps {
@@ -870,25 +935,27 @@ module CbUtils {
 
             var s = [];
 
-            var trackerMap = this._trackerMap;
             var itemMap = this._itemMap;
 
             var release;
             var tasks;
             var userUriList: string[];
-            var externalReleaseUriList;
-            var externalItemUriList: string[];
+            var trackerUriList: string[] = [];
+            var outerReleaseUriList;
+            var outerItemUriList: string[];
             s.push(function(done) {
                 getProjectInfo(aProjectUri, function(err, projectInfo) {
 
                     release = projectInfo.releaseList;
                     tasks = projectInfo.tasks;
+                    outerItemUriList = projectInfo.outerItemUriList;
 
                     projectInfo.taskTrackerList.forEach(function(t) {
-                        trackerMap[t.uri] = t;
+                        trackerUriList.push(t.uri);
                     });
 
                     projectInfo.releaseList.forEach(function(r) {
+                        r._type = Cb.TItemType.Release;
                         itemMap[r.uri] = r;
                     });
 
@@ -911,7 +978,7 @@ module CbUtils {
                         }
                     });
                     userUriList = Object.keys(mapUser);
-                    externalReleaseUriList = Object.keys(mapRelease);
+                    outerReleaseUriList = Object.keys(mapRelease);
 
                     var mapAssociation = {};
                     projectInfo.associations.forEach(function(a) {
@@ -923,17 +990,17 @@ module CbUtils {
                             mapAssociation[a.to.uri] = null;
                         }
                     });
-                    externalItemUriList = Object.keys(mapAssociation);
+                    outerItemUriList = outerItemUriList.concat(Object.keys(mapAssociation));
                     done();
                 });
             });
 
-            var externalItems;
-            var externalTrackerUriList;
-            var externalProjectUriList;
-            var externalUserUriList;
+            var outerItems;
+            var outerTrackerUriList;
+            var outerProjectUriList;
+            var outerUserUriList;
             s.push(function(done) {
-                getItems(externalItemUriList, function(err, ilist) {
+                getItems(outerItemUriList, function(err, ilist) {
                     var mapRelease = {};
                     var mapTracker = {};
                     var mapProject = {};
@@ -956,30 +1023,33 @@ module CbUtils {
                             });
                         }
                     });
-                    externalItems = ilist;
-                    externalReleaseUriList = externalReleaseUriList.concat(Object.keys(mapRelease));
-                    externalTrackerUriList = Object.keys(mapTracker);
-                    externalProjectUriList = Object.keys(mapProject);
-                    externalUserUriList = Object.keys(mapUser);
+                    outerItems = ilist;
+                    outerReleaseUriList = outerReleaseUriList.concat(Object.keys(mapRelease));
+                    outerTrackerUriList = Object.keys(mapTracker);
+                    outerProjectUriList = Object.keys(mapProject);
+                    outerUserUriList = Object.keys(mapUser);
                     done();
                 });
             });
 
             var userMap = this._userMap;
             var projectMap = this._projectMap;
+            var trackerMap = this._trackerMap;
+
             s.push(function(done) {
 
                 async.parallel([
                     function(done) {
-                        getItems(externalReleaseUriList, function(err, ilist) {
+                        getItems(outerReleaseUriList, function(err, ilist) {
                             ilist.forEach(function(release) {
+                                release._type = Cb.TItemType.Release;
                                 itemMap[release.uri] = <Cb.TRelease><any>release;
                             });
                             done();
                         });
                     },
                     function(done) {
-                        getItems(externalTrackerUriList, function(err, ilist) {
+                        getItems(trackerUriList.concat(outerTrackerUriList), function(err, ilist) {
                             ilist.forEach(function(tracker) {
                                 trackerMap[tracker.uri] = <Cb.TTracker><any>tracker;
                             });
@@ -987,8 +1057,7 @@ module CbUtils {
                         });
                     },
                     function(done) {
-                        var uriList = userUriList.concat(externalUserUriList);
-                        getItems(uriList, function(err, ilist) {
+                        getItems(userUriList.concat(outerUserUriList), function(err, ilist) {
                             ilist.forEach(function(i) {
                                 userMap[i.uri] = <Cb.TUser><any>i;
                             });
@@ -996,8 +1065,7 @@ module CbUtils {
                         });
                     },
                     function(done) {
-                        var uriList = [aProjectUri].concat(externalProjectUriList);
-                        getItems(uriList, function(err, ilist) {
+                        getItems([aProjectUri].concat(outerProjectUriList), function(err, ilist) {
                             ilist.forEach(function(i) {
                                 projectMap[i.uri] = <Cb.TProject><any>i;
                             });
@@ -1012,18 +1080,18 @@ module CbUtils {
 
             async.series(s, (err) => {
 
-                var externalTasks = [];
-                externalItems.forEach((item) => {
+                var outerTasks = [];
+                outerItems.forEach((item) => {
                     var tracker = trackerMap[item.tracker.uri];
                     if (tracker.type.name == 'Task') {
-                        externalTasks.push(item);
+                        outerTasks.push(item);
                     }
                 });
 
                 var ret: TCachedProjectInfo = {
                     releases: release,
                     tasks: tasks,
-                    externalTasks: externalTasks
+                    outerTasks: outerTasks
                 };
 
                 this._cache[aProjectUri] = ret;
@@ -1169,6 +1237,7 @@ module CbUtils {
         }
 
         var KUnknownIdentifier = 'UNKNOWN';
+        var KIgnoreIdentifier = 'IGNORE';
         var KGroupKeyIdentifiers = {};
         KGroupKeyIdentifiers[TGroupType.ByUser] = function(aAllMaps: TAllMaps, aTask: Cb.TTask) {
             var ret = KUnknownIdentifier;
@@ -1186,6 +1255,9 @@ module CbUtils {
         };
         KGroupKeyIdentifiers[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aTask: Cb.TTask) {
             var ret = KUnknownIdentifier;
+            if (aTask._type == Cb.TItemType.Release) {
+                return KIgnoreIdentifier;
+            }
             var releaseUriList = getReleaseUriListFromTask(aTask);
             if (releaseUriList) {
                 ret = releaseUriList[0];
@@ -1220,17 +1292,19 @@ module CbUtils {
         KGroupConverters[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aReleaseUri: string, aParentId?: string): DhxGantt.TTask {
             var release: Cb.TRelease = aAllMaps.itemMap[aReleaseUri];
             console.log(release);
-            var ret: DhxGantt.TTask = {
-                id: release.uri,
-                text: release.name,
-                user: '-',
-                _type: DhxGanttDef.TTaskType.Release
-            };
-            if (release.parent) {
-                var parentId = aParentId ? aParentId + '>' : '';
-                ret.parent = parentId + release.parent.uri;
-            }
-            return ret;
+
+            return covertCbItemToDhxTask(aAllMaps, release, aParentId);
+//            var ret: DhxGantt.TTask = {
+//                id: release.uri,
+//                text: release.name,
+//                user: '-',
+//                _type: DhxGanttDef.TTaskType.Release
+//            };
+//            if (release.parent) {
+//                var parentId = aParentId ? aParentId + '>' : '';
+//                ret.parent = parentId + release.parent.uri;
+//            }
+//            return ret;
         };
 
         var KUnknownConverter = {};
@@ -1274,6 +1348,10 @@ module CbUtils {
                 var groupConverter = KGroupConverters[type];
                 var unknownTask: TGroupTask = KUnknownConverter[type]();
                 Object.keys(map).forEach(function(key) {
+
+                    if (key == KIgnoreIdentifier) {
+                        return;
+                    }
 
                     var task: TGroupTask;
                     if (key == KUnknownIdentifier) {
@@ -1338,6 +1416,13 @@ module CbUtils {
                                     source: a.from.uri,
                                     target: a.to.uri,
                                     type: '1'
+                                });
+                            } else if (a.type.name == 'derived') {
+                                ret.push({
+                                    id: a.uri,
+                                    source: a.to.uri,
+                                    target: a.from.uri,
+                                    type: '0'
                                 });
                             }
                         } catch (e) {
@@ -1446,7 +1531,7 @@ module CbUtils {
                 var cbTasks: any[] = cachedProjectInfo.releases.slice(0);
 //                var cbTasks = [];
                 cbTasks = cbTasks.concat(cachedProjectInfo.tasks);
-                cbTasks = cbTasks.concat(cachedProjectInfo.externalTasks);
+                cbTasks = cbTasks.concat(cachedProjectInfo.outerTasks);
 
                 var filters = [];
                 if (aFilter & TFilterType.ByWithoutCompletedTask) {

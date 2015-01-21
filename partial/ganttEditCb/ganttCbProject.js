@@ -246,8 +246,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             });
         }
         task.user = userNames.join(',');
-        task.userIdList = userIdList;
 
+        //        task.userIdList = userIdList;
         if (cbTask.endDate) {
             task.end_date = new Date(cbTask.endDate);
         }
@@ -542,7 +542,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
     /**
     * Context menu
-    * @type {{menuItems: {id: string, text: string, cb: (function(dhx.TContextCbParam): undefined)}[]}}
+    * @type {{menuItems: {id: string, text: string, cb: (function(DhxGantt.TContextCbParam): undefined)}[]}}
     */
     var contextMenu = {
         menuItems: [
@@ -630,6 +630,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     //        }
     //    });
     if (!userUri && !projectUri) {
+        //        CbUtils.getTasksByProject('/project/3', function(err, resp) {
+        //            gantt.clearAll();
+        //            gantt.parse(CbUtils.convertCbTasksToDhxData(resp), "json");
+        //        });
         return;
     }
 
@@ -691,14 +695,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     }
 
     showModal('Getting information...');
-
-    CbUtils.getTasksByProject('/project/3', function(err, resp) {
-        gantt.clearAll();
-        gantt.parse(CbUtils.convertCbTasksToDhxData(resp), "json");
-    });
-
-    return;
-
     $codeBeamer.getTasks(param, function (err, trackerUriList, items) {
         if (err) {
             console.log(err);

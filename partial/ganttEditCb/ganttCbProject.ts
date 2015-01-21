@@ -175,8 +175,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         });
     };
 
-    function findTask(id: string): dhx.TTask {
-        var t: dhx.TTask = null;
+    function findTask(id: string): DhxGantt.TTask {
+        var t: DhxGantt.TTask = null;
         var i, len=$scope.tasks.data.length;
         for (i=0; i<len; i++) {
             t = $scope.tasks.data[i];
@@ -187,8 +187,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         return t;
     }
 
-    function updateTask(task: dhx.TTask) {
-        var t: dhx.TTask = null;
+    function updateTask(task: DhxGantt.TTask) {
+        var t: DhxGantt.TTask = null;
         var i, len=$scope.tasks.data.length;
         for (i=0; i<len; i++) {
             t = $scope.tasks.data[i];
@@ -200,7 +200,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         return false;
     }
 
-    function setParentOpen(task: dhx.TTask) {
+    function setParentOpen(task: DhxGantt.TTask) {
         if (task.parent) {
             var parentTask = findTask(task.parent);
             if (parentTask) {
@@ -210,7 +210,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     }
 
-    function doDependsTasks(aTask: dhx.TTask, aCb, aLoopFunc: (aPrecedentTask: dhx.TTask, aTask: dhx.TTask, aCb) => void) {
+    function doDependsTasks(aTask: DhxGantt.TTask, aCb, aLoopFunc: (aPrecedentTask: DhxGantt.TTask, aTask: DhxGantt.TTask, aCb) => void) {
         var series = [];
         if (aTask.depends) {
             aTask.depends.forEach(function(taskId: string) {
@@ -231,9 +231,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         });
     }
 
-    function covertCbTaskToDhxTask(cbTask: cb.TTask, parentUri?: string): dhx.TTask {
+    function covertCbTaskToDhxTask(cbTask: cb.TTask, parentUri?: string): DhxGantt.TTask {
         console.log(cbTask);
-        var task: dhx.TTask = {
+        var task: DhxGantt.TTask = {
             id: cbTask.uri,
             text: cbTask.name,
             start_date: new Date(cbTask.startDate || cbTask.modifiedAt),
@@ -253,7 +253,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             });
         }
         task.user = userNames.join(',');
-        task.userIdList = userIdList;
+//        task.userIdList = userIdList;
 
         if (cbTask.endDate) {
             task.end_date = new Date(cbTask.endDate);
@@ -362,7 +362,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         };
     }());
 
-    function get_holiday_awared_task(aTask: dhx.TTask, aMode: string): cb.TTask {
+    function get_holiday_awared_task(aTask: DhxGantt.TTask, aMode: string): cb.TTask {
         var holidayAwared = holidayAwareness? $calendar.getStartAndEndDate(aTask.start_date, aTask.estimatedMillis): {
             start: aTask.start_date,
             end: aTask.end_date
@@ -398,7 +398,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
      * @param id
      * @param item
      */
-    $scope.onTaskAdd = function(gantt, id, item: dhx.TTask) {
+    $scope.onTaskAdd = function(gantt, id, item: DhxGantt.TTask) {
         if (taskTrackerUriList) {
             var param: cb.TParamCreateTask = {
                 tracker: taskTrackerUriList[0],
@@ -437,7 +437,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     };
 
-    $scope.onTaskUpdate = function(id, item: dhx.TTask, mode: string) {
+    $scope.onTaskUpdate = function(id, item: DhxGantt.TTask, mode: string) {
         var task = get_holiday_awared_task(item, mode);
         showModal("Updating task");
         $codeBeamer.updateTask(task, function(err, resp) {
@@ -459,7 +459,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     $scope.onTaskDelete = function(gantt, id, item) {
         console.log('onTaskDelete');
-        var i, len=$scope.tasks.data.length, task: dhx.TTask;
+        var i, len=$scope.tasks.data.length, task: DhxGantt.TTask;
         for (i=0; i<len; i++) {
             task = $scope.tasks.data[i];
             if (task.id === id) {
@@ -499,8 +499,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
      */
 
     function adjustStartTime(gantt, toId, fromId) {
-        var taskTo: dhx.TTask = gantt.getTask(toId);
-        var taskFrom: dhx.TTask = gantt.getTask(fromId);
+        var taskTo: DhxGantt.TTask = gantt.getTask(toId);
+        var taskFrom: DhxGantt.TTask = gantt.getTask(fromId);
         if (taskTo.duration) {
             taskFrom.start_date = new Date(taskTo.start_date.getTime() + taskTo.duration * unitDay);
             taskFrom.end_date = new Date(taskFrom.start_date.getTime() + taskFrom.duration * unitDay);
@@ -513,7 +513,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     }
 
-    $scope.onLinkAdd = function(gantt, id, item: dhx.TLink) {
+    $scope.onLinkAdd = function(gantt, id, item: DhxGantt.TLink) {
         console.log(id, item);
         if (item.type === '0') {
 
@@ -554,13 +554,13 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     /**
      * Context menu
-     * @type {{menuItems: {id: string, text: string, cb: (function(dhx.TContextCbParam): undefined)}[]}}
+     * @type {{menuItems: {id: string, text: string, cb: (function(DhxGantt.TContextCbParam): undefined)}[]}}
      */
-    var contextMenu: dhx.TContextMenu = {
+    var contextMenu: DhxGantt.TContextMenu = {
         menuItems: [{
             id: 'open_task',
             text: '새창에서 열기',
-            cb: function(param: dhx.TContextCbParam) {
+            cb: function(param: DhxGantt.TContextCbParam) {
                 var url = param.taskId || param.linkId;
                 var width = 1280;
                 var height = 720;
@@ -576,7 +576,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }, {
             id: 'adjust_schedule',
             text: '연관 작업 일정 조정',
-            cb: function(param: dhx.TContextCbParam) {
+            cb: function(param: DhxGantt.TContextCbParam) {
 //                console.log(param);
                 var task = gantt.getTask(param.taskId);
                 showModal("Rescheduling tasks");
@@ -584,7 +584,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                     function() {
                         closeModal();
                     },
-                    function(precedentTask: dhx.TTask, task: dhx.TTask, aCb) {
+                    function(precedentTask: DhxGantt.TTask, task: DhxGantt.TTask, aCb) {
                         task.start_date = precedentTask.end_date;
                         var adjusted_task = get_holiday_awared_task(task, "move");
                         $codeBeamer.updateTask(adjusted_task, function(err, resp) {
@@ -604,7 +604,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }, {
             id: 'open_user_view',
             text: '사용자 작업 보기',
-            cb: function(param: dhx.TContextCbParam) {
+            cb: function(param: DhxGantt.TContextCbParam) {
 
 //                var task = gantt.getTask(param.taskId);
 //                console.log(task);
@@ -719,7 +719,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
         taskTrackerUriList = trackerUriList;
 
-        var taskUris = [], tasks: dhx.TTask[] = [], links: dhx.TLink[] = [];
+        var taskUris = [], tasks: DhxGantt.TTask[] = [], links: DhxGantt.TLink[] = [];
         var projects = {};
         var assignedUser = {};
 
