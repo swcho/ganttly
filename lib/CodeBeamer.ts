@@ -1265,28 +1265,31 @@ module CbUtils {
             aTasks.forEach(function(task) {
                 if (task._associations) {
                     task._associations.forEach(function(a) {
-                        if (a.type.name == 'depends') {
-//                            try {
-//                                ret.push({
-//                                    id: a.uri,
-//                                    source: a.to.uri,
-//                                    target: a.from.uri,
-//                                    type: '0'
-//                                });
-//                            } catch(e) {
-//                                console.error(task);
-//                            }
-                        } else if (a.type.name == 'child') {
-                            try {
+                        try {
+                            if (a.type.name == 'depends') {
                                 ret.push({
                                     id: a.uri,
                                     source: a.to.uri,
                                     target: a.from.uri,
+                                    type: '0'
+                                });
+                            } else if (a.type.name == 'child') {
+                                ret.push({
+                                    id: a.uri,
+                                    source: a.from.uri,
+                                    target: a.to.uri,
                                     type: '1'
                                 });
-                            } catch(e) {
-                                console.error(task);
+                            } else if (a.type.name == 'parent') {
+                                ret.push({
+                                    id: a.uri,
+                                    source: a.from.uri,
+                                    target: a.to.uri,
+                                    type: '1'
+                                });
                             }
+                        } catch (e) {
+                            console.error(task);
                         }
                     });
                 }
