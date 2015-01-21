@@ -102,7 +102,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 
         // Autosize
         //        gantt.config.autosize = true;
-        // Set task bar's class by priority
+        // Task class
         gantt.templates.task_class = function (start, end, task) {
             return classes_status[task.status] || '';
         };
@@ -110,6 +110,22 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
         //        gantt.templates.task_row_class = function(start, end, task) {
         //            return classes_status[task.status] || '';
         //        };
+        // Link class
+        gantt.templates.link_class = function (link) {
+            var types = gantt.config.links;
+            switch (link.type) {
+                case types.finish_to_start:
+                    return "finish_to_start";
+                    break;
+                case types.start_to_start:
+                    return "start_to_start";
+                    break;
+                case types.finish_to_finish:
+                    return "finish_to_finish";
+                    break;
+            }
+        };
+
         // Highlight weekend
         gantt.templates.scale_cell_class = function (date) {
             if ($calendar.isHoliday(date)) {
