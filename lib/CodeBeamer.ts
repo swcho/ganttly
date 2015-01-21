@@ -159,6 +159,7 @@ module Cb {
     export interface TItem {
         uri: string;
         name: string;
+        _associations?: TAssociation[];
     }
 
     export interface TTask extends TItem {
@@ -181,7 +182,6 @@ module Cb {
         spentEstimatedHours?: number;
         spentMillis?: number;
         release?: TRelease[];
-        _associations: TAssociation[];
     }
 
     export interface TRelease extends TItem {
@@ -544,25 +544,24 @@ module CbUtils {
         [itemUri: string]: Cb.TItem;
     }
 
-    function getItems(aItemUriList: string[], aCb: (err, items: Cb.TItem[], itemMap: TItemMap) => void) {
+    function getItems(aItemUriList: string[], aCb: (err, items: Cb.TItem[]) => void) {
 
         console.log('getItems');
 
         var p = [];
         var items = [];
-        var itemMap: TItemMap = {};
+
         aItemUriList.forEach(function(uri) {
             p.push(function(done) {
                Cb.item.getItem(uri, function(err, i) {
                    items.push(i);
-                   itemMap[uri] = i;
                    done(err);
                });
             });
         });
 
         async.parallel(p, function(err) {
-           aCb(err, items, itemMap);
+           aCb(err, items);
         });
     }
 
@@ -635,69 +634,74 @@ module CbUtils {
         });
     }
 
-    function getReleasesByProject(aProjectUri: string, aCb: (err, cmdbMap: TCmdbMap, releases: Cb.TRelease[], releaseMap: TReleaseMap) => void) {
+    function getReleasesInfoByProject(aProjectUri: string, aCb: (err, cmdbList: Cb.TCmdb[], releases: Cb.TRelease[], associations: Cb.TAssociation[]) => void) {
 
-        console.log('getReleasesByProject');
+        console.log('getReleasesInfoByProject');
 
         var s = [];
-        var cmdbList;
-        var cmdbMap: TCmdbMap = {};
+        var cmdbList: Cb.TCmdb[];
         var releases = [];
-        var releaseMap: TReleaseMap = {};
+        var associations: Cb.TAssociation[];
+
         s.push(function(done) {
             Cb.cmdb.getReleaseCmdbList(aProjectUri, function(err, list) {
                 cmdbList = list;
-                cmdbList.forEach(function(c) {
-                    c.project = c.project || <Cb.TProject><any>{ uri: aProjectUri };
-                    cmdbMap[c.uri]= c;
-                });
                 done(err);
             });
         });
+
         s.push(function(done) {
             getReleasesByCmdbList(cmdbList, function(err, rlist) {
-                rlist.forEach(function(r) {
-                    releaseMap[r.uri] = r;
-                });
                 releases = rlist;
                 done(err);
             });
         });
+
+
+        s.push(function(done) {
+            populateAssociation(releases, function(err, alist) {
+                associations = alist;
+                done(err);
+            });
+        });
+
         async.series(s, function(err) {
-            aCb(err, cmdbMap, releases, releaseMap);
+            aCb(err, cmdbList, releases, associations);
         });
     }
 
-    function getTaskInfoByProject(aProjectUri: string, aCb: (err, trackers: Cb.TTracker[], trackerMap: TTrackerMap, tasks: Cb.TTask[], taskMap: TTaskMap) => void) {
+    function getTaskInfoByProject(aProjectUri: string, aCb: (err, trackers: Cb.TTracker[], tasks: Cb.TTask[], associations: Cb.TAssociation[]) => void) {
 
         console.log('getTaskInfoByProject');
 
         var s = [];
-        var trackers;
-        var trackerMap: TTrackerMap = {};
-        var taskMap: TTaskMap = {};
-        var tasks = [];
+        var trackers: Cb.TTracker[];
+        var tasks: Cb.TTask[];
+        var associations: Cb.TAssociation[];
+
         s.push(function(done) {
             Cb.tracker.getTaskTrackers(aProjectUri, function(err, tlist) {
                 trackers = tlist;
-                tlist.forEach(function(t) {
-                    t.project = t.project || <Cb.TProject><any>{ uri: aProjectUri };
-                    trackerMap[t.uri]= t;
-                });
                 done(err);
             });
         });
+
         s.push(function(done) {
-            getTasksByTrackers(trackers, function(err, ts) {
-                ts.forEach(function(t) {
-                    taskMap[t.uri] = t;
-                    tasks.push(t);
-                });
+            getTasksByTrackers(trackers, function(err, tlist) {
+                tasks = tlist;
                 done(err);
             });
         });
+
+        s.push(function(done) {
+            populateAssociation(tasks, function(err, alist) {
+                associations = alist;
+                done(err);
+            });
+        });
+
         async.series(s, function(err) {
-            aCb(err, trackers, trackerMap, tasks, taskMap);
+            aCb(err, trackers, tasks, associations);
         });
     }
 
@@ -731,7 +735,7 @@ module CbUtils {
 
     }
 
-    function populateAssociation(aTasks: Cb.TTask[], aCb: (err, associations: Cb.TAssociation[]) => void) {
+    function populateAssociation(aItems: Cb.TItem[], aCb: (err, associations: Cb.TAssociation[]) => void) {
 
         console.log('populateAssociation');
 
@@ -739,11 +743,11 @@ module CbUtils {
 
         var associations = [];
 
-        aTasks.forEach(function(t) {
+        aItems.forEach(function(i) {
             p.push(function(done) {
-                Cb.association.getAllAssociationByTypes(t.uri, ['depends', 'child', 'parent'], function(err, a) {
+                Cb.association.getAllAssociationByTypes(i.uri, ['depends', 'child', 'parent'], function(err, a) {
                     if (a && a.length) {
-                        t._associations = a;
+                        i._associations = a;
                         associations = associations.concat(a);
                     }
                     done(err);
@@ -756,9 +760,57 @@ module CbUtils {
         });
     }
 
+    interface TProjectInfo {
+        releaseCmdbList: Cb.TCmdb[];
+        releaseList: Cb.TRelease[];
+        taskTrackerList: Cb.TTracker[];
+        tasks: Cb.TTask[];
+        associations: Cb.TAssociation[];
+    }
+
+    function getProjectInfo(aProjectUri, aCb: (err, projectInfo: TProjectInfo) => void) {
+
+        var p = [];
+        var releaseCmdbList: Cb.TCmdb[];
+        var releaseList: Cb.TRelease[];
+        var taskTrackerList: Cb.TTracker[];
+        var tasks: Cb.TTask[];
+        var associations: Cb.TAssociation[] = [];
+
+        p.push(function(done) {
+            getReleasesInfoByProject(aProjectUri, function(err, clist, rlist, alist) {
+                releaseCmdbList = clist;
+                releaseList = rlist;
+                associations = associations.concat(alist);
+                done(err);
+            });
+        });
+
+        p.push(function(done) {
+            getTaskInfoByProject(aProjectUri, function(err, trklist, tlist, alist) {
+                taskTrackerList = trklist;
+                tasks = tlist;
+                associations = associations.concat(alist);
+                done(err);
+            });
+        });
+
+        async.parallel(p, function(err) {
+
+            aCb(err, {
+                releaseCmdbList: releaseCmdbList,
+                releaseList: releaseList,
+                taskTrackerList: taskTrackerList,
+                tasks: tasks,
+                associations: associations
+            });
+
+        });
+
+    }
+
     export interface TCachedProjectInfo {
-        cmdbMap: TCmdbMap;
-        taskMap: TTaskMap;
+        releases: Cb.TRelease[];
         tasks: Cb.TTask[];
         externalTasks: Cb.TTask[];
     }
@@ -766,8 +818,8 @@ module CbUtils {
     export interface TAllMaps {
         projectMap: TProjectMap;
         userMap: TUserMap;
-        releaseMap: TReleaseMap;
         trackerMap: TTrackerMap;
+        itemMap: TItemMap;
     }
 
     var KReleaseProps = ['release', '업무구분'];
@@ -788,10 +840,9 @@ module CbUtils {
     export class CCbCache {
 
         _cache: { [projectUri: string]: TCachedProjectInfo; } = {};
+        _userMap: TUserMap = {};
         _projectMap: TProjectMap = {};
         _trackerMap: TTrackerMap = {};
-        _releaseMap: TReleaseMap = {};
-        _userMap: TUserMap = {};
         _itemMap: TItemMap = {};
 
         constructor() {
@@ -803,8 +854,8 @@ module CbUtils {
             return {
                 projectMap: this._projectMap,
                 userMap: this._userMap,
-                releaseMap: this._releaseMap,
-                trackerMap: this._trackerMap
+                trackerMap: this._trackerMap,
+                itemMap: this._itemMap
             };
         }
 
@@ -819,89 +870,61 @@ module CbUtils {
 
             var s = [];
 
-            var cmdbMap: TCmdbMap;
-            var trackers: Cb.TTracker[];
-            var taskMap: TTaskMap = {};
-            var tasks: Cb.TTask[] = [];
+            var trackerMap = this._trackerMap;
+            var itemMap = this._itemMap;
 
-//            s.push(function(done) {
-//                getReleasesByProject(aProjectUri, function (err, cmap, rlist, rmap) {
-//                    cmdbMap = cmap;
-//                    releases = rlist;
-//                    releaseMap = rmap;
-//                    done();
-//                });
-//            });
-            var releaseUriList;
-            var userUriList;
+            var release;
+            var tasks;
+            var userUriList: string[];
+            var externalItemUriList: string[];
             s.push(function(done) {
-                getTaskInfoByProject(aProjectUri, function(err, trkList, trkM, tlist, tmap) {
-                    trackers = trkList;
-                    taskMap = tmap;
-                    tasks = tlist;
+                getProjectInfo(aProjectUri, function(err, projectInfo) {
 
-                    var mapRelease = {};
+                    release = projectInfo.releaseList;
+                    tasks = projectInfo.tasks;
+
+                    projectInfo.taskTrackerList.forEach(function(t) {
+                        trackerMap[t.uri] = t;
+                    });
+
+                    projectInfo.releaseList.forEach(function(r) {
+                        itemMap[r.uri] = r;
+                    });
+
                     var mapUser = {};
-                    tasks.forEach(function(t) {
+                    projectInfo.tasks.forEach(function(t) {
+                        itemMap[t.uri] = <any>t;
 
                         if (t.assignedTo) {
                             t.assignedTo.forEach(function(u) {
                                 mapUser[u.uri] = null;
                             });
                         }
-
-                        var uriList = getReleaseUriListFromTask(t);
-                        if (uriList) {
-                            uriList.forEach(function(uri) {
-                                mapRelease[uri] = null;
-                            });
-                        }
                     });
-
-                    releaseUriList = Object.keys(mapRelease);
                     userUriList = Object.keys(mapUser);
 
-                    done(err);
-                });
-            });
-
-//            s.push(function(done) {
-//                getReleases(external_releases, function(err, rlist, rmap) {
-//                    releases = releases.concat(rlist);
-//                    done(err);
-//                });
-//            });
-
-            var externalItemUriList;
-            s.push(function(done) {
-                populateAssociation(tasks, function(err, alist) {
-
-                    var map = {};
-                    alist.forEach(function(a) {
-
+                    var mapAssociation = {};
+                    projectInfo.associations.forEach(function(a) {
                         if (a.from && a.from.uri.indexOf('/item') == 0) {
-                            map[a.from.uri] = null;
+                            mapAssociation[a.from.uri] = null;
                         }
 
                         if (a.to && a.to.uri.indexOf('/item') == 0) {
-                            map[a.to.uri] = null;
+                            mapAssociation[a.to.uri] = null;
                         }
-
                     });
-                    externalItemUriList = Object.keys(map);
-
-                    done(err);
+                    externalItemUriList = Object.keys(mapAssociation);
+                    done();
                 });
             });
 
-            var externalItemMap = this._itemMap;
             var externalItems;
             var externalReleaseUriList;
             var externalTrackerUriList;
             var externalProjectUriList;
             var externalUserUriList;
             s.push(function(done) {
-                getItems(externalItemUriList, function(err, ilist, imap) {
+                getItems(externalItemUriList, function(err, ilist) {
                     var mapRelease = {};
                     var mapTracker = {};
                     var mapProject = {};
@@ -917,7 +940,7 @@ module CbUtils {
 
                         mapTracker[item['tracker'].uri] = null;
                         mapProject[item['tracker'].project.uri] = null;
-                        externalItemMap[item.uri] = item;
+                        itemMap[item.uri] = item;
                         if (item['assignedTo']) {
                             item['assignedTo'].forEach(function(u) {
                                 mapUser[u.uri] = null;
@@ -933,48 +956,49 @@ module CbUtils {
                 });
             });
 
-            var releaseMap = this._releaseMap;
-            s.push(function(done) {
-                var uriList = releaseUriList.concat(externalReleaseUriList);
-                getItems(uriList, function(err, ilist, imap) {
-                    ilist.forEach(function(release) {
-                        releaseMap[release.uri] = <Cb.TRelease><any>release;
-                    });
-                    done();
-                });
-            });
-
-            var trackerMap = this._trackerMap;
-            s.push(function(done) {
-                getItems(externalTrackerUriList, function(err, ilist, imap) {
-                    ilist = <any>trackers.concat(<any>ilist);
-                    ilist.forEach(function(tracker) {
-                        trackerMap[tracker.uri] = <Cb.TTracker><any>tracker;
-                    });
-                    done(err);
-                });
-            });
-
             var userMap = this._userMap;
-            s.push(function(done) {
-                var uriList = userUriList.concat(externalUserUriList);
-                getItems(uriList, function(err, ilist, imap) {
-                    ilist.forEach(function(i) {
-                        userMap[i.uri] = <Cb.TUser><any>i;
-                    });
-                    done();
-                });
-            });
-
             var projectMap = this._projectMap;
             s.push(function(done) {
-                var uriList = [aProjectUri].concat(externalProjectUriList);
-                getItems(uriList, function(err, ilist, imap) {
-                    ilist.forEach(function(i) {
-                        projectMap[i.uri] = <Cb.TProject><any>i;
-                    });
-                    done();
+
+                async.parallel([
+                    function(done) {
+                        getItems(externalReleaseUriList, function(err, ilist) {
+                            ilist.forEach(function(release) {
+                                itemMap[release.uri] = <Cb.TRelease><any>release;
+                            });
+                            done();
+                        });
+                    },
+                    function(done) {
+                        getItems(externalTrackerUriList, function(err, ilist) {
+                            ilist.forEach(function(tracker) {
+                                trackerMap[tracker.uri] = <Cb.TTracker><any>tracker;
+                            });
+                            done(err);
+                        });
+                    },
+                    function(done) {
+                        var uriList = userUriList.concat(externalUserUriList);
+                        getItems(uriList, function(err, ilist) {
+                            ilist.forEach(function(i) {
+                                userMap[i.uri] = <Cb.TUser><any>i;
+                            });
+                            done();
+                        });
+                    },
+                    function(done) {
+                        var uriList = [aProjectUri].concat(externalProjectUriList);
+                        getItems(uriList, function(err, ilist) {
+                            ilist.forEach(function(i) {
+                                projectMap[i.uri] = <Cb.TProject><any>i;
+                            });
+                            done();
+                        });
+                    }
+                ], function(err) {
+                    done(err);
                 });
+
             });
 
             async.series(s, (err) => {
@@ -988,8 +1012,7 @@ module CbUtils {
                 });
 
                 var ret: TCachedProjectInfo = {
-                    cmdbMap: cmdbMap,
-                    taskMap: taskMap,
+                    releases: release,
                     tasks: tasks,
                     externalTasks: externalTasks
                 };
@@ -1050,23 +1073,43 @@ module CbUtils {
             return name;
         }
 
-        function covertCbTaskToDhxTask(aAllMaps: TAllMaps, aCbTask: Cb.TTask, aParentUri?: string): DhxGantt.TTask {
+        var default_color = {
+            'New': '#b31317',
+            'In progress': '#ffab46',
+            'Partly completed': '#00a85d',
+            'Completed': '#187a6d',
+            'Closed': '#187a6d',
+            'Suspended': '#00a85d',
+            'Unreleased': '#ffab46',
+            'Released': '#00a85d',
+            'End-of-Life': '#187a6d'
+        };
+
+        function covertCbItemToDhxTask(aAllMaps: TAllMaps, aCbItem: Cb.TItem, aParentUri?: string): DhxGantt.TTask {
+
+            var cbTask: Cb.TTask = <Cb.TTask>aCbItem;
+            var cbRelease: Cb.TRelease = <Cb.TRelease>aCbItem;
 
             var dhxTask: DhxGantt.TTask = {
-                id: aCbTask.uri,
-                text: aCbTask.name,
-                start_date: new Date(aCbTask.startDate || aCbTask.submittedAt),
-                progress: aCbTask.spentEstimatedHours || 0,
-                priority: aCbTask.priority ? aCbTask.priority.name: 'Noraml',
-                status: aCbTask.status ? aCbTask.status.name: 'None',
-                estimatedMillis: aCbTask.estimatedMillis,
-                estimatedDays: Math.ceil(aCbTask.estimatedMillis / unitWorkingDay)
+                id: cbTask.uri,
+                text: cbTask.name,
+                start_date: new Date(cbTask.startDate || cbTask.submittedAt),
+                progress: cbTask.spentEstimatedHours || 0,
+                priority: cbTask.priority ? cbTask.priority.name: 'Normal',
+                status: cbTask.status ? cbTask.status.name: 'None',
+                estimatedMillis: cbTask.estimatedMillis,
+                estimatedDays: Math.ceil(cbTask.estimatedMillis / unitWorkingDay)
             };
+
+            if (cbRelease.plannedReleaseDate) {
+                dhxTask.start_date = new Date(cbRelease.plannedReleaseDate);
+                dhxTask._type = DhxGanttDef.TTaskType.Release;
+            }
 
             var userNames = [];
             var userIdList = [];
-            if (aCbTask.assignedTo) {
-                aCbTask.assignedTo.forEach(function(user) {
+            if (cbTask.assignedTo) {
+                cbTask.assignedTo.forEach(function(user) {
                     userNames.push(getUserName(aAllMaps.userMap[user.uri]));
                     userIdList.push(user.uri);
                 });
@@ -1074,8 +1117,8 @@ module CbUtils {
             dhxTask.user = userNames.join(',');
             dhxTask._userIdList = userIdList;
 
-            if (aCbTask.endDate) {
-                dhxTask.end_date = new Date(aCbTask.endDate);
+            if (cbTask.endDate) {
+                dhxTask.end_date = new Date(cbTask.endDate);
             }
 
             // This is required to display adjustment icon
@@ -1085,23 +1128,16 @@ module CbUtils {
 
             if (aParentUri) {
                 dhxTask.parent = aParentUri;
-            } else if (aCbTask.parent) {
-                dhxTask.parent = aCbTask.parent.uri;
+            } else if (cbTask.parent) {
+                dhxTask.parent = cbTask.parent.uri;
             }
 
             // color
-            if (aCbTask.status) {
-                if (aCbTask.status.style) {
-                    dhxTask.color = aCbTask.status.style;
+            if (cbTask.status) {
+                if (cbTask.status.style) {
+                    dhxTask.color = cbTask.status.style;
                 } else {
-                    var default_color = {
-                        'New': '#b31317',
-                        'In progress': '#ffab46',
-                        'Partly completed': '',
-                        'Completed': '#00a85d',
-                        'Suspended': '#00a85d'
-                    };
-                    dhxTask.color = default_color[aCbTask.status.name];
+                    dhxTask.color = default_color[cbTask.status.name];
                 }
             } else {
                 dhxTask.color = 'white';
@@ -1113,7 +1149,7 @@ module CbUtils {
         function convertCbTasksToDhxTasks(aAllMaps: TAllMaps, aCbTasks: Cb.TTask[], aParentUri?: string): DhxGantt.TTask[] {
             var dhxTasks = [];
             aCbTasks.forEach(function(cbTask) {
-                dhxTasks.push(covertCbTaskToDhxTask(aAllMaps, cbTask, aParentUri));
+                dhxTasks.push(covertCbItemToDhxTask(aAllMaps, cbTask, aParentUri));
             });
             return dhxTasks;
         }
@@ -1122,17 +1158,6 @@ module CbUtils {
             groupType?: TGroupType;
             child?: TGroupTask[];
         }
-
-//        interface FnInnerGroupingHandlers {
-//            (allMaps: TAllMaps): TGroupTask[];
-//        }
-//
-//        var KInnerGroupingHandlers: { [type: TGroupType]: FnInnerGroupingHandlers } = {};
-//        KInnerGroupingHandler[TGroupType.BySprint] = function(aAllMaps: TAllMaps): TGroupTask[] {
-//            var ret: TGroupTask[] = [];
-//
-//            return ret;
-//        };
 
         var KUnknownIdentifier = 'UNKNOWN';
         var KGroupKeyIdentifiers = {};
@@ -1184,13 +1209,13 @@ module CbUtils {
             };
         };
         KGroupConverters[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aReleaseUri: string, aParentId?: string): DhxGantt.TTask {
-            var release = aAllMaps.releaseMap[aReleaseUri];
+            var release: Cb.TRelease = aAllMaps.itemMap[aReleaseUri];
             console.log(release);
             var ret: DhxGantt.TTask = {
                 id: release.uri,
                 text: release.name,
                 user: '-',
-                _type: DhxGanttDef.TTaskType.Sprint
+                _type: DhxGanttDef.TTaskType.Release
             };
             if (release.parent) {
                 var parentId = aParentId ? aParentId + '>' : '';
@@ -1216,7 +1241,7 @@ module CbUtils {
                 id: '__unknown_release__',
                 text: 'Relase not assigned',
                 user: '-',
-                _type: DhxGanttDef.TTaskType.Sprint
+                _type: DhxGanttDef.TTaskType.Release
             };
         };
 
@@ -1311,6 +1336,17 @@ module CbUtils {
                         }
                     });
                 }
+
+                if (task.release) {
+                    task.release.forEach(function(r) {
+                        ret.push({
+                            id: task.uri + '-' + r.uri,
+                            source: task.uri,
+                            target: r.uri,
+                            type: '0'
+                        });
+                    });
+                }
             });
 
             return ret;
@@ -1398,7 +1434,9 @@ module CbUtils {
 
                 var allMaps = cache.getAllMaps();
 
-                var cbTasks = cachedProjectInfo.tasks.concat(cachedProjectInfo.externalTasks);
+                var cbTasks: any[] = cachedProjectInfo.releases.splice(0);
+                cbTasks = cbTasks.concat(cachedProjectInfo.tasks);
+                cbTasks = cbTasks.concat(cachedProjectInfo.externalTasks);
 
                 var filters = [];
                 if (aFilter & TFilterType.ByWithoutCompletedTask) {

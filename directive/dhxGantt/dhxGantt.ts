@@ -12,7 +12,7 @@ module DhxGanttDef {
         None,
         User,
         Project,
-        Sprint
+        Release
     }
 
 }
@@ -248,7 +248,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
         var task_class_names = {};
         task_class_names[DhxGanttDef.TTaskType.Project] = 'task_type_project';
         task_class_names[DhxGanttDef.TTaskType.User] = 'task_type_user';
-        task_class_names[DhxGanttDef.TTaskType.Sprint] = 'task_type_release';
+        task_class_names[DhxGanttDef.TTaskType.Release] = 'task_type_release';
 
         gantt.templates.grid_folder = function(item) {
             var icon_class_by_type = task_class_names[item._type];
