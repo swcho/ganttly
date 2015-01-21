@@ -530,7 +530,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 });
             });
 
-            if ($attrs['dhxContextMenu']) {
+            if ($attrs['dhxContextMenu'] && $scope[$attrs['dhxContextMenu']]) {
                 initContextMenu($scope[$attrs['dhxContextMenu']]);
             }
         }

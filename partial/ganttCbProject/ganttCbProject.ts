@@ -19,6 +19,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     var paramProjectUri = $stateParams.project;
     var paramGroupings: string[] = $stateParams.groupings ? $stateParams.groupings.split(',') : [];
+    var paramFilters: string[] = $stateParams.filters ? $stateParams.filters.split(',') : [];
 
     var userUri = $stateParams.user;
     var groupByUser = $stateParams.groupByUser === 'true';
@@ -145,6 +146,32 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         text: '년'
     }];
     $scope.scale = 'Week';
+
+    /**
+     * Form options
+     */
+
+    var KFilterIdWithoutCompletedTask = 'fid_without_task';
+    $scope.frmItems = [{
+        name: KFilterIdWithoutCompletedTask,
+        type: 'checkbox',
+        label: 'Hide Completed Tasks',
+        checked: paramFilters.indexOf(KFilterIdWithoutCompletedTask) != -1,
+        eventHandlers: {
+            onChange: function(value, state) {
+                var prevState = paramFilters.indexOf(KFilterIdWithoutCompletedTask) != -1;
+                if (state != prevState) {
+                    paramFilters.push(KFilterIdWithoutCompletedTask);
+                    $state.go('ganttCbProject', {
+                        filters: paramFilters.join(',')
+                    }, {
+                        inherit: true
+                    });
+                }
+            }
+        }
+    }];
+
 
     /**
      *
@@ -503,7 +530,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }]
     };
 
-//    $scope.contextMenu = contextMenu;
+    $scope.contextMenu = contextMenu;
 
 //    $codeBeamer.getUserList({
 //        page: 1
@@ -549,25 +576,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             $scope.cbProjectSelected = resp.uri;
 //            $scope.$apply();
         });
-
-//        $codeBeamer.getReleases({
-//            projectUri: projectUri
-//        }, function(err, trackerUriList, resp) {
-//            if (err) {
-//                return;
-//            }
-//            resp.forEach(function(release) {
-//                console.log(release.name);
-//                var date = release.plannedReleaseDate ? new Date(release.plannedReleaseDate): new Date(release.modifiedAt);
-//                var date_to_str = gantt.date.date_to_str(gantt.config.task_date);
-//                gantt.addMarker({
-//                    start_date: date,
-//                    css: "release",
-//                    title: date_to_str(date),
-//                    text: release.name
-//                });
-//            });
-//        });
     }
 
     showModal('Getting information...');
@@ -584,7 +592,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     });
 
-    CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, CbUtils.TFilterType.ByWithoutCompletedTask, function(err, resp, markers) {
+    var filterTypeById = {};
+    filterTypeById[KFilterIdWithoutCompletedTask] = CbUtils.TFilterType.ByWithoutCompletedTask;
+    var filters: CbUtils.TFilterType = CbUtils.TFilterType.None;
+    paramFilters.forEach(function(filterId) {
+        filters = filters | filterTypeById[filterId];
+    });
+
+    CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, filters, function(err, resp, markers) {
         gantt.clearAll();
         markers.forEach(function(m) {
             gantt.addMarker(m);
