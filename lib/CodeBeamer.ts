@@ -1018,9 +1018,15 @@ module CbUtils {
     }
 
     export enum TSortingType {
-        None = 0x00,
-        ByStartTime = 0x01,
-        ByUser = 0x02
+        None,
+        ByStartTime,
+        ByStartTimeDsc,
+        ByEndTime,
+        ByEndTimeDsc,
+        BySubmittedTime,
+        BySubmittedTimeDsc,
+        ByModifiedTime,
+        ByModifiedTimeDsc
     }
 
     export module UiUtils {
@@ -1344,19 +1350,46 @@ module CbUtils {
                     objA = objA[aPropOrder[i]];
                     objB = objB[aPropOrder[i]];
                     if (typeof objA == 'undefined') {
-                        return 1;
+                        console.error('NOT FOUND A');
+                        console.error(objA);
+                        return aAscending ? -1: 1;
                     }
                     if (typeof objB == 'undefined') {
-                        return -1;
+                        console.error('NOT FOUND B');
+                        console.error(objB);
+                        return aAscending ? 1: -1;
                     }
                 }
 
                 if (i == len) {
-                    return aCompare ? aCompare(objA, objB) : objA - objB;
+                    if (aAscending) {
+                        return aCompare ? aCompare(objA, objB) : objA - objB;
+                    } else {
+                        return aCompare ? aCompare(objB, objA) : objB - objA;
+                    }
                 }
 
+                console.error('SAME');
                 return 0;
             }
+        }
+
+        function dateStringCompare(a, b) {
+            return (new Date(a)).getTime() - (new Date(b)).getTime();
+        }
+
+        var KSorterByType = {};
+        KSorterByType[TSortingType.ByStartTime] = generatePropertySorter(['startDate'], true, dateStringCompare);
+        KSorterByType[TSortingType.ByStartTimeDsc] = generatePropertySorter(['startDate'], false, dateStringCompare);
+        KSorterByType[TSortingType.ByEndTime] = generatePropertySorter(['endDate'], true, dateStringCompare);
+        KSorterByType[TSortingType.ByEndTimeDsc] = generatePropertySorter(['endDate'], false, dateStringCompare);
+        KSorterByType[TSortingType.BySubmittedTime] = generatePropertySorter(['submittedDate'], true, dateStringCompare);
+        KSorterByType[TSortingType.BySubmittedTimeDsc] = generatePropertySorter(['submittedDate'], false, dateStringCompare);
+        KSorterByType[TSortingType.ByModifiedTime] = generatePropertySorter(['modifiedDate'], true, dateStringCompare);
+        KSorterByType[TSortingType.ByModifiedTimeDsc] = generatePropertySorter(['modifiedDate'], false, dateStringCompare);
+
+        function generateSorter(aType: TSortingType) {
+            return KSorterByType[aType];
         }
 
         export function getDhxDataByProject(
@@ -1395,11 +1428,9 @@ module CbUtils {
                     cbTasks = cbTasks.filter(f);
                 });
 
-                if (aSorting & TSortingType.ByStartTime) {
-                    var s = generatePropertySorter(['startDate'], true, function(a, b) {
-                        return (new Date(a)).getTime() - (new Date(b)).getTime();
-                    });
-                    cbTasks = cbTasks.sort(s);
+                var sorter = generateSorter(aSorting);
+                if (sorter) {
+                    cbTasks = cbTasks.sort(sorter);
                 }
 
                 var groupTasks = processGrouping(allMaps, cbTasks, aGroupings, 0);

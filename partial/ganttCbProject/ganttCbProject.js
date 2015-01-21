@@ -13,6 +13,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     var holidayAwareness = gConfig.holidayAwareness;
 
     var paramProjectUri = $stateParams.project;
+    var paramSorting = $stateParams.sorting || 'short_by_none';
     var paramGroupings = $stateParams.groupings ? $stateParams.groupings.split(',') : [];
     var paramFilters = $stateParams.filters ? $stateParams.filters.split(',') : [];
 
@@ -64,7 +65,58 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     };
 
     /**
-    * Grouings
+    * Sorting
+    */
+    var KSortIdNone = 'short_by_none';
+    var KSortIdStartTimeAsc = 'short_by_start_date_asc';
+    var KSortIdStartTimeDsc = 'short_by_start_date_dsc';
+    var KSortIdEndTimeAsc = 'short_by_end_date_asc';
+    var KSortIdEndTimeDsc = 'short_by_end_date_dsc';
+    var KSortIdSubmittedTimeAsc = 'short_by_submitted_date_asc';
+    var KSortIdSubmittedTimeDsc = 'short_by_submitted_date_dsc';
+    var KSortIdModifiedTimeAsc = 'short_by_modified_date_asc';
+    var KSortIdModifiedTimeDsc = 'short_by_modified_date_dsc';
+
+    $scope.cbSort = [
+        {
+            id: KSortIdNone,
+            text: 'None'
+        }, {
+            id: KSortIdStartTimeAsc,
+            text: 'Start date \u25B2'
+        }, {
+            id: KSortIdStartTimeDsc,
+            text: 'Start date \u25BC'
+        }, {
+            id: KSortIdEndTimeAsc,
+            text: 'End date \u25B2'
+        }, {
+            id: KSortIdEndTimeDsc,
+            text: 'End date \u25BC'
+        }, {
+            id: KSortIdSubmittedTimeAsc,
+            text: 'Submitted date \u25B2'
+        }, {
+            id: KSortIdSubmittedTimeDsc,
+            text: 'Submitted date \u25BC'
+        }, {
+            id: KSortIdModifiedTimeAsc,
+            text: 'Modified date \u25B2'
+        }, {
+            id: KSortIdModifiedTimeDsc,
+            text: 'Modified date \u25BC'
+        }];
+    $scope.cbSortSelected = paramSorting;
+    $scope.cbSortChanged = function (selected) {
+        $state.go('ganttCbProject', {
+            sorting: selected
+        }, {
+            inherit: true
+        });
+    };
+
+    /**
+    * Groupings
     *
     */
     var cbGroupingData = [
@@ -87,7 +139,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     $scope.cb1Selected = paramGroupings.length ? paramGroupings[0] : 'group_by_none';
     $scope.cb1Disabled = paramProjectUri ? false : true;
     $scope.cb1SetGrouping = function (selected) {
-        console.error('cb1SetGrouping: ' + selected);
         if (paramGroupings[0] != selected) {
             $state.go('ganttCbProject', {
                 project: paramProjectUri,
@@ -110,7 +161,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     $scope.cb2Selected = paramGroupings.length > 1 ? paramGroupings[1] : 'group_by_none';
     $scope.cb2Disabled = paramGroupings.length > 0 && paramGroupings[0] != 'group_by_none' ? false : true;
     $scope.cb2SetGrouping = function (selected) {
-        console.error('cb2SetGrouping: ' + selected);
         if (paramGroupings[1] != selected) {
             paramGroupings[1] = selected;
             $state.go('ganttCbProject', {
@@ -517,22 +567,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
     $scope.contextMenu = contextMenu;
 
-    //    $codeBeamer.getUserList({
-    //        page: 1
-    //    }, function(err, resp) {
-    //        if (err) {
-    //            return;
-    //        }
-    //        $scope.userList = resp.users;
-    //
-    //        if (userUri) {
-    //            $scope.userList.forEach(function(user: cb.TUser) {
-    //                if (user.uri === userUri) {
-    //                    $scope.selectedUser = user.name;
-    //                }
-    //            });
-    //        }
-    //    });
     if (!userUri && !paramProjectUri) {
         try  {
             gantt.clearAll();
@@ -582,7 +616,23 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         filters = filters | filterTypeById[filterId];
     });
 
-    var sorting = 1 /* ByStartTime */;
+    var sortingTypeById = {
+        'short_by_none': 0 /* None */,
+        'short_by_start_date_asc': 1 /* ByStartTime */,
+        'short_by_start_date_dsc': 2 /* ByStartTimeDsc */
+    };
+    sortingTypeById[KSortIdNone] = 0 /* None */;
+    sortingTypeById[KSortIdStartTimeAsc] = 1 /* ByStartTime */;
+    sortingTypeById[KSortIdStartTimeDsc] = 2 /* ByStartTimeDsc */;
+    sortingTypeById[KSortIdEndTimeAsc] = 3 /* ByEndTime */;
+    sortingTypeById[KSortIdEndTimeDsc] = 4 /* ByEndTimeDsc */;
+    sortingTypeById[KSortIdSubmittedTimeAsc] = 5 /* BySubmittedTime */;
+    sortingTypeById[KSortIdSubmittedTimeDsc] = 6 /* BySubmittedTimeDsc */;
+    sortingTypeById[KSortIdModifiedTimeAsc] = 7 /* ByModifiedTime */;
+    sortingTypeById[KSortIdModifiedTimeDsc] = 8 /* ByModifiedTimeDsc */;
+
+    var sorting = sortingTypeById[paramSorting];
+    console.log('sorging:', paramSorting, sorting);
 
     CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, filters, sorting, function (err, resp, markers) {
         gantt.clearAll();
