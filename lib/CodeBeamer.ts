@@ -1055,7 +1055,7 @@ module CbUtils {
             var dhxTask: DhxGantt.TTask = {
                 id: aCbTask.uri,
                 text: aCbTask.name,
-                start_date: new Date(aCbTask.startDate || aCbTask.modifiedAt),
+                start_date: new Date(aCbTask.startDate || aCbTask.submittedAt),
                 progress: aCbTask.spentEstimatedHours || 0,
                 priority: aCbTask.priority ? aCbTask.priority.name: 'Noraml',
                 status: aCbTask.status ? aCbTask.status.name: 'None',
@@ -1342,26 +1342,35 @@ module CbUtils {
             }
         }
 
-        function generatePropertySorter(aPropOrder: string[], aAscending: boolean, aCompare) {
+        function generatePropertySorter(aPropOrder: string[], aAscending: boolean, aCompare, aAlternative?) {
             return function(objA, objB) {
-                var i, len = aPropOrder.length;
+                var origA = objA, origB = objB, i, len = aPropOrder.length;
 
+                var ret = 0;
                 for (i=0; i<len; i++) {
                     objA = objA[aPropOrder[i]];
                     objB = objB[aPropOrder[i]];
                     if (typeof objA == 'undefined') {
-                        console.error('NOT FOUND A');
-                        console.error(objA);
-                        return aAscending ? -1: 1;
+//                        console.error('NOT FOUND A');
+                        ret = aAscending ? -1: 1;
+                        break;
                     }
                     if (typeof objB == 'undefined') {
-                        console.error('NOT FOUND B');
-                        console.error(objB);
-                        return aAscending ? 1: -1;
+//                        console.error('NOT FOUND B');
+                        ret = aAscending ? 1: -1;
+                        break;
                     }
                 }
 
-                if (i == len) {
+                var alternativeApplied = false;
+                if (i != len && aAlternative) {
+                    objA = origA[aAlternative];
+                    objB = origB[aAlternative];
+                    alternativeApplied = true;
+//                    console.error('alternative',objA,objB);
+                }
+
+                if (i == len || alternativeApplied) {
                     if (aAscending) {
                         return aCompare ? aCompare(objA, objB) : objA - objB;
                     } else {
@@ -1370,7 +1379,7 @@ module CbUtils {
                 }
 
                 console.error('SAME');
-                return 0;
+                return ret;
             }
         }
 
@@ -1379,8 +1388,8 @@ module CbUtils {
         }
 
         var KSorterByType = {};
-        KSorterByType[TSortingType.ByStartTime] = generatePropertySorter(['startDate'], true, dateStringCompare);
-        KSorterByType[TSortingType.ByStartTimeDsc] = generatePropertySorter(['startDate'], false, dateStringCompare);
+        KSorterByType[TSortingType.ByStartTime] = generatePropertySorter(['startDate'], true, dateStringCompare, 'submittedAt');
+        KSorterByType[TSortingType.ByStartTimeDsc] = generatePropertySorter(['startDate'], false, dateStringCompare, 'submittedAt');
         KSorterByType[TSortingType.ByEndTime] = generatePropertySorter(['endDate'], true, dateStringCompare);
         KSorterByType[TSortingType.ByEndTimeDsc] = generatePropertySorter(['endDate'], false, dateStringCompare);
         KSorterByType[TSortingType.BySubmittedTime] = generatePropertySorter(['submittedAt'], true, dateStringCompare);
