@@ -1383,10 +1383,10 @@ module CbUtils {
         KSorterByType[TSortingType.ByStartTimeDsc] = generatePropertySorter(['startDate'], false, dateStringCompare);
         KSorterByType[TSortingType.ByEndTime] = generatePropertySorter(['endDate'], true, dateStringCompare);
         KSorterByType[TSortingType.ByEndTimeDsc] = generatePropertySorter(['endDate'], false, dateStringCompare);
-        KSorterByType[TSortingType.BySubmittedTime] = generatePropertySorter(['submittedDate'], true, dateStringCompare);
-        KSorterByType[TSortingType.BySubmittedTimeDsc] = generatePropertySorter(['submittedDate'], false, dateStringCompare);
-        KSorterByType[TSortingType.ByModifiedTime] = generatePropertySorter(['modifiedDate'], true, dateStringCompare);
-        KSorterByType[TSortingType.ByModifiedTimeDsc] = generatePropertySorter(['modifiedDate'], false, dateStringCompare);
+        KSorterByType[TSortingType.BySubmittedTime] = generatePropertySorter(['submittedAt'], true, dateStringCompare);
+        KSorterByType[TSortingType.BySubmittedTimeDsc] = generatePropertySorter(['submittedAt'], false, dateStringCompare);
+        KSorterByType[TSortingType.ByModifiedTime] = generatePropertySorter(['modifiedAt'], true, dateStringCompare);
+        KSorterByType[TSortingType.ByModifiedTimeDsc] = generatePropertySorter(['modifiedAt'], false, dateStringCompare);
 
         function generateSorter(aType: TSortingType) {
             return KSorterByType[aType];

@@ -202,9 +202,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             checked: paramFilters.indexOf(KFilterIdWithoutCompletedTask) != -1,
             eventHandlers: {
                 onChange: function (value, state) {
-                    var prevState = paramFilters.indexOf(KFilterIdWithoutCompletedTask) != -1;
+                    var prevIndex = paramFilters.indexOf(KFilterIdWithoutCompletedTask);
+                    var prevState = prevIndex != -1;
                     if (state != prevState) {
-                        paramFilters.push(KFilterIdWithoutCompletedTask);
+                        if (state) {
+                            paramFilters.push(KFilterIdWithoutCompletedTask);
+                        } else {
+                            paramFilters.splice(prevIndex);
+                        }
                         $state.go('ganttCbProject', {
                             filters: paramFilters.join(',')
                         }, {
