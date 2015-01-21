@@ -876,6 +876,7 @@ module CbUtils {
             var release;
             var tasks;
             var userUriList: string[];
+            var externalReleaseUriList;
             var externalItemUriList: string[];
             s.push(function(done) {
                 getProjectInfo(aProjectUri, function(err, projectInfo) {
@@ -892,6 +893,7 @@ module CbUtils {
                     });
 
                     var mapUser = {};
+                    var mapRelease = {};
                     projectInfo.tasks.forEach(function(t) {
                         itemMap[t.uri] = <any>t;
 
@@ -900,8 +902,16 @@ module CbUtils {
                                 mapUser[u.uri] = null;
                             });
                         }
+
+                        var releaseUriList = getReleaseUriListFromTask(<any>t);
+                        if (releaseUriList) {
+                            releaseUriList.forEach(function(ruri) {
+                                mapRelease[ruri] = null;
+                            });
+                        }
                     });
                     userUriList = Object.keys(mapUser);
+                    externalReleaseUriList = Object.keys(mapRelease);
 
                     var mapAssociation = {};
                     projectInfo.associations.forEach(function(a) {
@@ -919,7 +929,6 @@ module CbUtils {
             });
 
             var externalItems;
-            var externalReleaseUriList;
             var externalTrackerUriList;
             var externalProjectUriList;
             var externalUserUriList;
@@ -948,7 +957,7 @@ module CbUtils {
                         }
                     });
                     externalItems = ilist;
-                    externalReleaseUriList = Object.keys(mapRelease);
+                    externalReleaseUriList = externalReleaseUriList.concat(Object.keys(mapRelease));
                     externalTrackerUriList = Object.keys(mapTracker);
                     externalProjectUriList = Object.keys(mapProject);
                     externalUserUriList = Object.keys(mapUser);
@@ -1435,6 +1444,7 @@ module CbUtils {
                 var allMaps = cache.getAllMaps();
 
                 var cbTasks: any[] = cachedProjectInfo.releases.slice(0);
+//                var cbTasks = [];
                 cbTasks = cbTasks.concat(cachedProjectInfo.tasks);
                 cbTasks = cbTasks.concat(cachedProjectInfo.externalTasks);
 
