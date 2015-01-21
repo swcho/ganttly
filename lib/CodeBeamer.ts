@@ -1342,44 +1342,15 @@ module CbUtils {
             }
         }
 
-        function generatePropertySorter(aPropOrder: string[], aAscending: boolean, aCompare, aAlternative?) {
+        function generatePropertySorter(aProp: string, aAscending: boolean, aCompare, aAlternative?: string) {
             return function(objA, objB) {
-                var origA = objA, origB = objB, i, len = aPropOrder.length;
-
-                var ret = 0;
-                for (i=0; i<len; i++) {
-                    objA = objA[aPropOrder[i]];
-                    objB = objB[aPropOrder[i]];
-                    if (typeof objA == 'undefined') {
-//                        console.error('NOT FOUND A');
-                        ret = aAscending ? -1: 1;
-                        break;
-                    }
-                    if (typeof objB == 'undefined') {
-//                        console.error('NOT FOUND B');
-                        ret = aAscending ? 1: -1;
-                        break;
-                    }
+                var varA = objA[aProp] || objA[aAlternative], varB = objB[aProp] || objB[aAlternative];
+                if (aAscending) {
+                    return aCompare ? aCompare(varA, varB) : varA - varB;
+                } else {
+                    return aCompare ? aCompare(varB, varA) : varB - varA;
                 }
-
-                var alternativeApplied = false;
-                if (i != len && aAlternative) {
-                    objA = origA[aAlternative];
-                    objB = origB[aAlternative];
-                    alternativeApplied = true;
-//                    console.error('alternative',objA,objB);
-                }
-
-                if (i == len || alternativeApplied) {
-                    if (aAscending) {
-                        return aCompare ? aCompare(objA, objB) : objA - objB;
-                    } else {
-                        return aCompare ? aCompare(objB, objA) : objB - objA;
-                    }
-                }
-
-                console.error('SAME');
-                return ret;
+                return 0;
             }
         }
 
@@ -1388,14 +1359,14 @@ module CbUtils {
         }
 
         var KSorterByType = {};
-        KSorterByType[TSortingType.ByStartTime] = generatePropertySorter(['startDate'], true, dateStringCompare, 'submittedAt');
-        KSorterByType[TSortingType.ByStartTimeDsc] = generatePropertySorter(['startDate'], false, dateStringCompare, 'submittedAt');
-        KSorterByType[TSortingType.ByEndTime] = generatePropertySorter(['endDate'], true, dateStringCompare);
-        KSorterByType[TSortingType.ByEndTimeDsc] = generatePropertySorter(['endDate'], false, dateStringCompare);
-        KSorterByType[TSortingType.BySubmittedTime] = generatePropertySorter(['submittedAt'], true, dateStringCompare);
-        KSorterByType[TSortingType.BySubmittedTimeDsc] = generatePropertySorter(['submittedAt'], false, dateStringCompare);
-        KSorterByType[TSortingType.ByModifiedTime] = generatePropertySorter(['modifiedAt'], true, dateStringCompare);
-        KSorterByType[TSortingType.ByModifiedTimeDsc] = generatePropertySorter(['modifiedAt'], false, dateStringCompare);
+        KSorterByType[TSortingType.ByStartTime] = generatePropertySorter('startDate', true, dateStringCompare, 'submittedAt');
+        KSorterByType[TSortingType.ByStartTimeDsc] = generatePropertySorter('startDate', false, dateStringCompare, 'submittedAt');
+        KSorterByType[TSortingType.ByEndTime] = generatePropertySorter('endDate', true, dateStringCompare);
+        KSorterByType[TSortingType.ByEndTimeDsc] = generatePropertySorter('endDate', false, dateStringCompare);
+        KSorterByType[TSortingType.BySubmittedTime] = generatePropertySorter('submittedAt', true, dateStringCompare);
+        KSorterByType[TSortingType.BySubmittedTimeDsc] = generatePropertySorter('submittedAt', false, dateStringCompare);
+        KSorterByType[TSortingType.ByModifiedTime] = generatePropertySorter('modifiedAt', true, dateStringCompare);
+        KSorterByType[TSortingType.ByModifiedTimeDsc] = generatePropertySorter('modifiedAt', false, dateStringCompare);
 
         function generateSorter(aType: TSortingType) {
             return KSorterByType[aType];
