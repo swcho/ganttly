@@ -167,11 +167,11 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 //        gantt.config.autosize = true;
 
         // Set task bar's class by priority
-//        gantt.templates.task_class  = function(start, end, task){
-//            return classes_priority[task.priority] + ' ' + classes_status[task.status];
-//        };
+        gantt.templates.task_class  = function(start, end, task){
+            return classes_status[task.status] || '';
+        };
 //        gantt.templates.task_row_class = function(start, end, task) {
-//            return classes_priority[task.priority] + ' ' + classes_status[task.status];
+//            return classes_status[task.status] || '';
 //        };
 
         // Highlight weekend

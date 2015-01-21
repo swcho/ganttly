@@ -490,8 +490,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             }]
     };
 
-    $scope.contextMenu = contextMenu;
-
+    //    $scope.contextMenu = contextMenu;
     //    $codeBeamer.getUserList({
     //        page: 1
     //    }, function(err, resp) {
