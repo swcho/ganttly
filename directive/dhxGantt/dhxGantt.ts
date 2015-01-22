@@ -153,10 +153,10 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 
         // Column configurations
         gantt.config.columns=[
-            {name:"text", tree: true, label:"작업", template:columnTaskRender, width: 200, resize: true },
-            {name:"user", label:"담당자", align: "center", width: 60, resize: true },
-            {name:"start_date", label:"시작일", align: "center", width: 90, resize: true },
-            {name:"duration",   label:"기간",   align: "center", width: 40, resize: true },
+            {name:"text", tree: true, label:"Task/Group", template:columnTaskRender, width: 200, resize: true },
+            {name:"user", label:"User", align: "center", width: 60, resize: true },
+            {name:"start_date", label:"Start", align: "center", width: 90, resize: true },
+            {name:"duration",   label:"Dur.",   align: "center", width: 40, resize: true },
             {name:"add", width: 40 }
         ];
 

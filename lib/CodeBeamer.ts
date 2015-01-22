@@ -1159,7 +1159,8 @@ module CbUtils {
             'Suspended': '#00a85d',
             'Unreleased': '#ffab46',
             'Released': '#00a85d',
-            'End-of-Life': '#187a6d'
+            'End-of-Life': '#187a6d',
+            'Resolved': '#00a85d'
         };
 
         function covertCbItemToDhxTask(aAllMaps: TAllMaps, aCbItem: Cb.TItem, aParentUri?: string): DhxGantt.TTask {

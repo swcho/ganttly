@@ -163,10 +163,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         if (paramGroupings[1] != selected) {
             paramGroupings[1] = selected;
             $state.go('ganttCbProject', {
-                project: paramProjectUri,
                 groupings: paramGroupings.join(',')
             }, {
-                inherit: false
+                inherit: true
             });
         }
     };
