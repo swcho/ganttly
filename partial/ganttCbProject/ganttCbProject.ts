@@ -18,6 +18,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     var holidayAwareness = gConfig.holidayAwareness;
 
     var paramProjectUri = $stateParams.project;
+    var paramScope = $stateParams.scope || 'Week';
     var paramSorting = $stateParams.sorting || 'short_by_none';
     var paramGroupings: string[] = $stateParams.groupings ? $stateParams.groupings.split(',') : [];
     var paramFilters: string[] = $stateParams.filters ? $stateParams.filters.split(',') : [];
@@ -63,11 +64,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         if (uri === paramProjectUri) {
             return;
         }
-        console.log('****** project');
         $state.go('ganttCbProject', {
             project: uri
         }, {
-            inherit: false
+            inherit: true
         });
     };
 
@@ -149,10 +149,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     $scope.cb1SetGrouping = function(selected) {
         if (paramGroupings[0] != selected) {
             $state.go('ganttCbProject', {
-                project: paramProjectUri,
                 groupings: selected
             }, {
-                inherit: false
+                inherit: true
             });
         }
     };
@@ -196,7 +195,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         id: 'Year',
         text: '년'
     }];
-    $scope.scale = 'Week';
+    $scope.scale = paramScope;
 
     /**
      * Form options

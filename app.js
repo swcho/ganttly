@@ -8,7 +8,7 @@ angular.module('ganttly').config(function($stateProvider, $urlRouterProvider, $l
         templateUrl: 'partial/configCb/configCb.html'
     });
     $stateProvider.state('ganttCbProject', {
-        url: '/ganttCbProject?project&sorting&groupings&filters',
+        url: '/ganttCbProject?project&scope&sorting&groupings&filters',
         templateUrl: 'partial/ganttCbProject/ganttCbProject.html'
     });
     $stateProvider.state('scheduleCb', {
