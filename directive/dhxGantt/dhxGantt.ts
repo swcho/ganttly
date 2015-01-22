@@ -35,6 +35,7 @@ declare module DhxGantt {
         estimatedDays?: number;
         depends?: string[];
         color?: string;
+        type?: any;
         _type?: DhxGanttDef.TTaskType;
         _data?: any;
     }
@@ -259,6 +260,14 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             var icon_class_by_type = task_class_names[item._type];
             var icon_class = icon_class_by_type || 'gantt_file';
             return "<div class='gantt_tree_icon " + icon_class + "'></div>";
+        };
+
+        // Righ side text for milestone
+        gantt.templates.rightside_text = function(start, end, task){
+            if(task.type == gantt.config.types.milestone){
+                return task.text;
+            }
+            return "";
         };
 
         //init gantt

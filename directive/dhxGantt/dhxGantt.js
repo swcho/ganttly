@@ -196,6 +196,14 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             return "<div class='gantt_tree_icon " + icon_class + "'></div>";
         };
 
+        // Righ side text for milestone
+        gantt.templates.rightside_text = function (start, end, task) {
+            if (task.type == gantt.config.types.milestone) {
+                return task.text;
+            }
+            return "";
+        };
+
         //init gantt
         gantt.init($element[0]);
     }

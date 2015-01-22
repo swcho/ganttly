@@ -1181,6 +1181,7 @@ module CbUtils {
             if (cbRelease.plannedReleaseDate) {
                 dhxTask.start_date = new Date(cbRelease.plannedReleaseDate);
                 dhxTask._type = DhxGanttDef.TTaskType.Release;
+                dhxTask.type = gantt.config.types.milestone;
             }
 
             var userNames = [];

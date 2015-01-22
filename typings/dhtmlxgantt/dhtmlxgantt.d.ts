@@ -513,6 +513,8 @@ parse the start_date, end_date properties in case they are specified as strings
 	xml_date: string;
 
     autosize: boolean;
+
+    types: any;
 }
 
 
