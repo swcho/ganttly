@@ -914,6 +914,10 @@ module CbUtils {
 
         }
 
+        getProject(aProjectUri: string): Cb.TProject {
+            return this._projectMap[aProjectUri];
+        }
+
         getAllMaps(): TAllMaps {
 
             return {
@@ -1590,5 +1594,18 @@ module CbUtils {
             });
 
         }
+
+        export function roundDay(aDate: Date) {
+            return new Date(aDate.getFullYear(), aDate.getMonth(), aDate.getDate());
+        }
+
+        export function addDays(aDate: Date, aDays: number) {
+            return new Date(aDate.getTime() + unitDay * aDays);
+        }
+
+        export function getPast7DateFromNow() {
+            return addDays(roundDay(new Date()), -7);
+        }
+
     }
 }

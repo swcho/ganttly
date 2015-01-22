@@ -990,6 +990,7 @@ interface GanttStatic{
 
     addMarker(param: any);
     getTaskPosition(task);
+    posFromDate(date: Date): number;
 }
 
 

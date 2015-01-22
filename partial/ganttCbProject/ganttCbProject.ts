@@ -51,14 +51,25 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         });
     }
 
-    $scope.cbProjectItems = [];
+//    $scope.cbProjectItems = [];
     $scope.cbProjectFilter = function(text, cb) {
         getProjectList(text, cb);
     };
-    getProjectList('', function(items) {
-        $scope.cbProjectItems = items;
-        $scope.$apply();
-    });
+
+    if (!paramProjectUri) {
+        getProjectList('', function(items) {
+            $scope.cbProjectItems = items;
+        });
+    } else {
+        Cb.project.getProject(paramProjectUri, function(err, p) {
+            $scope.cbProjectItems = [{
+                id: p.uri,
+                text: p.name
+            }];
+            $scope.cbProjectSelected = p.uri;
+            $scope.$apply();
+        });
+    }
 
     $scope.setProject = function(uri) {
         if (uri === paramProjectUri) {
@@ -599,22 +610,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
      * Display Tasks
      * @type {{}}
      */
-    var param: cb.TParamGetTask = {};
-    if (paramProjectUri) {
-        param.projectUri = paramProjectUri;
-        $codeBeamer.getByUri(paramProjectUri, function(err, resp) {
-            if (err) {
-                return;
-            }
-            $scope.cbProjectItems = [{
-                id: resp.uri,
-                text: resp.name
-            }];
-            $scope.cbProjectSelected = resp.uri;
-//            $scope.$apply();
-        });
-    }
-
     showModal('Getting information...');
 
     var groupTypeById = {
@@ -652,120 +647,21 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     sortingTypeById[KSortIdModifiedTimeDsc] = CbUtils.TSortingType.ByModifiedTimeDsc;
 
     var sorting: CbUtils.TSortingType = sortingTypeById[paramSorting];
-    console.log('sorging:',paramSorting,sorting)
 
     CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, filters,  sorting, function(err, resp, markers) {
+
+        // set gantt chart
         gantt.clearAll();
         markers.forEach(function(m) {
             gantt.addMarker(m);
         });
         gantt.parse(resp, "json");
+
+        gantt.scrollTo(gantt.posFromDate(CbUtils.UiUtils.getPast7DateFromNow()), 0);
+
+        // close modal
         closeModal();
-    });
-
-    return;
-    $codeBeamer.getTasks(param, function(err, trackerUriList: string[], items: cb.TTask[]) {
-        if (err) {
-            console.log(err);
-            return;
-        }
-
-        taskTrackerUriList = trackerUriList;
-
-        var taskUris = [], tasks: DhxGantt.TTask[] = [], links: DhxGantt.TLink[] = [];
-        var projects = {};
-        var assignedUser = {};
-
-        items.forEach(function(item) {
-            taskUris.push(item.uri);
-//            tasks.push(CbUtils.covertCbTaskToDhxTask(item)); TODO:
-            if (groupByProject) {
-                projects[item.tracker.project.uri] = item.tracker.project;
-            }
-            if (groupByUser) {
-                if (item.assignedTo && item.assignedTo.length) {
-                    assignedUser[item.assignedTo[0].uri] = item.assignedTo[0];
-                }
-            }
-        });
-
-        items.forEach(function(item, i) {
-            if (item.associations) {
-                item.associations.forEach(function (association:cb.TAssociation) {
-                    var indexTo = association.to ? taskUris.indexOf(association.to.uri): -1;
-                    var indexFrom = association.from ? taskUris.indexOf(association.from.uri): -1;
-                    if (indexTo !== -1) {
-                        if (association.type.name === 'depends') {
-                            links.push({
-                                id: association.uri,
-                                source: association.to.uri,
-                                target: item.uri,
-                                type: '0'
-                            });
-                            if (!tasks[indexTo].depends) {
-                                tasks[indexTo].depends = [];
-                            }
-                            tasks[indexTo].depends.push(item.uri);
-                        } else if (association.type.name === 'parent') {
-                            console.log(association.from.uri + ' -> ' + association.to.uri);
-                            tasks[indexTo].parent = association.from.uri;
-                        } else if (indexFrom !== -1 && association.type.name === 'child') {
-                            console.log(association.to.uri + ' -> ' + association.from.uri);
-                            tasks[indexFrom].parent = association.to.uri;
-                        }
-                    }
-                });
-            }
-            if (groupByProject) {
-                tasks[i].parent = item.tracker.project.uri;
-            } else if (groupByUser) {
-                if (item.assignedTo && item.assignedTo.length) {
-                    tasks[i].parent = item.assignedTo[0].uri;
-                } else {
-                    tasks[i].parent = '__not_assigned__';
-                }
-            } else if (item.parent) {
-                tasks[i].parent = item.parent.uri;
-            }
-        });
-
-        Object.keys(projects).forEach(function(key) {
-            tasks.push({
-                id: projects[key].uri,
-                text: projects[key].name,
-                user: '-'
-            });
-        });
-
-        var assignedUserKeys = Object.keys(assignedUser);
-        if (assignedUserKeys.length) {
-            assignedUserKeys.forEach(function(key) {
-                tasks.push({
-                    id: assignedUser[key].uri,
-                    text: assignedUser[key].name,
-                    user: '-'
-                });
-            });
-            tasks.push({
-                id: '__not_assigned__',
-                text: 'Not assigned',
-                user: '-'
-            });
-        }
-
-        $scope.tasks = {
-            data: tasks,
-            links: links
-        };
-
-        gantt.clearAll();
-        gantt.parse($scope.tasks, "json");
-
-        closeModal();
-    }, function(msg) {
-        dhtmlx.message(msg);
     });
 
     console.log('-------------------------');
-
 });
