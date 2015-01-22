@@ -608,14 +608,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     };
 
     //    $scope.contextMenu = contextMenu;
-    //    if (!userUri && !paramProjectUri) {
-    //        try {
-    //            gantt.clearAll();
-    //        } catch(e) {
-    //
-    //        }
-    //        return;
-    //    }
+    if (!paramProjectUri) {
+        try  {
+            gantt.clearAll();
+        } catch (e) {
+        }
+        return;
+    }
+
     /**
     * Display Tasks
     * @type {{}}
