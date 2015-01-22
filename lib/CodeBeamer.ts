@@ -1316,6 +1316,7 @@ module CbUtils {
                 id: '__unknown_user__',
                 text: 'User not assigned',
                 user: '-',
+                type: gantt.config.types.project,
                 _type: DhxGanttDef.TTaskType.User
             };
         };
@@ -1327,6 +1328,7 @@ module CbUtils {
                 id: '__unknown_release__',
                 text: 'Relase not assigned',
                 user: '-',
+                type: gantt.config.types.project,
                 _type: DhxGanttDef.TTaskType.Release
             };
         };
