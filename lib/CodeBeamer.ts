@@ -1482,9 +1482,10 @@ module CbUtils {
             }
         }
 
-        function generatePropertySorter(aProp: string, aAscending: boolean, aCompare, aAlternative?: string) {
+        function generatePropertySorter(aProp: string, aAscending: boolean, aCompare, ...aAlternative: string[]) {
             return function(objA, objB) {
-                var varA = objA[aProp] || objA[aAlternative], varB = objB[aProp] || objB[aAlternative];
+                var varA = objA[aProp] || objA[aAlternative[0]] || objA[aAlternative[1]],
+                    varB = objB[aProp] || objB[aAlternative[0]] || objB[aAlternative[1]];
                 if (aAscending) {
                     return aCompare ? aCompare(varA, varB) : varA - varB;
                 } else {
@@ -1499,8 +1500,8 @@ module CbUtils {
         }
 
         var KSorterByType = {};
-        KSorterByType[TSortingType.ByStartTime] = generatePropertySorter('startDate', true, dateStringCompare, 'submittedAt');
-        KSorterByType[TSortingType.ByStartTimeDsc] = generatePropertySorter('startDate', false, dateStringCompare, 'submittedAt');
+        KSorterByType[TSortingType.ByStartTime] = generatePropertySorter('startDate', true, dateStringCompare, 'plannedReleaseDate', 'submittedAt');
+        KSorterByType[TSortingType.ByStartTimeDsc] = generatePropertySorter('startDate', false, dateStringCompare, 'plannedReleaseDate', 'submittedAt');
         KSorterByType[TSortingType.ByEndTime] = generatePropertySorter('endDate', true, dateStringCompare);
         KSorterByType[TSortingType.ByEndTimeDsc] = generatePropertySorter('endDate', false, dateStringCompare);
         KSorterByType[TSortingType.BySubmittedTime] = generatePropertySorter('submittedAt', true, dateStringCompare);

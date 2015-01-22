@@ -650,6 +650,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, filters,  sorting, function(err, resp, markers) {
 
+        var prevPosition = gantt.getScrollState();
+        console.error(prevPosition);
+
         // set gantt chart
         gantt.clearAll();
         markers.forEach(function(m) {
@@ -657,7 +660,14 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         });
         gantt.parse(resp, "json");
 
-        gantt.scrollTo(gantt.posFromDate(CbUtils.UiUtils.getPast7DateFromNow()), 0);
+        setTimeout(function() {
+            if (prevPosition.x  == 0 && prevPosition.y == 0) {
+                console.error('set 7 days before');
+                prevPosition.x = gantt.posFromDate(CbUtils.UiUtils.getPast7DateFromNow());
+                prevPosition.y = 0;
+            }
+            gantt.scrollTo(prevPosition.x, prevPosition.y);
+        }, 0);
 
         // close modal
         closeModal();
