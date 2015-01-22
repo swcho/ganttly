@@ -204,3 +204,39 @@
     background-size: 18px;
   }
 }
+
+// ref: http://docs.dhtmlx.com/gantt/samples/04_customization/17_classic_gantt_look.html
+.custom-project{
+  position: absolute;
+  height: 6px;
+  color: #ffffff;
+  background-color: #444444;
+}
+.custom-project div{
+  position: absolute;
+}
+.project-left, .project-right{
+  top: 6px;
+  background-color: transparent;
+  border-style: solid;
+  width: 0px;
+  height: 0px;
+}
+
+.project-left{
+  left:0px;
+  border-width: 0px 0px  8px 7px;
+  border-top-color: transparent;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  border-left-color: #444444 !important;
+}
+
+.project-right{
+  right:0px;
+  border-width: 0px 7px 8px 0px;
+  border-top-color: transparent;
+  border-right-color: #444444;
+  border-bottom-color: transparent !important;
+  border-left-color: transparent;
+}

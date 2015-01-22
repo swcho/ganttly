@@ -204,6 +204,25 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             return "";
         };
 
+        // Custom task rendering for project type
+        // ref: http://docs.dhtmlx.com/gantt/samples/04_customization/17_classic_gantt_look.html
+        gantt.config.type_renderers[gantt.config.types.project] = function (task) {
+            var main_el = document.createElement("div");
+            main_el.setAttribute(gantt.config.task_attribute, task.id);
+            var size = gantt.getTaskPosition(task);
+            main_el.innerHTML = [
+                "<div class='project-left'></div>",
+                "<div class='project-right'></div>"
+            ].join('');
+            main_el.className = "custom-project";
+
+            main_el.style.left = size.left + "px";
+            main_el.style.top = size.top + 7 + "px";
+            main_el.style.width = size.width + "px";
+
+            return main_el;
+        };
+
         //init gantt
         gantt.init($element[0]);
     }

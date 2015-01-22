@@ -513,8 +513,9 @@ parse the start_date, end_date properties in case they are specified as strings
 	xml_date: string;
 
     autosize: boolean;
-
     types: any;
+    type_renderers: any;
+
 }
 
 
@@ -988,6 +989,7 @@ interface GanttStatic{
 	updateTask(id: string, item: any);
 
     addMarker(param: any);
+    getTaskPosition(task);
 }
 
 

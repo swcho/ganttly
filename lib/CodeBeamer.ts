@@ -1277,6 +1277,7 @@ module CbUtils {
                 id: user.uri,
                 text: getUserName(user),
                 user: '-',
+                type: gantt.config.types.project,
                 _type: DhxGanttDef.TTaskType.User
             };
         };
@@ -1287,6 +1288,7 @@ module CbUtils {
                 id: project.uri,
                 text: project.name,
                 user: '-',
+                type: gantt.config.types.project,
                 _type: DhxGanttDef.TTaskType.Project
             };
         };

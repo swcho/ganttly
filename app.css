@@ -7584,6 +7584,39 @@ button.close {
   background-image: url('images/icons/ico_services.png');
   background-size: 18px;
 }
+.custom-project {
+  position: absolute;
+  height: 6px;
+  color: #ffffff;
+  background-color: #444444;
+}
+.custom-project div {
+  position: absolute;
+}
+.project-left,
+.project-right {
+  top: 6px;
+  background-color: transparent;
+  border-style: solid;
+  width: 0px;
+  height: 0px;
+}
+.project-left {
+  left: 0px;
+  border-width: 0px 0px  8px 7px;
+  border-top-color: transparent;
+  border-right-color: transparent !important;
+  border-bottom-color: transparent !important;
+  border-left-color: #444444 !important;
+}
+.project-right {
+  right: 0px;
+  border-width: 0px 7px 8px 0px;
+  border-top-color: transparent;
+  border-right-color: #444444;
+  border-bottom-color: transparent !important;
+  border-left-color: transparent;
+}
 .gantt_task_line.status_none {
   border: 2px solid rgba(175, 175, 175, 0.5);
   color: rgba(175, 175, 175, 0.5);
