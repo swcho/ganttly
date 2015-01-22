@@ -208,11 +208,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     $scope.scale = paramScope;
 
     /**
-     * Form options
+     * Filter options
      */
 
     var KFilterIdWithoutCompletedTask = 'fid_without_task';
-    $scope.frmItems = [{
+    var frmFilters: dhx.TFormItem[] = [{
         name: KFilterIdWithoutCompletedTask,
         type: 'checkbox',
         label: 'Hide Completed Tasks',
@@ -236,7 +236,23 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
             }
         }
     }];
+    $scope.frmFilters = frmFilters;
 
+    /**
+     * Navigation button
+     */
+    var frmNavi: dhx.TFormItem[] = [{
+        name: 'bt_navi_today',
+        type: 'button',
+        value: 'Today',
+        eventHandlers: {
+            onButtonClick: function() {
+                console.error('onButtonClick');
+                gantt.scrollTo(gantt.posFromDate(CbUtils.UiUtils.getPast7DateFromNow()), 0);
+            }
+        }
+    }];
+    $scope.frmNavi = frmNavi;
 
     /**
      *

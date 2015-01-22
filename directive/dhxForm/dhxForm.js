@@ -39,6 +39,11 @@ angular.module('ganttly').directive('dhxForm', function () {
                     if (eventHandlers[name] && eventHandlers[name]['onChange']) {
                         eventHandlers[name]['onChange'](value, state);
                     }
+                }),
+                myForm.attachEvent("onButtonClick", function (name) {
+                    if (eventHandlers[name] && eventHandlers[name]['onButtonClick']) {
+                        eventHandlers[name]['onButtonClick']();
+                    }
                 })
             ];
 

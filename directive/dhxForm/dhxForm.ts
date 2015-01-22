@@ -13,7 +13,7 @@ declare module dhx {
         hidden?: boolean; // hides/shows the item. The default value - *false* (the item is shown)
         inputLeft?: number; // sets the left absolute offset of input.The attribute is applied only if the *position* is set as "absolute"
         inputTop?: number; // sets the top absolute offset of input. The attribute is applied only if the *position* is set as "absolute"
-        name?: string; // the identification name. Used for referring to item
+        name: string; // the identification name. Used for referring to item
         type: string;
         list?: TFormItem[]; // defines the array of nested elements
         offsetLeft?: number; // sets the left relative offset of item
@@ -25,6 +25,7 @@ declare module dhx {
         checked?: boolean; // for check box
         eventHandlers?: {
             onChange?: (value: any, state: boolean) => void;
+            onButtonClick? : () => void;
         }
     }
 }
@@ -68,6 +69,11 @@ angular.module('ganttly').directive('dhxForm', function() {
                 myForm.attachEvent("onChange", function (name, value, state){
                     if (eventHandlers[name] && eventHandlers[name]['onChange']) {
                         eventHandlers[name]['onChange'](value, state);
+                    }
+                }),
+                myForm.attachEvent("onButtonClick", function (name){
+                    if (eventHandlers[name] && eventHandlers[name]['onButtonClick']) {
+                        eventHandlers[name]['onButtonClick']();
                     }
                 })
             ];
