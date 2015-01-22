@@ -7558,16 +7558,26 @@ button.close {
   text-decoration: line-through !important;
 }
 .weekend {
-  background: #f4f7f4;
+  background: rgba(241, 244, 241, 0.51);
 }
 .gantt_selected .weekend {
-  background: #f7eb91;
+  background: rgba(241, 244, 241, 0.51);
 }
 .holiday {
-  background: #f78f91;
+  background: rgba(247, 79, 70, 0.5);
+  color: white !important;
 }
 .gantt_selected .holiday {
-  background: #f7eb91;
+  background: rgba(247, 79, 70, 0.5);
+  color: white !important;
+}
+.today {
+  background: #d3e7ff;
+  color: white !important;
+}
+.gantt_selected .today {
+  background: #d3e7ff;
+  color: white !important;
 }
 .gantt_tooltip {
   width: 200px;

@@ -1608,5 +1608,15 @@ module CbUtils {
             return addDays(roundDay(new Date()), -7);
         }
 
+        export function setDateCentered(aDate: Date) {
+
+            var view_with = gantt.$container.offsetWidth - gantt.$grid.offsetWidth;
+
+            var pos = gantt.posFromDate(aDate) - view_with/2;
+
+            gantt.scrollTo(pos, 0);
+
+        }
+
     }
 }

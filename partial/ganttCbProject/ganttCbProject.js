@@ -13,7 +13,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     var holidayAwareness = gConfig.holidayAwareness;
 
     var paramProjectUri = $stateParams.project;
-    var paramScope = $stateParams.scope || 'Week';
+    var paramScale = $stateParams.scale || 'Week';
     var paramSorting = $stateParams.sorting || 'short_by_none';
     var paramGroupings = $stateParams.groupings ? $stateParams.groupings.split(',') : [];
     var paramFilters = $stateParams.filters ? $stateParams.filters.split(',') : [];
@@ -198,7 +198,16 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             id: 'Year',
             text: '년'
         }];
-    $scope.scale = paramScope;
+    $scope.cbScale = paramScale;
+    $scope.cbScaleChanged = function (selected) {
+        if (selected != paramScale) {
+            $state.go('ganttCbProject', {
+                scale: selected
+            }, {
+                inherit: true
+            });
+        }
+    };
 
     /**
     * Filter options
@@ -239,8 +248,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             value: 'Today',
             eventHandlers: {
                 onButtonClick: function () {
-                    console.error('onButtonClick');
-                    gantt.scrollTo(gantt.posFromDate(CbUtils.UiUtils.getPast7DateFromNow()), 0);
+                    //                console.error('onButtonClick');
+                    //                gantt.scrollTo(gantt.posFromDate(CbUtils.UiUtils.getPast7DateFromNow()), 0);
+                    //                gantt.showDate(new Date());
+                    CbUtils.UiUtils.setDateCentered(new Date());
                 }
             }
         }];
@@ -596,16 +607,15 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             }]
     };
 
-    $scope.contextMenu = contextMenu;
-
-    if (!userUri && !paramProjectUri) {
-        try  {
-            gantt.clearAll();
-        } catch (e) {
-        }
-        return;
-    }
-
+    //    $scope.contextMenu = contextMenu;
+    //    if (!userUri && !paramProjectUri) {
+    //        try {
+    //            gantt.clearAll();
+    //        } catch(e) {
+    //
+    //        }
+    //        return;
+    //    }
     /**
     * Display Tasks
     * @type {{}}
@@ -653,20 +663,17 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         console.error(prevPosition);
 
         // set gantt chart
+        gantt.setScale(paramScale);
         gantt.clearAll();
-        markers.forEach(function (m) {
-            gantt.addMarker(m);
-        });
         gantt.parse(resp, "json");
 
         setTimeout(function () {
             if (prevPosition.x == 0 && prevPosition.y == 0) {
-                console.error('set 7 days before');
-                prevPosition.x = gantt.posFromDate(CbUtils.UiUtils.getPast7DateFromNow());
-                prevPosition.y = 0;
+                CbUtils.UiUtils.setDateCentered(new Date());
+            } else {
+                gantt.scrollTo(prevPosition.x, prevPosition.y);
             }
-            gantt.scrollTo(prevPosition.x, prevPosition.y);
-        }, 0);
+        }, 5);
 
         // close modal
         closeModal();

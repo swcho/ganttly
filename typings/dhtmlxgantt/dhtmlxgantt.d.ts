@@ -592,6 +592,8 @@ interface GanttStatic{
 	version: String;
 	locale: GanttLocale;
 	$click: any;
+    $container: any;
+    $grid: any;
 
 	/**
 	 * adds a new dependency link
@@ -991,6 +993,8 @@ interface GanttStatic{
     addMarker(param: any);
     getTaskPosition(task);
     posFromDate(date: Date): number;
+    showDate(date: Date);
+    setScale(scale: string);
 }
 
 

@@ -42,11 +42,12 @@
         </div>
 
         <div class="combo_group">
-            <label>Scope</label>
+            <label>Scale</label>
 
             <div dhx-combo style="width: 80px;" class="combo"
                  dhx-data="cbScaleItems"
-                 dhx-selected="scale"
+                 dhx-selected="cbScale"
+                 dhx-change="cbScaleChanged"
                     ></div>
         </div>
 
@@ -57,7 +58,7 @@
 
     <div dhx-gantt
          id="gantt"
-         dhx-scale="scale"
+         dhx-scale="ganttScale"
          dhx-task-shift-clicked="onTaskShiftClicked"
          dhx-task-add="onTaskAdd"
          dhx-task-update="onTaskUpdate"

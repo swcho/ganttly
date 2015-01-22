@@ -126,24 +126,6 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             }
         };
 
-        // Highlight weekend
-        gantt.templates.scale_cell_class = function (date) {
-            if ($calendar.isHoliday(date)) {
-                return "holiday";
-            }
-            if (date.getDay() === 0 || date.getDay() === 6) {
-                return "weekend";
-            }
-        };
-        gantt.templates.task_cell_class = function (item, date) {
-            if ($calendar.isHoliday(date)) {
-                return "holiday";
-            }
-            if (date.getDay() === 0 || date.getDay() === 6) {
-                return "weekend";
-            }
-        };
-
         // Task tooltip
         gantt.templates.tooltip_text = function (start, end, task) {
             var descriptions = [
@@ -227,27 +209,107 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
         gantt.init($element[0]);
     }
 
+    // Highlight weekend
+    //if (false) {
+    //    gantt.templates.scale_cell_class = function (date) {
+    //
+    //        console.log(this.config.scale_unit);
+    //
+    //        if (this.config.scale_unit == 'month') {
+    //            if (date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+    //                if (date.getDate() == 1) {
+    //                    return 'today';
+    //                }
+    //                if (getWeek(date) == getWeek(now)) {
+    //                    return 'today';
+    //                }
+    //            }
+    //        } else {
+    //            if ($calendar.isHoliday(date)) {
+    //                return 'holiday';
+    //            }
+    //            if (date.getDay() === 0 || date.getDay() === 6) {
+    //                return 'weekend';
+    //            }
+    //            if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+    //                return 'today';
+    //            }
+    //        }
+    //        return '';
+    //    };
+    //    gantt.templates.task_cell_class = function (item, date) {
+    //
+    //        if (this.config.scale_unit == 'month') {
+    //            if (date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+    //                if (date.getDate() == 1) {
+    //                    return 'today';
+    //                }
+    //                if (getWeek(date) == getWeek(now)) {
+    //                    return 'today';
+    //                }
+    //            }
+    //        } else {
+    //            if ($calendar.isHoliday(date)) {
+    //                return "holiday";
+    //            }
+    //            if (date.getDay() === 0 || date.getDay() === 6) {
+    //                return "weekend"
+    //            }
+    //            if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+    //                return 'today';
+    //            }
+    //        }
+    //
+    //    };
+    //}
     function setScale(scale) {
+        var now = new Date();
+
+        function getWeek(aDate) {
+            var onejan = new Date(aDate.getFullYear(), 0, 1);
+            return Math.ceil((((aDate - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+        }
+
+        var init = true;
+
         var _setScale = {
             'Day': function () {
                 gantt.config.scale_unit = "day";
+                gantt.config.scale_height = 27;
                 gantt.config.step = 1;
                 gantt.config.date_scale = "%d %M";
                 gantt.config.subscales = [];
-                gantt.config.scale_height = 27;
                 gantt.templates.date_scale = null;
+                gantt.templates.scale_cell_class = function (date) {
+                    if (date.getDay() === 0 || date.getDay() === 6) {
+                        return 'weekend';
+                    }
+                    if ($calendar.isHoliday(date)) {
+                        return "holiday";
+                    }
+                    if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+                        return 'today';
+                    }
+                    return '';
+                };
+                gantt.templates.task_cell_class = function (item, date) {
+                    if (date.getDay() === 0 || date.getDay() === 6) {
+                        return 'weekend';
+                    }
+                    if ($calendar.isHoliday(date)) {
+                        return "holiday";
+                    }
+                    if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+                        return 'today';
+                    }
+                    return '';
+                };
             },
             'Week': function () {
-                var weekScaleTemplate = function (date) {
-                    var dateToStr = gantt.date.date_to_str("%M w%W");
-                    return dateToStr(date);
-                };
-
                 gantt.config.scale_unit = "week";
+                gantt.config.scale_height = 50;
                 gantt.config.step = 1;
-                gantt.templates.date_scale = weekScaleTemplate;
-                gantt.config.subscales = [
-                    {
+                gantt.config.subscales = [{
                         unit: "day",
                         step: 1,
                         //                        date:"%d %D",
@@ -256,49 +318,124 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                             var holiday = $calendar.isHoliday(date);
                             return holiday ? holiday.title + '<br>' + dateToStr(date) : dateToStr(date);
                         }
+                    }];
+                gantt.templates.date_scale = function (date) {
+                    var dateToStr = gantt.date.date_to_str("%M w%W");
+                    return dateToStr(date);
+                };
+                gantt.templates.scale_cell_class = function (date) {
+                    if (init && getWeek(date) == getWeek(now)) {
+                        init = false;
+                        return 'today';
                     }
-                ];
-                gantt.config.scale_height = 50;
+                    if (date.getDay() === 0 || date.getDay() === 6) {
+                        return 'weekend';
+                    }
+                    if ($calendar.isHoliday(date)) {
+                        return "holiday";
+                    }
+                    if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+                        return 'today';
+                    }
+                    return '';
+                };
+                gantt.templates.task_cell_class = function (item, date) {
+                    if (date.getDay() === 0 || date.getDay() === 6) {
+                        return 'weekend';
+                    }
+                    if ($calendar.isHoliday(date)) {
+                        return "holiday";
+                    }
+                    if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+                        return 'today';
+                    }
+                    return '';
+                };
             },
             'Month': function () {
                 gantt.config.scale_unit = "month";
-                gantt.config.date_scale = "%F, %Y";
-                gantt.config.subscales = [
-                    { unit: "week", step: 1, date: "Week #%W" }
-                ];
                 gantt.config.scale_height = 50;
+                gantt.config.date_scale = "%F, %Y";
+                gantt.config.subscales = [{
+                        unit: "week",
+                        step: 1,
+                        date: "w%W"
+                    }];
                 gantt.templates.date_scale = null;
+                gantt.templates.scale_cell_class = function (date) {
+                    if (date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+                        if (date.getDate() == 1) {
+                            return 'today';
+                        }
+                        if (getWeek(date) == getWeek(now)) {
+                            return 'today';
+                        }
+                    }
+                    return '';
+                };
+                gantt.templates.task_cell_class = function (item, date) {
+                    if (date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+                        if (getWeek(date) == getWeek(now)) {
+                            return 'today';
+                        }
+                    }
+                    return '';
+                };
             },
             'Year': function () {
                 gantt.config.scale_unit = "year";
+                gantt.config.scale_height = 90;
                 gantt.config.step = 1;
                 gantt.config.date_scale = "%Y";
                 gantt.config.min_column_width = 50;
-
-                gantt.config.scale_height = 90;
-                gantt.templates.date_scale = null;
-
-                var monthScaleTemplate = function (date) {
-                    var dateToStr = gantt.date.date_to_str("%M");
-                    var quarter = {
-                        'Jan': '1',
-                        'Apr': '2',
-                        'Jul': '3',
-                        'Oct': '4'
-                    };
-                    return quarter[dateToStr(date)] + 'Q';
-                };
-
                 gantt.config.subscales = [
-                    { unit: "month", step: 3, template: monthScaleTemplate },
-                    { unit: "month", step: 1, date: "%M" }
-                ];
+                    {
+                        unit: "month",
+                        step: 3,
+                        template: function (date) {
+                            var dateToStr = gantt.date.date_to_str("%M");
+                            var quarter = {
+                                'Jan': '1',
+                                'Apr': '2',
+                                'Jul': '3',
+                                'Oct': '4'
+                            };
+                            return quarter[dateToStr(date)] + 'Q';
+                        }
+                    }, {
+                        unit: "month",
+                        step: 1,
+                        date: "%M"
+                    }];
+                gantt.templates.date_scale = null;
+                gantt.templates.scale_cell_class = function (date) {
+                    if (date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+                        if (date.getDate() == 1) {
+                            return 'today';
+                        }
+                        if (getWeek(date) == getWeek(now)) {
+                            return 'today';
+                        }
+                    }
+                    return '';
+                };
+                gantt.templates.task_cell_class = function (item, date) {
+                    if (date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+                        if (getWeek(date) == getWeek(now)) {
+                            return 'today';
+                        }
+                    }
+                    return '';
+                };
             }
         };
-        console.log(scale);
-        _setScale[scale]();
-        gantt.render();
+        if (scale) {
+            _setScale[scale]();
+            //            gantt.render();
+        }
     }
+
+    gantt.setScale = setScale;
 
     function initContextMenu(contextMenu) {
         var outstanding_param = {};
