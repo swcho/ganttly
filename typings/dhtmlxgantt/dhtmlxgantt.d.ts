@@ -594,6 +594,8 @@ interface GanttStatic{
 	$click: any;
     $container: any;
     $grid: any;
+    $task: any;
+    $task_data: any;
 
 	/**
 	 * adds a new dependency link

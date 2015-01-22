@@ -163,6 +163,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
         gantt.config.row_height = 26;
 
         gantt.config.readonly = true;
+        gantt.config.initial_scroll = false;
 
         // Autosize
 //        gantt.config.autosize = true;

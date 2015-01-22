@@ -1610,9 +1610,7 @@ module CbUtils {
 
         export function setDateCentered(aDate: Date) {
 
-            var view_with = gantt.$container.offsetWidth - gantt.$grid.offsetWidth;
-
-            var pos = gantt.posFromDate(aDate) - view_with/2;
+            var pos = gantt.posFromDate(aDate) - gantt.$task.offsetWidth /2;
 
             gantt.scrollTo(pos, 0);
 
