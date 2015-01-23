@@ -169,16 +169,17 @@ var DhxGanttExt;
         //init gantt
         gantt.init($element[0]);
 
-        gantt.$task.addEventListener('mousewheel', function (e) {
+        gantt.$task_data.addEventListener('mousewheel', function (e) {
             if (e.ctrlKey) {
                 console.log(e);
+                console.log(e.layerX, e.layerY);
                 var prev_date = getCenteredDate();
 
                 if (prev_date) {
                     if (e.wheelDelta > 0) {
-                        increaseScale();
-                    } else {
                         decreaseScale();
+                    } else {
+                        increaseScale();
                     }
 
                     gantt.render();
@@ -229,6 +230,28 @@ var DhxGanttExt;
         });
     }
     DhxGanttExt.doDependsTasks = doDependsTasks;
+
+    function getCenterPos() {
+        var prevPosition = gantt.getScrollState();
+        return {
+            x: prevPosition.x + (gantt.$task.offsetWidth / 2),
+            y: prevPosition.y + (gantt.$task.offsetHeight / 2)
+        };
+    }
+
+    function getDateByPos(x) {
+        var start_date = gantt['_min_date'];
+
+        var end_date = gantt['_max_date'];
+
+        var div = end_date.getTime() - start_date.getTime();
+
+        var content_width = gantt.$task_data.offsetWidth;
+
+        var div_date = Math.ceil((x * div) / content_width);
+
+        return new Date(start_date.getTime() + div_date);
+    }
 
     function getCenteredDate() {
         var prevPosition = gantt.getScrollState();
