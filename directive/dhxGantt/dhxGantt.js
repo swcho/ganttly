@@ -182,11 +182,13 @@ var DhxGanttExt;
 
                 var prevX = e.layerX;
 
-                var prevY = e.layerY;
+                var prev_content_width = gantt.$task_data.offsetWidth;
 
-                var taskId = getTaskIdByPos(prevY);
+                var prev_time = gantt['_date_from_pos'](prevX);
 
-                var prevTime = gantt['_date_from_pos'](prevX);
+                var prev_scroll = gantt.getScrollState();
+
+                var prev_x_from_scroll = prevX - prev_scroll.x;
 
                 if (e.wheelDelta > 0) {
                     decreaseScale();
@@ -196,11 +198,14 @@ var DhxGanttExt;
 
                 gantt.render();
 
-                var new_content_height = gantt.$task_data.offsetHeight;
+                var new_content_width = gantt.$task_data.offsetWidth;
 
-                //                    console.log('new date range',gantt['_min_date'],'-',gantt['_max_date']);
-                //                    var new_time_width = gantt['_max_date'].getTime() - gantt['_min_date'].getTime();
-                //                    var time_x = prev_time - gantt['_min_date'].getTime() ;
+                var new_time_width = gantt['_max_date'].getTime() - gantt['_min_date'].getTime();
+
+                var time_x = prev_time - gantt['_min_date'].getTime();
+
+                var newX = time_x * prev_content_width / new_time_width;
+
                 //                    console.log('time div',time_x);
                 //                    var newX = gantt.posFromDate(prev_time);
                 //                    var new_time = gantt['_date_from_pos'](newX);
@@ -210,13 +215,10 @@ var DhxGanttExt;
                 //                    }
                 //                    var newY = prevY * new_content_height / prev_content_height - prev_scroll_offset_y;
                 //                    console.log(newX, newY);
-                console.log('taskId', taskId);
-
-                var task = gantt.getTask(taskId);
-
-                gantt.showDate(prevTime);
-
+                //                gantt.showDate(prevTime);
                 //                    gantt.scrollTo(newX, newY);
+                gantt.scrollTo(newX, prev_scroll.y);
+
                 e.returnValue = false;
                 e.cancelBubble = false;
                 e.preventDefault();
