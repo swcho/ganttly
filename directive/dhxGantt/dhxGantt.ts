@@ -1,21 +1,11 @@
 
 /// <reference path="../../typings/tsd.d.ts"/>
+/// <reference path="../../lib/Calendar.ts"/>
 
 // ref http://www.dhtmlx.com/blog/gantt-chart-angularjs-app-dhtmlxgantt/
 
 declare var dhtmlXMenuObject;
 declare var dhtmlx;
-
-module DhxGanttDef {
-
-    export enum TTaskType {
-        None,
-        User,
-        Project,
-        Release
-    }
-
-}
 
 declare module DhxGantt {
 
@@ -36,7 +26,7 @@ declare module DhxGantt {
         depends?: string[];
         color?: string;
         type?: any;
-        _type?: DhxGanttDef.TTaskType;
+        _type?: DhxGanttExt.TTaskType;
         _data?: any;
     }
 
@@ -77,46 +67,16 @@ declare module DhxGantt {
     }
 }
 
-module GanttUtils {
-    export function setParentOpen(aTask: DhxGantt.TTask) {
-        if (aTask.parent) {
-            var parentTask = gantt.getTask(aTask.id);
-            if (parentTask) {
-                parentTask.open = true;
-                setParentOpen(parentTask);
-            }
-        }
+module DhxGanttExt {
+
+    export enum TTaskType {
+        None,
+        User,
+        Project,
+        Release
     }
 
-    export function doDependsTasks(aTask: DhxGantt.TTask, aCb, aLoopFunc: (aPrecedentTask: DhxGantt.TTask, aTask: DhxGantt.TTask, aCb) => void) {
-        var series = [];
-        if (aTask.depends) {
-            aTask.depends.forEach(function(taskId: string) {
-                var task =gantt.getTask(taskId);
-                series.push(function(cb) {
-                    aLoopFunc(aTask, task, function(err) {
-                        if (err) {
-                            cb(err);
-                            return;
-                        }
-                        doDependsTasks(task, cb, aLoopFunc);
-                    });
-                });
-            });
-        }
-        async.series(series, function(err) {
-            aCb(err);
-        });
-    }
-
-}
-
-angular.module('ganttly').directive('dhxGantt', function ($calendar) {
-
-    var unitDay = 1000 * 60 * 60 * 24;
-    var unitHour = 1000 * 60 * 60;
-
-    function initGantt($element) {
+    export function init($element) {
         var classes_priority = {
             'Highest': 'priority_highest',
             'High': 'priority_high',
@@ -197,12 +157,12 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
         gantt.templates.tooltip_text = function(start,end,task){
 
             var descriptions = [
-                "<b>Task:</b> " + task.text,
-                "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start),
-                "<b>End date:</b> " + gantt.templates.tooltip_date_format(end),
-                "<b>Duration:</b> " + task.duration,
-                "<b>Est. Days:</b> " + (task.estimatedDays || 0),
-                "<b>Progress:</b> " + (task.progress ? task.progress.toFixed(2) : 0)
+                    "<b>Task:</b> " + task.text,
+                    "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start),
+                    "<b>End date:</b> " + gantt.templates.tooltip_date_format(end),
+                    "<b>Duration:</b> " + task.duration,
+                    "<b>Est. Days:</b> " + (task.estimatedDays || 0),
+                    "<b>Progress:</b> " + (task.progress ? task.progress.toFixed(2) : 0)
             ];
 
             return descriptions.join('<br/>');
@@ -231,9 +191,9 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 
         // Tree icons: ref:http://docs.dhtmlx.com/gantt/desktop__tree_column.html
         var task_class_names = {};
-        task_class_names[DhxGanttDef.TTaskType.Project] = 'task_type_project';
-        task_class_names[DhxGanttDef.TTaskType.User] = 'task_type_user';
-        task_class_names[DhxGanttDef.TTaskType.Release] = 'task_type_release';
+        task_class_names[DhxGanttExt.TTaskType.Project] = 'task_type_project';
+        task_class_names[DhxGanttExt.TTaskType.User] = 'task_type_user';
+        task_class_names[DhxGanttExt.TTaskType.Release] = 'task_type_release';
 
         gantt.templates.grid_folder = function(item) {
             var icon_class_by_type = task_class_names[item._type];
@@ -275,238 +235,319 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 
         //init gantt
         gantt.init($element[0]);
+
+        gantt.$task.addEventListener('mousewheel', function(e) {
+            if (e.ctrlKey) {
+                console.log(e);
+                var prev_date = getCenteredDate();
+
+                if (prev_date) {
+                    if (e.wheelDelta > 0) {
+                        increaseScale();
+                    } else {
+                        decreaseScale();
+                    }
+
+                    gantt.render();
+
+                    setDateCentered(prev_date);
+                }
+
+            }
+        });
     }
 
+    export function setDateCentered(aDate: Date) {
 
+        var pos = gantt.posFromDate(aDate) - gantt.$task.offsetWidth /2;
 
+        gantt.scrollTo(pos, 0);
 
-    // Highlight weekend
+    }
 
-//if (false) {
-//    gantt.templates.scale_cell_class = function (date) {
-//
-//        console.log(this.config.scale_unit);
-//
-//        if (this.config.scale_unit == 'month') {
-//            if (date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
-//                if (date.getDate() == 1) {
-//                    return 'today';
-//                }
-//                if (getWeek(date) == getWeek(now)) {
-//                    return 'today';
-//                }
-//            }
-//        } else {
-//            if ($calendar.isHoliday(date)) {
-//                return 'holiday';
-//            }
-//            if (date.getDay() === 0 || date.getDay() === 6) {
-//                return 'weekend';
-//            }
-//            if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
-//                return 'today';
-//            }
-//        }
-//        return '';
-//    };
-//    gantt.templates.task_cell_class = function (item, date) {
-//
-//        if (this.config.scale_unit == 'month') {
-//            if (date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
-//                if (date.getDate() == 1) {
-//                    return 'today';
-//                }
-//                if (getWeek(date) == getWeek(now)) {
-//                    return 'today';
-//                }
-//            }
-//        } else {
-//            if ($calendar.isHoliday(date)) {
-//                return "holiday";
-//            }
-//            if (date.getDay() === 0 || date.getDay() === 6) {
-//                return "weekend"
-//            }
-//            if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
-//                return 'today';
-//            }
-//        }
-//
-//    };
-//}
-    function setScale(scale) {
-        var now = new Date();
-
-        function getWeek(aDate) {
-            var onejan: any = new Date(aDate.getFullYear(), 0, 1);
-            return Math.ceil((((aDate - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+    export function setParentOpen(aTask: DhxGantt.TTask) {
+        if (aTask.parent) {
+            var parentTask = gantt.getTask(aTask.id);
+            if (parentTask) {
+                parentTask.open = true;
+                setParentOpen(parentTask);
+            }
         }
+    }
+
+    export function doDependsTasks(aTask: DhxGantt.TTask, aCb, aLoopFunc: (aPrecedentTask: DhxGantt.TTask, aTask: DhxGantt.TTask, aCb) => void) {
+        var series = [];
+        if (aTask.depends) {
+            aTask.depends.forEach(function(taskId: string) {
+                var task =gantt.getTask(taskId);
+                series.push(function(cb) {
+                    aLoopFunc(aTask, task, function(err) {
+                        if (err) {
+                            cb(err);
+                            return;
+                        }
+                        doDependsTasks(task, cb, aLoopFunc);
+                    });
+                });
+            });
+        }
+        async.series(series, function(err) {
+            aCb(err);
+        });
+    }
+
+    export function getCenteredDate() {
+
+        var prevPosition = gantt.getScrollState();
+
+        if (prevPosition.x || prevPosition.y) {
+            var content_width = gantt.$task_data.offsetWidth;
+
+            var prevCenter = prevPosition.x + (gantt.$task.offsetWidth / 2);
+
+            console.error(prevCenter, '/', content_width);
+
+            var start_date = gantt['_min_date'];
+
+            var end_date = gantt['_max_date'];
+
+            console.log('start', start_date);
+
+            console.log('end  ', end_date);
+
+            var div = end_date.getTime() - start_date.getTime();
+            console.log('div  ', div);
+
+            var div_date = Math.ceil(( prevCenter * div ) / content_width);
+
+            console.log('div_date', div_date);
+
+            var prev_start_date = new Date(start_date.getTime() + div_date);
+
+            console.log('date ', prev_start_date);
+
+            return prev_start_date;
+        }
+        return null;
+    }
+
+    function getWeek(aDate) {
+        var onejan: any = new Date(aDate.getFullYear(), 0, 1);
+        return Math.ceil((((aDate - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+    }
+
+    var KScaleHandlers = {
+        'day': function() {
+            var now = new Date();
+            gantt.config.scale_unit = "day";
+            gantt.config.scale_height = 27;
+            gantt.config.step = 1;
+            gantt.config.date_scale = "%d %M";
+            gantt.config.subscales = [];
+            gantt.templates.date_scale = null;
+            gantt.templates.scale_cell_class = function(date) {
+                if (date.getDay() === 0 || date.getDay() === 6) {
+                    return 'weekend';
+                }
+                if (CalendarUtils.isHoliday(date)) {
+                    return "holiday";
+                }
+                if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
+                    return 'today';
+                }
+                return '';
+            };
+            gantt.templates.task_cell_class = function(item, date) {
+                if (date.getDay() === 0 || date.getDay() === 6) {
+                    return 'weekend';
+                }
+                if (CalendarUtils.isHoliday(date)) {
+                    return "holiday";
+                }
+                if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+                    return 'today';
+                }
+                return '';
+            };
+        },
+        'week': function(init) {
+            var now = new Date();
+            gantt.config.scale_unit = "week";
+            gantt.config.scale_height = 50;
+            gantt.config.step = 1;
+            gantt.config.subscales = [{
+                unit:"day",
+                step:1,
+//                        date:"%d %D",
+                template: function(date) {
+                    var dateToStr = gantt.date.date_to_str("%d %D");
+                    var holiday = null; //$calendar.isHoliday(date);
+                    return holiday ? holiday.title + '<br>' + dateToStr(date): dateToStr(date);
+                }
+            }];
+            gantt.templates.date_scale = function(date){
+                var dateToStr = gantt.date.date_to_str("%M w%W");
+                return dateToStr(date);
+            };
+            gantt.templates.scale_cell_class = function(date) {
+                if (init && getWeek(date) == getWeek(now)) {
+                    init = false;
+                    return 'today';
+                }
+                if (date.getDay() === 0 || date.getDay() === 6) {
+                    return 'weekend';
+                }
+                if (CalendarUtils.isHoliday(date)) {
+                    return "holiday";
+                }
+                if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
+                    return 'today';
+                }
+                return '';
+            };
+            gantt.templates.task_cell_class = function(item, date) {
+                if (date.getDay() === 0 || date.getDay() === 6) {
+                    return 'weekend';
+                }
+                if (CalendarUtils.isHoliday(date)) {
+                    return "holiday";
+                }
+                if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
+                    return 'today';
+                }
+                return '';
+            };
+        },
+        'month': function() {
+            var now = new Date();
+            gantt.config.scale_unit = "month";
+            gantt.config.scale_height = 50;
+            gantt.config.date_scale = "%F, %Y";
+            gantt.config.subscales = [{
+                unit:"week",
+                step:1,
+                date:"w%W"
+            }];
+            gantt.templates.date_scale = null;
+            gantt.templates.scale_cell_class = function(date) {
+                if (date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
+                    if (date.getDate() == 1) {
+                        return 'today';
+                    }
+                    if (getWeek(date) == getWeek(now)) {
+                        return 'today';
+                    }
+                }
+                return '';
+            };
+            gantt.templates.task_cell_class = function(item, date) {
+                if (date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
+                    if (getWeek(date) == getWeek(now)) {
+                        return 'today';
+                    }
+                }
+                return '';
+            };
+        },
+        'year': function() {
+            var now = new Date();
+            gantt.config.scale_unit = "year";
+            gantt.config.scale_height = 90;
+            gantt.config.step = 1;
+            gantt.config.date_scale = "%Y";
+            gantt.config.min_column_width = 50;
+            gantt.config.subscales = [{
+                unit:"month",
+                step:3,
+                template: function(date){
+                    var dateToStr = gantt.date.date_to_str("%M");
+                    var quarter = {
+                        'Jan': '1',
+                        'Apr': '2',
+                        'Jul': '3',
+                        'Oct': '4'
+                    };
+                    return quarter[dateToStr(date)] + 'Q';
+                }
+            }, {
+                unit:"month",
+                step:1,
+                date:"%M"
+            }];
+            gantt.templates.date_scale = null;
+            gantt.templates.scale_cell_class = function(date) {
+                if (date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
+                    if (date.getDate() == 1) {
+                        return 'today';
+                    }
+                    if (getWeek(date) == getWeek(now)) {
+                        return 'today';
+                    }
+                }
+                return '';
+            };
+            gantt.templates.task_cell_class = function(item, date) {
+                if (date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
+                    if (getWeek(date) == getWeek(now)) {
+                        return 'today';
+                    }
+                }
+                return '';
+            };
+        }
+    };
+
+    export function setScale(aScale) {
+
+        if (!aScale) {
+            return;
+        }
+
+        console.log('setScale', aScale);
 
         var init = true;
+        var handler = KScaleHandlers[aScale];
 
-        var _setScale = {
-            'Day': function() {
-                gantt.config.scale_unit = "day";
-                gantt.config.scale_height = 27;
-                gantt.config.step = 1;
-                gantt.config.date_scale = "%d %M";
-                gantt.config.subscales = [];
-                gantt.templates.date_scale = null;
-                gantt.templates.scale_cell_class = function(date) {
-                    if (date.getDay() === 0 || date.getDay() === 6) {
-                        return 'weekend';
-                    }
-                    if ($calendar.isHoliday(date)) {
-                        return "holiday";
-                    }
-                    if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
-                        return 'today';
-                    }
-                    return '';
-                };
-                gantt.templates.task_cell_class = function(item, date) {
-                    if (date.getDay() === 0 || date.getDay() === 6) {
-                        return 'weekend';
-                    }
-                    if ($calendar.isHoliday(date)) {
-                        return "holiday";
-                    }
-                    if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
-                        return 'today';
-                    }
-                    return '';
-                };
-            },
-            'Week': function() {
-                gantt.config.scale_unit = "week";
-                gantt.config.scale_height = 50;
-                gantt.config.step = 1;
-                gantt.config.subscales = [{
-                    unit:"day",
-                    step:1,
-//                        date:"%d %D",
-                    template: function(date) {
-                        var dateToStr = gantt.date.date_to_str("%d %D");
-                        var holiday = $calendar.isHoliday(date);
-                        return holiday ? holiday.title + '<br>' + dateToStr(date): dateToStr(date);
-                    }
-                }];
-                gantt.templates.date_scale = function(date){
-                    var dateToStr = gantt.date.date_to_str("%M w%W");
-                    return dateToStr(date);
-                };
-                gantt.templates.scale_cell_class = function(date) {
-                    if (init && getWeek(date) == getWeek(now)) {
-                        init = false;
-                        return 'today';
-                    }
-                    if (date.getDay() === 0 || date.getDay() === 6) {
-                        return 'weekend';
-                    }
-                    if ($calendar.isHoliday(date)) {
-                        return "holiday";
-                    }
-                    if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
-                        return 'today';
-                    }
-                    return '';
-                };
-                gantt.templates.task_cell_class = function(item, date) {
-                    if (date.getDay() === 0 || date.getDay() === 6) {
-                        return 'weekend';
-                    }
-                    if ($calendar.isHoliday(date)) {
-                        return "holiday";
-                    }
-                    if (date.getDate() == now.getDate() && date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
-                        return 'today';
-                    }
-                    return '';
-                };
-            },
-            'Month': function() {
-                gantt.config.scale_unit = "month";
-                gantt.config.scale_height = 50;
-                gantt.config.date_scale = "%F, %Y";
-                gantt.config.subscales = [{
-                    unit:"week",
-                    step:1,
-                    date:"w%W"
-                }];
-                gantt.templates.date_scale = null;
-                gantt.templates.scale_cell_class = function(date) {
-                    if (date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
-                        if (date.getDate() == 1) {
-                            return 'today';
-                        }
-                        if (getWeek(date) == getWeek(now)) {
-                            return 'today';
-                        }
-                    }
-                    return '';
-                };
-                gantt.templates.task_cell_class = function(item, date) {
-                    if (date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
-                        if (getWeek(date) == getWeek(now)) {
-                            return 'today';
-                        }
-                    }
-                    return '';
-                };
-            },
-            'Year': function() {
-                gantt.config.scale_unit = "year";
-                gantt.config.scale_height = 90;
-                gantt.config.step = 1;
-                gantt.config.date_scale = "%Y";
-                gantt.config.min_column_width = 50;
-                gantt.config.subscales = [{
-                    unit:"month",
-                    step:3,
-                    template: function(date){
-                        var dateToStr = gantt.date.date_to_str("%M");
-                        var quarter = {
-                            'Jan': '1',
-                            'Apr': '2',
-                            'Jul': '3',
-                            'Oct': '4'
-                        };
-                        return quarter[dateToStr(date)] + 'Q';
-                    }
-                }, {
-                    unit:"month",
-                    step:1,
-                    date:"%M"
-                }];
-                gantt.templates.date_scale = null;
-                gantt.templates.scale_cell_class = function(date) {
-                    if (date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
-                        if (date.getDate() == 1) {
-                            return 'today';
-                        }
-                        if (getWeek(date) == getWeek(now)) {
-                            return 'today';
-                        }
-                    }
-                    return '';
-                };
-                gantt.templates.task_cell_class = function(item, date) {
-                    if (date.getMonth() == now.getMonth()  && date.getFullYear() == now.getFullYear()) {
-                        if (getWeek(date) == getWeek(now)) {
-                            return 'today';
-                        }
-                    }
-                    return '';
-                };
-            }
-        };
-        if (scale) {
-            _setScale[scale]();
-//            gantt.render();
+        if (handler) {
+            handler(init);
         }
+
     }
 
-    gantt.setScale = setScale;
+    var available_scales = ['day', 'week', 'month', 'year'];
+
+    function getCurrentScaleIndex() {
+
+        var scale_unit = gantt.config.scale_unit;
+
+        return available_scales.indexOf(scale_unit);;
+    }
+
+    function decreaseScale() {
+
+        var index = getCurrentScaleIndex() - 1;
+
+        console.log('decreaseScale', index);
+
+        setScale(available_scales[index]);
+
+    }
+
+    function increaseScale() {
+
+        var index = getCurrentScaleIndex() + 1;
+
+        console.log('increaseScale', index);
+
+        setScale(available_scales[index]);
+    }
+
+}
+
+angular.module('ganttly').directive('dhxGantt', function ($calendar) {
+
+    var unitDay = 1000 * 60 * 60 * 24;
+    var unitHour = 1000 * 60 * 60;
 
     function initContextMenu(contextMenu: DhxGantt.TContextMenu) {
 
@@ -588,7 +629,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 
         link: function ($scope, $element, $attrs, $controller) {
 
-            initGantt($element);
+            DhxGanttExt.init($element);
 
             //size of gantt
             $scope.$watch(function () {
@@ -603,7 +644,7 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
 //            }, false);
 
             $scope.$watch($attrs['dhxScale'], function(scale){
-                setScale(scale);
+                DhxGanttExt.setScale(scale);
             }, true);
 
             var taskChangeMode;

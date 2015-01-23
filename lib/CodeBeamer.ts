@@ -3,8 +3,8 @@
 /// <reference path='../typings/tsd.d.ts'/>
 /// <reference path="../directive/dhxGantt/dhxGantt.ts"/>
 
-declare var Http;
 declare var gConfig;
+declare var Http;
 
 module Cb {
 
@@ -1185,7 +1185,7 @@ module CbUtils {
 
             if (cbRelease.plannedReleaseDate) {
                 dhxTask.start_date = new Date(cbRelease.plannedReleaseDate);
-                dhxTask._type = DhxGanttDef.TTaskType.Release;
+                dhxTask._type = DhxGanttExt.TTaskType.Release;
                 dhxTask.type = gantt.config.types.milestone;
             }
 
@@ -1283,7 +1283,7 @@ module CbUtils {
                 text: getUserName(user),
                 user: '-',
                 type: gantt.config.types.project,
-                _type: DhxGanttDef.TTaskType.User
+                _type: DhxGanttExt.TTaskType.User
             };
         };
         KGroupConverters[TGroupType.ByProject] = function(aAllMaps: TAllMaps, aProjectUri: string): DhxGantt.TTask {
@@ -1294,7 +1294,7 @@ module CbUtils {
                 text: project.name,
                 user: '-',
                 type: gantt.config.types.project,
-                _type: DhxGanttDef.TTaskType.Project
+                _type: DhxGanttExt.TTaskType.Project
             };
         };
         KGroupConverters[TGroupType.BySprint] = function(aAllMaps: TAllMaps, aReleaseUri: string, aParentId?: string): DhxGantt.TTask {
@@ -1306,7 +1306,7 @@ module CbUtils {
 //                id: release.uri,
 //                text: release.name,
 //                user: '-',
-//                _type: DhxGanttDef.TTaskType.Release
+//                _type: DhxGanttExt.TTaskType.Release
 //            };
 //            if (release.parent) {
 //                var parentId = aParentId ? aParentId + '>' : '';
@@ -1322,7 +1322,7 @@ module CbUtils {
                 text: 'User not assigned',
                 user: '-',
                 type: gantt.config.types.project,
-                _type: DhxGanttDef.TTaskType.User
+                _type: DhxGanttExt.TTaskType.User
             };
         };
         KUnknownConverter[TGroupType.ByProject] = function() {
@@ -1334,7 +1334,7 @@ module CbUtils {
                 text: 'Relase not assigned',
                 user: '-',
                 type: gantt.config.types.project,
-                _type: DhxGanttDef.TTaskType.Release
+                _type: DhxGanttExt.TTaskType.Release
             };
         };
 
@@ -1606,14 +1606,6 @@ module CbUtils {
 
         export function getPast7DateFromNow() {
             return addDays(roundDay(new Date()), -7);
-        }
-
-        export function setDateCentered(aDate: Date) {
-
-            var pos = gantt.posFromDate(aDate) - gantt.$task.offsetWidth /2;
-
-            gantt.scrollTo(pos, 0);
-
         }
 
     }

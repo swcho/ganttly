@@ -28,7 +28,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     var groupByProject = $stateParams.groupByProject === 'true';
     var taskTrackerUriList: string[];
 
-
     /**
      * Project selections
      *
@@ -193,16 +192,16 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
      * Scales
      */
     $scope.cbScaleItems = [{
-        id: 'Day',
+        id: 'day',
         text: '일'
     }, {
-        id: 'Week',
+        id: 'week',
         text: '주'
     }, {
-        id: 'Month',
+        id: 'month',
         text: '월'
     }, {
-        id: 'Year',
+        id: 'year',
         text: '년'
     }];
     $scope.cbScale = paramScale;
@@ -259,7 +258,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 //                console.error('onButtonClick');
 //                gantt.scrollTo(gantt.posFromDate(CbUtils.UiUtils.getPast7DateFromNow()), 0);
 //                gantt.showDate(new Date());
-                CbUtils.UiUtils.setDateCentered(new Date());
+                DhxGanttExt.setDateCentered(new Date());
             }
         }
     }];
@@ -677,44 +676,17 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     CbUtils.UiUtils.getDhxDataByProject(paramProjectUri, groupings, filters,  sorting, function(err, resp, markers) {
 
-        var prevPosition = gantt.getScrollState();
-
-        var content_width = gantt.$task_data.offsetWidth;
-
-        var prevCenter = prevPosition.x + (gantt.$task.offsetWidth / 2);
-
-        console.error(prevCenter, '/', content_width);
-
-        var start_date = gantt['_min_date'];
-
-        var end_date = gantt['_max_date'];
-
-        console.log('start', start_date);
-
-        console.log('end  ', end_date);
-
-        var div = end_date.getTime() - start_date.getTime();
-        console.log('div  ', div);
-
-        var div_date = Math.ceil(( prevCenter * div ) / content_width);
-
-        console.log('div_date', div_date);
-
-        var prev_start_date = new Date(start_date.getTime() + div_date);
-
-        console.log('date ', prev_start_date);
+        var prev_date = DhxGanttExt.getCenteredDate();
 
         // draw gantt chart
-        gantt.setScale(paramScale);
+        DhxGanttExt.setScale(paramScale);
+
         gantt.clearAll();
+
         gantt.parse(resp, "json");
 
         setTimeout(function() {
-            if (prevPosition.x  == 0 && prevPosition.y == 0) {
-                CbUtils.UiUtils.setDateCentered(new Date());
-            } else {
-                CbUtils.UiUtils.setDateCentered(prev_start_date);
-            }
+            DhxGanttExt.setDateCentered(prev_date || new Date());
         }, 5);
 
         // close modal
