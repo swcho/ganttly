@@ -255,6 +255,8 @@ module DhxGanttExt {
 
                 var prev_time = gantt['_date_from_pos'](prevX);
 
+                console.log(prev_time);
+
                 var prev_scroll = gantt.getScrollState();
 
                 var prev_x_from_scroll = prevX - prev_scroll.x;
@@ -269,11 +271,19 @@ module DhxGanttExt {
 
                 var new_content_width = gantt.$task_data.offsetWidth;
 
+                console.log(gantt['_min_date']);
+
                 var new_time_width = gantt['_max_date'].getTime() - gantt['_min_date'].getTime();
 
-                var time_x = prev_time - gantt['_min_date'].getTime() ;
+                var time_x = Math.max(prev_time.getTime() - gantt['_min_date'].getTime(), 0);
 
-                var newX = time_x * prev_content_width / new_time_width;
+                var newX = time_x * new_content_width / new_time_width;
+
+                var new_time = gantt['_date_from_pos'](newX);
+
+                console.log(new_time, newX);
+
+                console.log('div', prev_time.getTime() - new_time.getTime());
 
 //                    console.log('time div',time_x);
 
@@ -296,7 +306,7 @@ module DhxGanttExt {
 
 //                    gantt.scrollTo(newX, newY);
 
-                gantt.scrollTo(newX, prev_scroll.y);
+                gantt.scrollTo(newX - prev_x_from_scroll, prev_scroll.y);
 
                 e.returnValue = false;
                 e.cancelBubble = false;
