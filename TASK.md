@@ -7,3 +7,7 @@
 . 해당 Site의 Admin이 기존 Gantt Chart와 마찬가지로 바로 Editing이 가능했으면 좋겠습니다.
 . TS 담당자를 기준으로 Chart를 표시하는 기능
 . Filtering 기능 추가 (Test 단계, TS담당자, 법인, 사업부)
+
+
+. Gather springs information
+. Gather multiple release trackers from a project

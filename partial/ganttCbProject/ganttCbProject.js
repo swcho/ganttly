@@ -607,8 +607,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             }]
     };
 
-    $scope.contextMenu = contextMenu;
-
+    //    $scope.contextMenu = contextMenu;
     if (!paramProjectUri) {
         try  {
             gantt.clearAll();

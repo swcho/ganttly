@@ -169,23 +169,59 @@ var DhxGanttExt;
         //init gantt
         gantt.init($element[0]);
 
+        var unit_per_scale = {
+            'day': 1000 * 60 * 60 * 20,
+            'week': 1000 * 60 * 60 * 20,
+            'month': 1000 * 60 * 60 * 20 * 7,
+            'year': 1000 * 60 * 60 * 20 * 365
+        };
+
         gantt.$task_data.addEventListener('mousewheel', function (e) {
-            if (e.ctrlKey) {
+            if (isTaskDrawn() && e.ctrlKey) {
                 console.log(e);
-                console.log(e.layerX, e.layerY);
-                var prev_date = getCenteredDate();
 
-                if (prev_date) {
-                    if (e.wheelDelta > 0) {
-                        decreaseScale();
-                    } else {
-                        increaseScale();
-                    }
+                var prevX = e.layerX;
 
-                    gantt.render();
+                var prevY = e.layerY;
 
-                    setDateCentered(prev_date);
+                var taskId = getTaskIdByPos(prevY);
+
+                var prevTime = gantt['_date_from_pos'](prevX);
+
+                if (e.wheelDelta > 0) {
+                    decreaseScale();
+                } else {
+                    increaseScale();
                 }
+
+                gantt.render();
+
+                var new_content_height = gantt.$task_data.offsetHeight;
+
+                //                    console.log('new date range',gantt['_min_date'],'-',gantt['_max_date']);
+                //                    var new_time_width = gantt['_max_date'].getTime() - gantt['_min_date'].getTime();
+                //                    var time_x = prev_time - gantt['_min_date'].getTime() ;
+                //                    console.log('time div',time_x);
+                //                    var newX = gantt.posFromDate(prev_time);
+                //                    var new_time = gantt['_date_from_pos'](newX);
+                //                    console.warn('new time',new_time);
+                //                    if (prev_time.getTime() - new_time.getTime() != 0) {
+                //                        console.error('ERR');
+                //                    }
+                //                    var newY = prevY * new_content_height / prev_content_height - prev_scroll_offset_y;
+                //                    console.log(newX, newY);
+                console.log('taskId', taskId);
+
+                var task = gantt.getTask(taskId);
+
+                gantt.showDate(prevTime);
+
+                //                    gantt.scrollTo(newX, newY);
+                e.returnValue = false;
+                e.cancelBubble = false;
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
             }
         });
     }
@@ -253,6 +289,47 @@ var DhxGanttExt;
         return new Date(start_date.getTime() + div_date);
     }
 
+    function getTaskIdByPos(y) {
+        var tasks = gantt.$task_data.querySelectorAll('.gantt_task_row');
+
+        var i, len = tasks.length, el, taskId, div;
+
+        for (i = 0; i < len; i++) {
+            el = tasks[i];
+            taskId = el.getAttribute('task_id');
+            div = y - el.offsetTop;
+            if (el.offsetTop <= y && y <= el.offsetTop + el.offsetHeight) {
+                break;
+            }
+        }
+
+        return taskId;
+    }
+
+    function getTaskPos(aTaskId) {
+        var tasks = gantt.$task_data.querySelectorAll('.gantt_task_row');
+
+        var i, len = tasks.length, el, taskId, pos;
+
+        for (i = 0; i < len; i++) {
+            el = tasks[i];
+            taskId = el.getAttribute('task_id');
+            pos = {
+                x: el.offsetLeft,
+                y: el.offsetTop
+            };
+            if (aTaskId == taskId) {
+                break;
+            }
+        }
+
+        return pos;
+    }
+
+    function isTaskDrawn() {
+        return gantt.$task_data.querySelectorAll('.gantt_task_row').length ? true : false;
+    }
+
     function getCenteredDate() {
         var prevPosition = gantt.getScrollState();
 
@@ -297,7 +374,7 @@ var DhxGanttExt;
         'day': function () {
             var now = new Date();
             gantt.config.scale_unit = "day";
-            gantt.config.scale_height = 27;
+            gantt.config.scale_height = 50;
             gantt.config.step = 1;
             gantt.config.date_scale = "%d %M";
             gantt.config.subscales = [];
@@ -409,7 +486,7 @@ var DhxGanttExt;
         'year': function () {
             var now = new Date();
             gantt.config.scale_unit = "year";
-            gantt.config.scale_height = 90;
+            gantt.config.scale_height = 50;
             gantt.config.step = 1;
             gantt.config.date_scale = "%Y";
             gantt.config.min_column_width = 50;

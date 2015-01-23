@@ -621,7 +621,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }]
     };
 
-    $scope.contextMenu = contextMenu;
+//    $scope.contextMenu = contextMenu;
 
     if (!paramProjectUri) {
         try {
