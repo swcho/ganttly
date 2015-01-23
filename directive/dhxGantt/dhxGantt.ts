@@ -253,9 +253,13 @@ module DhxGanttExt {
 
                 var prev_content_width = gantt.$task_data.offsetWidth;
 
-                var prev_time = gantt['_date_from_pos'](prevX);
+                var prev_time_width = gantt['_max_date'].getTime() - gantt['_min_date'].getTime();
 
-                console.log(prev_time);
+                var prev_time = new Date(gantt['_min_date'].getTime() + ( prevX * prev_time_width / prev_content_width));
+
+//                var prev_time = gantt['_date_from_pos'](prevX);
+
+                console.log(prev_time, prev_time.getTime() - gantt['_date_from_pos'](prevX));
 
                 var prev_scroll = gantt.getScrollState();
 
