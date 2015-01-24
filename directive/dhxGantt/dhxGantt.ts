@@ -323,28 +323,7 @@ module DhxGanttExt {
                     debugger;
                 }
 
-//                    console.log('time div',time_x);
-
-//                    var newX = gantt.posFromDate(prev_time);
-
-//                    var new_time = gantt['_date_from_pos'](newX);
-
-//                    console.warn('new time',new_time);
-
-//                    if (prev_time.getTime() - new_time.getTime() != 0) {
-//                        console.error('ERR');
-//                    }
-
-//                    var newY = prevY * new_content_height / prev_content_height - prev_scroll_offset_y;
-
-//                    console.log(newX, newY);
-
-
-//                gantt.showDate(prevTime);
-
-//                    gantt.scrollTo(newX, newY);
-
-                gantt.scrollTo(new_pos - prev_x_from_scroll, prev_scroll.y);
+                gantt.scrollTo(new_pos - gantt.$task.offsetWidth / 2, prev_scroll.y);
 
                 e.returnValue = false;
                 e.cancelBubble = false;
@@ -427,7 +406,7 @@ module DhxGanttExt {
 
         var content_width = gantt.$task_data.offsetWidth;
 
-        var pos = Math.ceil(( date.getTime() * content_width ) / div);
+        var pos = Math.ceil(( (date.getTime() - start_date.getTime()) * content_width ) / div);
 
         return pos;
     }
