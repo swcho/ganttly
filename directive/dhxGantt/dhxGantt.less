@@ -214,6 +214,14 @@
     background-image: url('images/icons/ico_services.png');
     background-size: 18px;
   }
+  &.task_normal {
+    background-image: url('images/icons/ico_todo_normal.png');
+    background-size: 18px;
+  }
+  &.task_err {
+    background-image: url('images/icons/ico_todo_err.png');
+    background-size: 18px;
+  }
 }
 
 // ref: http://docs.dhtmlx.com/gantt/samples/04_customization/17_classic_gantt_look.html
@@ -250,4 +258,11 @@
   border-right-color: #444444;
   border-bottom-color: transparent !important;
   border-left-color: transparent;
+}
+
+// warning
+.gantt_task_row {
+  &.warning {
+    background-color: #f791df !important;
+  }
 }

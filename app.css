@@ -7594,6 +7594,14 @@ button.close {
   background-image: url('images/icons/ico_services.png');
   background-size: 18px;
 }
+.gantt_tree_icon.task_normal {
+  background-image: url('images/icons/ico_todo_normal.png');
+  background-size: 18px;
+}
+.gantt_tree_icon.task_err {
+  background-image: url('images/icons/ico_todo_err.png');
+  background-size: 18px;
+}
 .custom-project {
   position: absolute;
   height: 6px;
@@ -7626,6 +7634,9 @@ button.close {
   border-right-color: #444444;
   border-bottom-color: transparent !important;
   border-left-color: transparent;
+}
+.gantt_task_row.warning {
+  background-color: #f791df !important;
 }
 .gantt_task_line.status_none {
   border: 2px solid rgba(175, 175, 175, 0.5);

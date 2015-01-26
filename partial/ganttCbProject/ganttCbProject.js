@@ -284,6 +284,28 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         dialog.close();
     }
 
+    $scope.tooltip = function (start, end, task) {
+        var descriptions = [
+            "<b>Task:</b> " + task.text,
+            "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start),
+            "<b>End date:</b> " + gantt.templates.tooltip_date_format(end),
+            "<b>Duration:</b> " + task.duration,
+            "<b>Est. Days:</b> " + (task.estimatedDays || 0),
+            "<b>Progress:</b> " + (task.progress ? task.progress.toFixed(2) : 0)
+        ];
+
+        var ret = descriptions.join('<br/>');
+
+        if (task._warnings) {
+            ret += '<br/>' + task._warnings.join('<br/>');
+        }
+        return ret;
+    };
+
+    /**
+    *
+    * @type {{show: (function(any, any): undefined)}}
+    */
     var contextWin = (function () {
         var wins = {};
         setInterval(function () {
@@ -607,8 +629,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             }]
     };
 
-    $scope.contextMenu = contextMenu;
-
+    //    $scope.contextMenu = contextMenu;
     if (!paramProjectUri) {
         try  {
             gantt.clearAll();

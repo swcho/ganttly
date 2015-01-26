@@ -35,8 +35,8 @@ var DhxGanttExt;
             //            if (classes_priority[task.priority]) {
             //                classNames.push(classes_priority[task.priority]);
             //            }
-            if (classes_status[task.status]) {
-                classNames.push(classes_status[task.status]);
+            if (classes_status[task._status]) {
+                classNames.push(classes_status[task._status]);
             }
 
             var styles = [];
@@ -66,12 +66,12 @@ var DhxGanttExt;
         //        gantt.config.autosize = true;
         // Task class
         gantt.templates.task_class = function (start, end, task) {
-            return classes_status[task.status] || '';
+            return classes_status[task._status] || '';
+        };
+        gantt.templates.task_row_class = function (start, end, task) {
+            return task._warnings ? 'warning' : '';
         };
 
-        //        gantt.templates.task_row_class = function(start, end, task) {
-        //            return classes_status[task.status] || '';
-        //        };
         // Link class
         gantt.templates.link_class = function (link) {
             var types = gantt.config.links;
@@ -86,20 +86,6 @@ var DhxGanttExt;
                     return "finish_to_finish";
                     break;
             }
-        };
-
-        // Task tooltip
-        gantt.templates.tooltip_text = function (start, end, task) {
-            var descriptions = [
-                "<b>Task:</b> " + task.text,
-                "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start),
-                "<b>End date:</b> " + gantt.templates.tooltip_date_format(end),
-                "<b>Duration:</b> " + task.duration,
-                "<b>Est. Days:</b> " + (task.estimatedDays || 0),
-                "<b>Progress:</b> " + (task.progress ? task.progress.toFixed(2) : 0)
-            ];
-
-            return descriptions.join('<br/>');
         };
 
         // Mark today
@@ -134,9 +120,12 @@ var DhxGanttExt;
             var icon_class = icon_class_by_type || 'gantt_folder_' + (item.$open ? "open" : "closed");
             return "<div class='gantt_tree_icon " + icon_class + "'></div>";
         };
-        gantt.templates.grid_file = function (item) {
-            var icon_class_by_type = task_class_names[item._type];
-            var icon_class = icon_class_by_type || 'gantt_file';
+
+        // https://www.iconfinder.com/icons/83885/information_list_icon#size=32
+        gantt.templates.grid_file = function (task) {
+            var icon_class_by_type = task_class_names[task._type];
+            var icon_err = task._warnings ? 'task_err' : 'task_normal';
+            var icon_class = icon_class_by_type || icon_err || 'gantt_file';
             return "<div class='gantt_tree_icon " + icon_class + "'></div>";
         };
 
@@ -715,6 +704,10 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
             $scope.$watch($attrs['dhxScale'], function (scale) {
                 DhxGanttExt.setScale(scale);
             }, true);
+
+            var tooltip_handler = $scope[$attrs['dhxToolTip']];
+            gantt.templates.tooltip_text = tooltip_handler || function () {
+            };
 
             var taskChangeMode;
             var moveStartDate;

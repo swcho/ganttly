@@ -1167,6 +1167,32 @@ module CbUtils {
             'Resolved': '#00a85d'
         };
 
+        var KCompletedStatusValues = ['Closed', 'Completed'];
+
+        interface IValidityChecker {
+            name: string;
+            checker: (aTask: DhxGantt.TTask) => string;
+        }
+
+        var KValidityCheckers = [{
+            name: 'End date',
+            checker: function(dhxTask: DhxGantt.TTask) {
+
+                if (!dhxTask._status) {
+                    return "Status is not configured";
+                }
+
+                if (!dhxTask.end_date) {
+                    return 'End date is not configured';
+                }
+
+                if (KCompletedStatusValues.indexOf(dhxTask._status) == -1 && dhxTask.end_date < new Date()) {
+                    return "End date is overdue.";
+                }
+                return null;
+            }
+        }];
+
         function covertCbItemToDhxTask(aAllMaps: TAllMaps, aCbItem: Cb.TItem, aParentUri?: string): DhxGantt.TTask {
 
             var cbTask: Cb.TTask = <Cb.TTask>aCbItem;
@@ -1178,7 +1204,7 @@ module CbUtils {
                 start_date: new Date(cbTask.startDate || cbTask.submittedAt),
                 progress: cbTask.spentEstimatedHours || 0,
                 priority: cbTask.priority ? cbTask.priority.name: 'Normal',
-                status: cbTask.status ? cbTask.status.name: 'None',
+                _status: cbTask.status ? cbTask.status.name: 'None',
                 estimatedMillis: cbTask.estimatedMillis,
                 estimatedDays: Math.ceil(cbTask.estimatedMillis / unitWorkingDay)
             };
@@ -1205,9 +1231,9 @@ module CbUtils {
             }
 
             // This is required to display adjustment icon
-            if (!dhxTask.duration || dhxTask.duration < 1) {
-                dhxTask.duration = 1;
-            }
+//            if (!dhxTask.duration || dhxTask.duration < 1) {
+//                dhxTask.duration = 1;
+//            }
 
             if (aParentUri) {
                 dhxTask.parent = aParentUri;
@@ -1225,6 +1251,15 @@ module CbUtils {
             } else {
                 dhxTask.color = 'white';
             }
+
+            var warnings = [];
+            KValidityCheckers.forEach(function(validityCheckers) {
+                var ret = validityCheckers.checker(dhxTask);
+                if (ret) {
+                    warnings.push(ret);
+                }
+            });
+            dhxTask._warnings = warnings.length ? warnings: null;
 
             return dhxTask;
         }
@@ -1546,7 +1581,7 @@ module CbUtils {
 
                 var filters = [];
                 if (aFilter & TFilterType.ByWithoutCompletedTask) {
-                    filters.push(generatePropertyFilter(['status', 'name'], ['Closed', 'Completed'], false));
+                    filters.push(generatePropertyFilter(['status', 'name'], KCompletedStatusValues, false));
                 }
                 filters.forEach(function(f) {
                     cbTasks = cbTasks.filter(f);
