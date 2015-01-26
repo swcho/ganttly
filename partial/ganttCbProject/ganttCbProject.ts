@@ -294,24 +294,31 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
 
     $scope.tooltip = function(start,end,task){
-
-        var descriptions = [
-                "<b>Task:</b> " + task.text,
-                "<b>Start date:</b> " + gantt.templates.tooltip_date_format(start),
-                "<b>End date:</b> " + gantt.templates.tooltip_date_format(end),
-                "<b>Duration:</b> " + task.duration,
-                "<b>Est. Days:</b> " + (task.estimatedDays || 0),
-                "<b>Progress:</b> " + (task.progress ? task.progress.toFixed(2) : 0)
-        ];
-
-        var ret = descriptions.join('<br/>');
+        var ret = '';
+        ret += '<p><b>' + task.text + '</b></p>';
+        ret += '<hr>';
 
         if (task._warnings) {
-            ret += '<br/>';
             task._warnings.forEach(function(w) {
-                ret += '<span class="warning">' + w + '</span><br/>';
+                ret += '<p class="warning">' + w + '</p>';
             });
         }
+
+        ret += '<p>' + DhxGanttExt.formatDate(start) + ' - ' + DhxGanttExt.formatDate(end) + ' (' + task.duration + ')</p>';
+
+//        var descriptions = [
+//                "<b>Est. Days:</b> " + (task.estimatedDays || 0),
+//                "<b>Progress:</b> " + (task.progress ? task.progress.toFixed(2) : 0)
+//        ];
+//
+//        ret += descriptions.join('<br/>');
+
+//        if (task._data) {
+//            if (task._data.description) {
+//                ret += '<p>' + task._data.description + '</p>';
+//            }
+//        }
+
         return ret;
     };
 

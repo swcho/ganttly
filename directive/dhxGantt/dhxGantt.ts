@@ -78,6 +78,12 @@ module DhxGanttExt {
         Release
     }
 
+    var date_to_str = gantt.date.date_to_str('%Y.%m.%d');
+
+    export function formatDate(date: Date) {
+        return date_to_str(date);
+    }
+
     export function init($element) {
         var classes_priority = {
             'Highest': 'priority_highest',
@@ -239,8 +245,6 @@ module DhxGanttExt {
 
         var debug = false;
         if (debug) {
-
-            var date_to_str = gantt.date.date_to_str('%Y-%m-%d');
 
             var $debug = $('<div>').appendTo($(document.body)).addClass('debug').css({
                 position: 'fixed',

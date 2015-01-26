@@ -1259,7 +1259,10 @@ module CbUtils {
                     warnings.push(ret);
                 }
             });
+
             dhxTask._warnings = warnings.length ? warnings: null;
+
+            dhxTask._data = aCbItem;
 
             return dhxTask;
         }

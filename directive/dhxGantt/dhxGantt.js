@@ -11,6 +11,13 @@ var DhxGanttExt;
     })(DhxGanttExt.TTaskType || (DhxGanttExt.TTaskType = {}));
     var TTaskType = DhxGanttExt.TTaskType;
 
+    var date_to_str = gantt.date.date_to_str('%Y.%m.%d');
+
+    function formatDate(date) {
+        return date_to_str(date);
+    }
+    DhxGanttExt.formatDate = formatDate;
+
     function init($element) {
         var classes_priority = {
             'Highest': 'priority_highest',
@@ -172,8 +179,6 @@ var DhxGanttExt;
 
         var debug = false;
         if (debug) {
-            var date_to_str = gantt.date.date_to_str('%Y-%m-%d');
-
             var $debug = $('<div>').appendTo($(document.body)).addClass('debug').css({
                 position: 'fixed',
                 'z-index': 100,
