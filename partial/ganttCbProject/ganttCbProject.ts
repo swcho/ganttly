@@ -307,7 +307,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         var ret = descriptions.join('<br/>');
 
         if (task._warnings) {
-            ret += '<br/>' + task._warnings.join('<br/>');
+            ret += '<br/>';
+            task._warnings.forEach(function(w) {
+                ret += '<span class="warning">' + w + '</span><br/>';
+            });
         }
         return ret;
     };
@@ -446,6 +449,20 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 //                closeModal();
 //            });
         }
+    };
+
+    $scope.onTaskDblClick = function(gantt, taskId, event) {
+        var url = taskId;
+        var width = 1280;
+        var height = 720;
+        var params = [
+            'width=' + width,
+            'height=' + height,
+            'fullscreen=yes' // only works in IE, but here for completeness
+        ].join(',');
+        var win = open(gConfig.cbBaseUrl + url, null, params);
+        win.moveTo((screen.width - width)/2, (screen.height - height)/2);
+        win.resizeTo(width, height);
     };
 
     $scope.onTaskShiftClicked = function(gantt, id) {
@@ -620,7 +637,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                     }
                 );
             }
-        },*/ {
+        }, {
             id: 'open_user_view',
             text: '사용자 작업 보기',
             cb: function(param: DhxGantt.TContextCbParam) {
@@ -643,7 +660,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                     win.resizeTo(width, height);
                 }
             }
-        }]
+        } */]
     };
 
 //    $scope.contextMenu = contextMenu;

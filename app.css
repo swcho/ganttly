@@ -7638,6 +7638,9 @@ button.close {
 .gantt_task_row.warning {
   background-color: #f791df !important;
 }
+.gantt_tooltip .warning {
+  color: #f791df;
+}
 .gantt_task_line.status_none {
   border: 2px solid rgba(175, 175, 175, 0.5);
   color: rgba(175, 175, 175, 0.5);

@@ -297,7 +297,10 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         var ret = descriptions.join('<br/>');
 
         if (task._warnings) {
-            ret += '<br/>' + task._warnings.join('<br/>');
+            ret += '<br/>';
+            task._warnings.forEach(function (w) {
+                ret += '<span class="warning">' + w + '</span><br/>';
+            });
         }
         return ret;
     };
@@ -430,6 +433,20 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             //                closeModal();
             //            });
         }
+    };
+
+    $scope.onTaskDblClick = function (gantt, taskId, event) {
+        var url = taskId;
+        var width = 1280;
+        var height = 720;
+        var params = [
+            'width=' + width,
+            'height=' + height,
+            'fullscreen=yes'
+        ].join(',');
+        var win = open(gConfig.cbBaseUrl + url, null, params);
+        win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+        win.resizeTo(width, height);
     };
 
     $scope.onTaskShiftClicked = function (gantt, id) {
@@ -575,58 +592,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                     win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
                     win.resizeTo(width, height);
                 }
-            },
-            {
-                /*{
-                id: 'adjust_schedule',
-                text: '연관 작업 일정 조정',
-                cb: function(param: dhx.TContextCbParam) {
-                //                console.log(param);
-                var task = gantt.getTask(param.taskId);
-                showModal("Rescheduling tasks");
-                doDependsTasks(task,
-                function() {
-                closeModal();
-                },
-                function(precedentTask: dhx.TTask, task: dhx.TTask, aCb) {
-                task.start_date = precedentTask.end_date;
-                var adjusted_task = get_holiday_awared_task(task, "move");
-                $codeBeamer.updateTask(adjusted_task, function(err, resp) {
-                if (!err) {
-                var task_from_cb = covertCbTaskToDhxTask(resp, task.parent);
-                task.start_date = task_from_cb.start_date;
-                task.estimatedMillis = task_from_cb.estimatedMillis;
-                task.progress = task_from_cb.progress;
-                task.end_date = task_from_cb.end_date;
-                gantt.refreshTask(task.id);
-                }
-                aCb(err);
-                });
-                }
-                );
-                }
-                },*/
-                id: 'open_user_view',
-                text: '사용자 작업 보기',
-                cb: function (param) {
-                    //                var task = gantt.getTask(param.taskId);
-                    //                console.log(task);
-                    //                console.log(location);
-                    if (param.taskId.indexOf('/user') === 0) {
-                        var width = 1280;
-                        var height = 720;
-                        var params = [
-                            'width=' + width,
-                            'height=' + height,
-                            'fullscreen=yes'
-                        ].join(',');
-
-                        var win = open(location['origin'] + location.pathname + '/#/ganttCbProject?user=' + param.taskId, null, params);
-                        win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
-                        win.resizeTo(width, height);
-                    }
-                }
-            }]
+            }
+        ]
     };
 
     //    $scope.contextMenu = contextMenu;

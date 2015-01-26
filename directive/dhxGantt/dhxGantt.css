@@ -183,3 +183,6 @@
 .gantt_task_row.warning {
   background-color: #f791df !important;
 }
+.gantt_tooltip .warning {
+  color: #f791df;
+}

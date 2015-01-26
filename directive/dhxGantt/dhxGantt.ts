@@ -815,6 +815,11 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                         $scope[$attrs['dhxTaskSelected']](gantt, id, item);
                     }
                 }),
+                gantt.attachEvent("onTaskDblClick", function(id, event){
+                    if ($attrs['dhxTaskDblClick']) {
+                        $scope[$attrs['dhxTaskDblClick']](gantt, id, event);
+                    }
+                }),
             /**
              * Task editing events
              */
