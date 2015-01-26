@@ -11,6 +11,10 @@ angular.module('ganttly').config(function($stateProvider, $urlRouterProvider, $l
         url: '/ganttCbProject?project&scale&sorting&groupings&filters',
         templateUrl: 'partial/ganttCbProject/ganttCbProject.html'
     });
+    $stateProvider.state('ganttCbUser', {
+        url: '/ganttCbUser?project&scale&sorting&groupings&filters',
+        templateUrl: 'partial/ganttCbUser/ganttCbUser.html'
+    });
     $stateProvider.state('scheduleCb', {
         url: '/scheduleCb?project&grouping&type&text&start&end',
         templateUrl: 'partial/scheduleCb/scheduleCb.html'

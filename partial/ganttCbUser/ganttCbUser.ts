@@ -2,13 +2,10 @@
 /// <reference path="../../directive/dhxGantt/dhxGantt.ts"/>
 /// <reference path="../../directive/dhxForm/dhxForm.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
-/// <reference path="../../service/codeBeamer.ts"/>
 /// <reference path="../../lib/UiUtils.ts"/>
 
-declare var dhtmlXWindows;
-
-angular.module('ganttly').controller('GanttCbProjectCtrl', function (
-    $scope, $state, $stateParams, $calendar, $codeBeamer: cb.ICodeBeamer) {
+angular.module('ganttly').controller('GanttCbUserCtrl', function (
+    $scope, $state, $stateParams) {
 
     console.log($stateParams);
 
@@ -23,10 +20,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     var paramGroupings: string[] = $stateParams.groupings ? $stateParams.groupings.split(',') : [];
     var paramFilters: string[] = $stateParams.filters ? $stateParams.filters.split(',') : [];
 
-    var userUri = $stateParams.user;
-    var groupByUser = $stateParams.groupByUser === 'true';
-    var groupByProject = $stateParams.groupByProject === 'true';
     var taskTrackerUriList: string[];
+
+    var KUiRouterName = 'ganttCbUser';
 
     /**
      * Project selections
@@ -74,7 +70,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         if (uri === paramProjectUri) {
             return;
         }
-        $state.go('ganttCbProject', {
+        $state.go(KUiRouterName, {
             project: uri
         }, {
             inherit: true
@@ -126,7 +122,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     }];
     $scope.cbSortSelected = paramSorting;
     $scope.cbSortChanged = function(selected) {
-        $state.go('ganttCbProject', {
+        $state.go(KUiRouterName, {
             sorting: selected
         }, {
             inherit: true
@@ -158,7 +154,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     $scope.cb1Disabled = paramProjectUri ? false: true;
     $scope.cb1SetGrouping = function(selected) {
         if (paramGroupings[0] != selected) {
-            $state.go('ganttCbProject', {
+            $state.go(KUiRouterName, {
                 groupings: selected
             }, {
                 inherit: true
@@ -180,7 +176,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     $scope.cb2SetGrouping = function(selected) {
         if (paramGroupings[1] != selected) {
             paramGroupings[1] = selected;
-            $state.go('ganttCbProject', {
+            $state.go(KUiRouterName, {
                 groupings: paramGroupings.join(',')
             }, {
                 inherit: true
@@ -207,7 +203,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     $scope.cbScale = paramScale;
     $scope.cbScaleChanged = function(selected) {
         if (selected != paramScale) {
-            $state.go('ganttCbProject', {
+            $state.go(KUiRouterName, {
                 scale: selected
             }, {
                 inherit: true
@@ -235,7 +231,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                     } else {
                         paramFilters.splice(prevIndex);
                     }
-                    $state.go('ganttCbProject', {
+                    $state.go(KUiRouterName, {
                         filters: paramFilters.join(',')
                     }, {
                         inherit: true
@@ -263,34 +259,6 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }
     }];
     $scope.frmNavi = frmNavi;
-
-    /**
-     *
-     */
-
-    var hdxWins = new dhtmlXWindows();
-    hdxWins.attachViewportTo('ganttCbProject');
-    var dialog;
-    function showModal(aMessage: string) {
-        dialog = hdxWins.createWindow({
-            id: 'progress',
-            left: 20,
-            top: 30,
-            width: 300,
-            height: 100,
-            modal: true,
-            center: true,
-            header: false,
-            caption: 'Please wait...'
-        });
-        dialog.setModal(true);
-        dialog.progressOn();
-        dialog.attachHTMLString('<p>' + aMessage +'</p>');
-        dialog.show();
-    }
-    function closeModal() {
-        dialog.close();
-    }
 
 
     $scope.tooltip = function(start,end,task){
@@ -391,8 +359,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         };
     }());
 
-    function get_holiday_awared_task(aTask: DhxGantt.TTask, aMode: string): cb.TTask {
-        var holidayAwared = holidayAwareness? $calendar.getStartAndEndDate(aTask.start_date, aTask.estimatedMillis): {
+    function get_holiday_awared_task(aTask: DhxGantt.TTask, aMode: string): Cb.TTask {
+        var holidayAwared = holidayAwareness? CalendarUtils.getStartAndEndDate(aTask.start_date, aTask.estimatedMillis): {
             start: aTask.start_date,
             end: aTask.end_date
         };
@@ -410,7 +378,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         } else { // by duration change in light box, apply holiday awareness
             task.estimatedMillis = aTask.duration * unitWorkingDay;
             if (holidayAwareness) {
-                task.endDate = $calendar.getStartAndEndDate(aTask.start_date, aTask.duration * unitWorkingDay).end;
+                task.endDate = CalendarUtils.getStartAndEndDate(aTask.start_date, aTask.duration * unitWorkingDay).end;
             } else {
                 task.endDate = holidayAwared.end;
             }
@@ -429,19 +397,19 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
      */
     $scope.onTaskAdd = function(gantt, id, item: DhxGantt.TTask) {
         if (taskTrackerUriList) {
-            var param: cb.TParamCreateTask = {
-                tracker: taskTrackerUriList[0],
-                name: item.text,
-                startDate: item.start_date,
-                estimatedMillis: item.duration * unitWorkingDay,
-                description: item.text + '\n\nCreated by ganttly',
-                descFormat: "Wiki"
-            };
-            if (item.parent) {
-                param.parent = item.parent;
-            }
+//            var param: cb.TParamCreateTask = {
+//                tracker: taskTrackerUriList[0],
+//                name: item.text,
+//                startDate: item.start_date,
+//                estimatedMillis: item.duration * unitWorkingDay,
+//                description: item.text + '\n\nCreated by ganttly',
+//                descFormat: "Wiki"
+//            };
+//            if (item.parent) {
+//                param.parent = item.parent;
+//            }
 
-            showModal("Adding task");
+            UiUtils.ModalHelper.showModal("Adding task");
 
 //            $codeBeamer.createTask(param, function (err, resp) {
 //                if (err) {
@@ -482,7 +450,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     $scope.onTaskUpdate = function(id, item: DhxGantt.TTask, mode: string) {
         var task = get_holiday_awared_task(item, mode);
-        showModal("Updating task");
+        UiUtils.ModalHelper.showModal("Updating task");
 //        $codeBeamer.updateTask(task, function(err, resp) {
 //            if (err) {
 //                console.log(err);
@@ -510,13 +478,13 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                 break;
             }
         }
-        $codeBeamer.deleteTask(id, function(err) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            gantt.refreshData();
-        });
+//        $codeBeamer.deleteTask(id, function(err) {
+//            if (err) {
+//                console.log(err);
+//                return;
+//            }
+//            gantt.refreshData();
+//        });
     };
 
     $scope.onTaskOpened = function(gantt, id) {
@@ -560,24 +528,24 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         console.log(id, item);
         if (item.type === '0') {
 
-            showModal("Adding association");
-            $codeBeamer.createAssociation({
-                from: item.target,
-                to: item.source
-            }, function(err, association) {
-                if (err) {
-                    return;
-                }
-                $scope.tasks.links.push({
-                    id: association.uri,
-                    source: item.source,
-                    target: item.target,
-                    type: '0'
-                });
-//                adjustStartTime(gantt, item.source, item.target);
-                gantt.refreshData();
-                closeModal();
-            });
+            UiUtils.ModalHelper.showModal("Adding association");
+//            $codeBeamer.createAssociation({
+//                from: item.target,
+//                to: item.source
+//            }, function(err, association) {
+//                if (err) {
+//                    return;
+//                }
+//                $scope.tasks.links.push({
+//                    id: association.uri,
+//                    source: item.source,
+//                    target: item.target,
+//                    type: '0'
+//                });
+////                adjustStartTime(gantt, item.source, item.target);
+//                gantt.refreshData();
+//                closeModal();
+//            });
         } else {
             gantt.deleteLink(id);
             dhtmlx.message('의존 관계만 설정할 수 있습니다.');
@@ -590,9 +558,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     };
 
     $scope.onLinkDelete = function(gantt, id, item) {
-        $codeBeamer.deleteAssociation(id, function(err, resp) {
-
-        });
+//        $codeBeamer.deleteAssociation(id, function(err, resp) {
+//
+//        });
     };
 
     /**
@@ -685,7 +653,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
      * Display Tasks
      * @type {{}}
      */
-    showModal('Getting information...');
+    UiUtils.ModalHelper.showModal('Getting information...');
 
     var groupTypeById = {
         'group_by_user': CbUtils.TGroupType.ByUser,
@@ -739,7 +707,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
         }, 5);
 
         // close modal
-        closeModal();
+        UiUtils.ModalHelper.closeModal();
     });
 
     console.log('-------------------------');

@@ -1,0 +1,75 @@
+<div id="ganttCbUser" style="height:100%; width:100%;" ng-controller="GanttCbUserCtrl">
+
+    <div id="topPane">
+        <div class="combo_group">
+            <label>Project</label>
+
+            <div dhx-combo style="width:180px;" class="combo"
+                 dhx-data="cbProjectItems"
+                 dhx-filter="cbProjectFilter"
+                 dhx-selected="cbProjectSelected"
+                 dhx-change="setProject"></div>
+        </div>
+
+        <div class="combo_group">
+            <label>Sort</label>
+
+            <div dhx-combo style="width: 120px;" class="combo"
+                 dhx-data="cbSort"
+                 dhx-selected="cbSortSelected"
+                 dhx-change="cbSortChanged"
+                    ></div>
+        </div>
+
+        <div class="combo_group">
+            <label>1st grouping</label>
+
+            <div dhx-combo style="width:120px;" class="combo"
+                 dhx-data="cb1Data"
+                 dhx-selected="cb1Selected"
+                 dhx-disabled="cb1Disabled"
+                 dhx-change="cb1SetGrouping"></div>
+        </div>
+
+        <div class="combo_group">
+            <label>2nd grouping</label>
+
+            <div dhx-combo style="width: 120px;" class="combo"
+                 dhx-data="cb2Data"
+                 dhx-selected="cb2Selected"
+                 dhx-disabled="cb2Disabled"
+                 dhx-change="cb2SetGrouping"></div>
+        </div>
+
+        <div class="combo_group">
+            <label>Scale</label>
+
+            <div dhx-combo style="width: 80px;" class="combo"
+                 dhx-data="cbScaleItems"
+                 dhx-selected="cbScale"
+                 dhx-change="cbScaleChanged"
+                    ></div>
+        </div>
+
+        <div dhx-form style="width: 160px;height: 50px;" class="form" dhx-form-items="frmFilters"></div>
+        <div dhx-form style="width: 80px;height: 50px;" class="form" dhx-form-items="frmNavi"></div>
+
+    </div>
+
+    <div dhx-gantt
+         id="gantt"
+         dhx-scale="ganttScale"
+         dhx-task-shift-clicked="onTaskShiftClicked"
+         dhx-task-dbl-click="onTaskDblClick"
+         dhx-task-add="onTaskAdd"
+         dhx-task-update="onTaskUpdate"
+         dhx-task-delete="onTaskDelete"
+         dhx-task-opened="onTaskOpened"
+         dhx-task-closed="onTaskClosed"
+         dhx-link-add="onLinkAdd"
+         dhx-link-update="onLinkUpdate"
+         dhx-link-delete="onLinkDelete"
+         dhx-context-menu="contextMenu"
+         dhx-tool-tip="tooltip"
+            ></div>
+</div>

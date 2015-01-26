@@ -799,4 +799,4 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
 
     console.log('-------------------------');
 });
-//# sourceMappingURL=ganttCbProject.js.map
+//# sourceMappingURL=ganttCbEdit.js.map

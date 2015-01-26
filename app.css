@@ -7770,6 +7770,39 @@ button.close {
 .sprint.gantt_marker {
   background-color: rgba(0, 0, 255, 0.4);
 }
+#ganttCbUser #topPane {
+  position: absolute;
+  left: 0px;
+  height: 60px;
+  width: 100%;
+  z-index: 1;
+  margin: 4px;
+}
+#ganttCbUser #topPane .combo_group {
+  float: left;
+  margin-right: 4px;
+}
+#ganttCbUser #topPane .combo_group label {
+  line-height: 26px;
+  margin: 0px;
+}
+#ganttCbUser #topPane .combo_group .combo {
+  clear: both;
+}
+#ganttCbUser #gantt {
+  height: 100%;
+  width: 100%;
+  padding-top: 60px;
+}
+.today.gantt_marker {
+  background-color: rgba(0, 255, 0, 0.4);
+}
+.release.gantt_marker {
+  background-color: rgba(255, 0, 0, 0.4);
+}
+.sprint.gantt_marker {
+  background-color: rgba(0, 0, 255, 0.4);
+}
 #scheduleCb .form {
   position: absolute;
   left: 0px;
