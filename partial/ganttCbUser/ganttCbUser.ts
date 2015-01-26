@@ -2,6 +2,7 @@
 /// <reference path="../../directive/dhxGantt/dhxGantt.ts"/>
 /// <reference path="../../directive/dhxForm/dhxForm.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
+/// <reference path="../../lib/DhxExt.ts"/>
 /// <reference path="../../lib/UiUtils.ts"/>
 
 angular.module('ganttly').controller('GanttCbUserCtrl', function (
@@ -29,7 +30,9 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
      *
      */
 
-    function getProjectList(text, cb) {
+    var elUser = document.getElementById('cbUser');
+
+    var cbUser = new DhxExt.CCombo(elUser, function(text, cb) {
         Cb.project.getPage(1, text, function(err, projectsPage) {
             if (err) {
                 return;
@@ -44,13 +47,21 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
             });
             cb(items);
         });
-    }
-
-//    $scope.cbProjectItems = [];
-    $scope.cbProjectFilter = function(text, cb) {
-        getProjectList(text, cb);
+    });
+    cbUser.onChange = function (id) {
+        console.log('onChange', id);
+        if (id === paramProjectUri) {
+            return;
+        }
+        $state.go(KUiRouterName, {
+            project: id
+        }, {
+            inherit: true
+        });
     };
 
+
+    /*
     if (!paramProjectUri) {
         getProjectList('', function(items) {
             $scope.cbProjectItems = items;
@@ -76,7 +87,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
             inherit: true
         });
     };
-
+*/
 
     /**
      * Sorting

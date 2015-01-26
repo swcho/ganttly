@@ -1,6 +1,7 @@
 /// <reference path="../../directive/dhxGantt/dhxGantt.ts"/>
 /// <reference path="../../directive/dhxForm/dhxForm.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
+/// <reference path="../../lib/DhxExt.ts"/>
 /// <reference path="../../lib/UiUtils.ts"/>
 angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state, $stateParams) {
     console.log($stateParams);
@@ -24,7 +25,9 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
     * Project selections
     *
     */
-    function getProjectList(text, cb) {
+    var elUser = document.getElementById('cbUser');
+
+    var cbUser = new DhxExt.CCombo(elUser, function (text, cb) {
         Cb.project.getPage(1, text, function (err, projectsPage) {
             if (err) {
                 return;
@@ -39,39 +42,46 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
             });
             cb(items);
         });
-    }
-
-    //    $scope.cbProjectItems = [];
-    $scope.cbProjectFilter = function (text, cb) {
-        getProjectList(text, cb);
-    };
-
-    if (!paramProjectUri) {
-        getProjectList('', function (items) {
-            $scope.cbProjectItems = items;
-        });
-    } else {
-        Cb.project.getProject(paramProjectUri, function (err, p) {
-            $scope.cbProjectItems = [{
-                    id: p.uri,
-                    text: p.name
-                }];
-            $scope.cbProjectSelected = p.uri;
-            $scope.$apply();
-        });
-    }
-
-    $scope.setProject = function (uri) {
-        if (uri === paramProjectUri) {
+    });
+    cbUser.onChange = function (id) {
+        console.log('onChange', id);
+        if (id === paramProjectUri) {
             return;
         }
         $state.go(KUiRouterName, {
-            project: uri
+            project: id
         }, {
             inherit: true
         });
     };
 
+    /*
+    if (!paramProjectUri) {
+    getProjectList('', function(items) {
+    $scope.cbProjectItems = items;
+    });
+    } else {
+    Cb.project.getProject(paramProjectUri, function(err, p) {
+    $scope.cbProjectItems = [{
+    id: p.uri,
+    text: p.name
+    }];
+    $scope.cbProjectSelected = p.uri;
+    $scope.$apply();
+    });
+    }
+    
+    $scope.setProject = function(uri) {
+    if (uri === paramProjectUri) {
+    return;
+    }
+    $state.go(KUiRouterName, {
+    project: uri
+    }, {
+    inherit: true
+    });
+    };
+    */
     /**
     * Sorting
     */
