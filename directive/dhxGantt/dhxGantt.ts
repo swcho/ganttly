@@ -237,79 +237,78 @@ module DhxGanttExt {
         //init gantt
         gantt.init($element[0]);
 
+        function getMousePos(e) {
+            var pos = gantt.getScrollState();
+            var rect = gantt.$task_data.getBoundingClientRect();
+            var x = e.clientX - rect.left;
+            var y = e.clientY - rect.top;
+            return {
+                x: x,
+                y: y
+            };
+        }
 
+        var debug = false;
+        if (debug) {
 
-        var date_to_str = gantt.date.date_to_str('%Y-%m-%d');
+            var date_to_str = gantt.date.date_to_str('%Y-%m-%d');
 
-        var $debug = $('<div>').appendTo($(document.body)).addClass('debug').css({
-            position: 'fixed',
-            'z-index': 100,
-            width: '100',
-            height: '40'
-        });
-
-        var unit_per_scale = {
-            'day': 1000 * 60 * 60 * 20,
-            'week': 1000 * 60 * 60 * 20,
-            'month': 1000 * 60 * 60 * 20 * 7,
-            'year': 1000 * 60 * 60 * 20 * 365
-        };
-
-        gantt.$task_data.addEventListener('mousemove', function(e: MouseEvent) {
-
-            $debug.css({
-                top: e.clientY + 10,
-                left: e.clientX + 10
+            var $debug = $('<div>').appendTo($(document.body)).addClass('debug').css({
+                position: 'fixed',
+                'z-index': 100,
+                width: '100',
+                height: '40'
             });
 
-            $debug.html(
-                '<p>' + e.layerX + ',' + e.layerY + '</p>' +
-                '<p>' + date_to_str(gantt['_date_from_pos'](e.layerX)) + '</p>' +
-                '<p>' + date_to_str(getDateFromPos(e.layerX)) + '</p>'
-            );
+            var unit_per_scale = {
+                'day': 1000 * 60 * 60 * 20,
+                'week': 1000 * 60 * 60 * 20,
+                'month': 1000 * 60 * 60 * 20 * 7,
+                'year': 1000 * 60 * 60 * 20 * 365
+            };
 
+            gantt.$task_data.addEventListener('mousemove', function(e: MouseEvent) {
 
-        });
+                $debug.css({
+                    top: e.clientY + 10,
+                    left: e.clientX + 10
+                });
 
-        gantt.$task_data.addEventListener('mousewheel', function(e) {
+                var pos = getMousePos(e)
 
-            if (isTaskDrawn() && e.ctrlKey) {
+                $debug.html(
+                        '<p>' + pos.x + ',' + pos.y + '</p>' +
+//                        '<p>' + date_to_str(gantt['_date_from_pos'](pos.x)) + '</p>' +
+                        '<p>' + date_to_str(getDateFromPos(pos.x)) + '</p>'
+                );
 
-                console.log(e);
+            });
 
-                var prevX = e.layerX;
+        }
 
-                var prev_content_width = gantt.$task_data.offsetWidth;
+        gantt.$task_data.addEventListener('mousewheel', function(evt) {
 
-                var prev_time_width = gantt['_max_date'].getTime() - gantt['_min_date'].getTime();
+            if (isTaskDrawn() && evt.ctrlKey) {
 
-                var prev_time = new Date(gantt['_min_date'].getTime() + ( prevX * prev_time_width / prev_content_width));
+                console.log(evt);
 
-//                var prev_time = gantt['_date_from_pos'](prevX);
+                var prev_pos = getMousePos(evt).x;
 
-                console.log(prev_time, prev_time.getTime() - gantt['_date_from_pos'](prevX));
+                var prev_time = getDateFromPos(prev_pos);
+
+                console.log(prev_time);
 
                 var prev_scroll = gantt.getScrollState();
 
-                var prev_x_from_scroll = prevX - prev_scroll.x;
+                var prev_x_from_scroll = prev_pos - prev_scroll.x;
 
-                if (e.wheelDelta > 0) {
+                if (evt.wheelDelta > 0) {
                     decreaseScale();
                 } else {
                     increaseScale();
                 }
 
                 gantt.render();
-
-//                var new_content_width = gantt.$task_data.offsetWidth;
-//
-//                console.log(gantt['_min_date']);
-//
-//                var new_time_width = gantt['_max_date'].getTime() - gantt['_min_date'].getTime();
-//
-//                var time_x = Math.max(prev_time.getTime() - gantt['_min_date'].getTime(), 0);
-//
-//                var newX = time_x * new_content_width / new_time_width;
 
                 var new_pos = getPosFromDate(prev_time);
 
@@ -319,16 +318,16 @@ module DhxGanttExt {
 
                 console.log(new_time, new_time_div);
 
-                if (new_time_div) {
+                if (debug && new_time_div) {
                     debugger;
                 }
 
-                gantt.scrollTo(new_pos - gantt.$task.offsetWidth / 2, prev_scroll.y);
+                gantt.scrollTo(new_pos - prev_x_from_scroll, prev_scroll.y);
 
-                e.returnValue = false;
-                e.cancelBubble = false;
-                e.preventDefault();
-                e.stopPropagation();
+                evt.returnValue = false;
+                evt.cancelBubble = false;
+                evt.preventDefault();
+                evt.stopPropagation();
                 return false;
             }
         });

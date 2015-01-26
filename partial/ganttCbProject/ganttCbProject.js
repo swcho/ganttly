@@ -13,7 +13,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     var holidayAwareness = gConfig.holidayAwareness;
 
     var paramProjectUri = $stateParams.project;
-    var paramScale = $stateParams.scale || 'Week';
+    var paramScale = $stateParams.scale || 'week';
     var paramSorting = $stateParams.sorting || 'short_by_none';
     var paramGroupings = $stateParams.groupings ? $stateParams.groupings.split(',') : [];
     var paramFilters = $stateParams.filters ? $stateParams.filters.split(',') : [];
@@ -607,7 +607,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             }]
     };
 
-    //    $scope.contextMenu = contextMenu;
+    $scope.contextMenu = contextMenu;
+
     if (!paramProjectUri) {
         try  {
             gantt.clearAll();
