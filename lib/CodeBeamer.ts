@@ -901,7 +901,6 @@ module CbUtils {
 
     interface TUserInfo {
         projects: Cb.TProject[];
-        releaseCmdbList: Cb.TCmdb[];
         releaseList: Cb.TRelease[];
         taskTrackerList: Cb.TTracker[];
         tasks: Cb.TTask[];
@@ -909,7 +908,7 @@ module CbUtils {
         outerItemUriList: string;
     }
 
-    function getTaskInfoByUser(aUserUri, aCb: (err, trackers: Cb.TTracker[], tasks: Cb.TTask[], associations: Cb.TAssociation[], projects: Cb.TProject[]) => void) {
+    function getTaskInfoByUser(aUserUri, aCb: (err, trackers: Cb.TTracker[], tasks: Cb.TTask[], associations: Cb.TAssociation[], projects: Cb.TProject[], releases: Cb.TRelease[]) => void) {
 
         console.log('getTaskInfoByUser');
 
@@ -919,6 +918,8 @@ module CbUtils {
         var tasks: Cb.TTask[];
         var projectUriList: string[];
         var projects: Cb.TProject[];
+        var releaseUriList: string[];
+        var releases: Cb.TRelease[] = [];
 
         s.push(function(done) {
             Cb.tracker.getTaskTrackersByUser(aUserUri, function(err, trackerByProjectList) {
@@ -937,6 +938,15 @@ module CbUtils {
             getTasksByTrackers(aUserUri, trackers, function(err, tlist, purilist) {
                 tasks = tlist;
                 projectUriList = purilist;
+                var mapRelease = {}
+                tasks.forEach(function(t) {
+                    if (t.release) {
+                        t.release.forEach(function(r) {
+                            mapRelease[r.uri] = null;
+                        });
+                    }
+                });
+                releaseUriList = Object.keys(mapRelease);
                 done(err);
             });
         });
@@ -956,8 +966,15 @@ module CbUtils {
             });
         });
 
+        s.push(function(done) {
+            getItems(releaseUriList, function(err, rlist) {
+                releases = rlist;
+                done(err);
+            });
+        });
+
         async.series(s, function(err) {
-            aCb(err, trackers, tasks, associations, projects);
+            aCb(err, trackers, tasks, associations, projects, releases);
         });
     }
 
@@ -967,20 +984,20 @@ module CbUtils {
 
         var p = [];
 
-        var releaseCmdbList: Cb.TCmdb[] = [];
-        var releaseList: Cb.TRelease[] = [];
         var taskTrackerList: Cb.TTracker[] = [];
         var tasks: Cb.TTask[] = [];
         var associations: Cb.TAssociation[] = [];
         var outerItemUriList: string;
         var projects: Cb.TProject[];
+        var releaseList: Cb.TRelease[];
 
         p.push(function(done) {
-            getTaskInfoByUser(aUserUri, function(err, trklist, tlist, alist, plist) {
+            getTaskInfoByUser(aUserUri, function(err, trklist, tlist, alist, plist, rlist) {
                 taskTrackerList = trklist;
                 tasks = tlist;
                 associations = alist;
                 projects = plist;
+                releaseList = rlist;
                 done(err);
             });
         });
@@ -1006,7 +1023,6 @@ module CbUtils {
         async.parallel(p, function(err) {
             aCb(err, {
                 projects: projects,
-                releaseCmdbList: releaseCmdbList,
                 releaseList: releaseList,
                 taskTrackerList: taskTrackerList,
                 tasks: tasks,
@@ -1271,9 +1287,13 @@ module CbUtils {
 
             var projectMap = this._projectMap;
             var trackerMap = this._trackerMap;
+            var itemMap = this._itemMap;
             s.push(function(done) {
                 getUserInfo(aUserUri, function(err, userInfo) {
                     releases = userInfo.releaseList;
+                    releases.forEach(function(r) {
+                        itemMap[r.uri] = r;
+                    });
                     tasks = userInfo.tasks;
                     var mapUser = {};
                     tasks.forEach(function(t) {
@@ -1306,7 +1326,7 @@ module CbUtils {
             });
 
             async.series(s, (err) => {
-                var ret: TCachedProjectInfo = {
+                var ret: TCachedUserInfo = {
                     releases: releases,
                     tasks: tasks,
                     outerTasks: outerTasks
