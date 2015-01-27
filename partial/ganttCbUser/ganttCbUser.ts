@@ -17,7 +17,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
 
     var paramProjectUri = $stateParams.project;
     var paramScale = $stateParams.scale || 'week';
-    var paramSorting = $stateParams.sorting || 'short_by_none';
+    var paramSort = $stateParams.sorting || 'short_by_none';
     var paramGroupings: string[] = $stateParams.groupings ? $stateParams.groupings.split(',') : [];
     var paramFilters: string[] = $stateParams.filters ? $stateParams.filters.split(',') : [];
 
@@ -25,14 +25,13 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
 
     var KUiRouterName = 'ganttCbUser';
 
+    var context = new UiUtils.CAngularContext($scope);
+
     /**
-     * Project selections
-     *
+     * User selections
      */
 
-    var elUser = document.getElementById('cbUser');
-
-    var cbUser = new DhxExt.CCombo(elUser, function(text, cb) {
+    var cbUser = new DhxExt.CCombo(document.getElementById('cbUser'), function(text, cb) {
         Cb.project.getPage(1, text, function(err, projectsPage) {
             if (err) {
                 return;
@@ -59,168 +58,44 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
             inherit: true
         });
     };
-
-
-    /*
-    if (!paramProjectUri) {
-        getProjectList('', function(items) {
-            $scope.cbProjectItems = items;
-        });
-    } else {
-        Cb.project.getProject(paramProjectUri, function(err, p) {
-            $scope.cbProjectItems = [{
-                id: p.uri,
-                text: p.name
-            }];
-            $scope.cbProjectSelected = p.uri;
-            $scope.$apply();
-        });
-    }
-
-    $scope.setProject = function(uri) {
-        if (uri === paramProjectUri) {
-            return;
-        }
-        $state.go(KUiRouterName, {
-            project: uri
-        }, {
-            inherit: true
-        });
-    };
-*/
+    context.addComponent(cbUser);
 
     /**
      * Sorting
      */
 
-    var KSortIdNone = 'short_by_none';
-    var KSortIdStartTimeAsc = 'short_by_start_date_asc';
-    var KSortIdStartTimeDsc = 'short_by_start_date_dsc';
-    var KSortIdEndTimeAsc = 'short_by_end_date_asc';
-    var KSortIdEndTimeDsc = 'short_by_end_date_dsc';
-    var KSortIdSubmittedTimeAsc = 'short_by_submitted_date_asc';
-    var KSortIdSubmittedTimeDsc = 'short_by_submitted_date_dsc';
-    var KSortIdModifiedTimeAsc = 'short_by_modified_date_asc';
-    var KSortIdModifiedTimeDsc = 'short_by_modified_date_dsc';
-
-    $scope.cbSort = [{
-        id: KSortIdNone,
-        text: 'None'
-    }, {
-        id: KSortIdStartTimeAsc,
-        text: 'Start date \u25B2'
-    }, {
-        id: KSortIdStartTimeDsc,
-        text: 'Start date \u25BC'
-    }, {
-        id: KSortIdEndTimeAsc,
-        text: 'End date \u25B2'
-    }, {
-        id: KSortIdEndTimeDsc,
-        text: 'End date \u25BC'
-    }, {
-        id: KSortIdSubmittedTimeAsc,
-        text: 'Submitted date \u25B2'
-    }, {
-        id: KSortIdSubmittedTimeDsc,
-        text: 'Submitted date \u25BC'
-    }, {
-        id: KSortIdModifiedTimeAsc,
-        text: 'Modified date \u25B2'
-    }, {
-        id: KSortIdModifiedTimeDsc,
-        text: 'Modified date \u25BC'
-    }];
-    $scope.cbSortSelected = paramSorting;
-    $scope.cbSortChanged = function(selected) {
+    UiUtils.SortHelper.createCombo(context, document.getElementById('cbSort'), paramSort, function(id) {
         $state.go(KUiRouterName, {
-            sorting: selected
+            sort: id
         }, {
             inherit: true
         });
-    };
+    });
 
     /**
      * Groupings
      *
      */
 
-    var cbGroupingData = [{
-        id: 'group_by_none',
-        text: 'None'
-    }, {
-        id: 'group_by_user',
-        text: 'By user'
-    }, {
-        id: 'group_by_project',
-        text: 'By project'
-    }, {
-        id: 'group_by_release',
-        text: 'By release'
-    }];
-
-    $scope.cb1Data = cbGroupingData;
-    console.log(paramGroupings);
-    $scope.cb1Selected = paramGroupings.length ? paramGroupings[0]: 'group_by_none';
-    $scope.cb1Disabled = paramProjectUri ? false: true;
-    $scope.cb1SetGrouping = function(selected) {
-        if (paramGroupings[0] != selected) {
-            $state.go(KUiRouterName, {
-                groupings: selected
-            }, {
-                inherit: true
-            });
-        }
-    };
-
-    var cb2Data = [];
-    if (paramGroupings.length) {
-        cbGroupingData.forEach(function(d) {
-            if (paramGroupings[0] != d.id) {
-                cb2Data.push(d);
-            }
+    var elements = [document.getElementById('cbGroup1'), document.getElementById('cbGroup2')];
+    UiUtils.GroupHelper.createComboForProject(context, elements, paramGroupings, function(selections) {
+        $state.go(KUiRouterName, {
+            groupings: selections.join(',')
+        }, {
+            inherit: true
         });
-    }
-    $scope.cb2Data = cb2Data;
-    $scope.cb2Selected = paramGroupings.length > 1 ? paramGroupings[1]: 'group_by_none';
-    $scope.cb2Disabled = paramGroupings.length > 0 && paramGroupings[0] != 'group_by_none' ? false: true;
-    $scope.cb2SetGrouping = function(selected) {
-        if (paramGroupings[1] != selected) {
-            paramGroupings[1] = selected;
-            $state.go(KUiRouterName, {
-                groupings: paramGroupings.join(',')
-            }, {
-                inherit: true
-            });
-        }
-    };
+    });
 
     /**
      * Scales
      */
-    $scope.cbScaleItems = [{
-        id: 'day',
-        text: '일'
-    }, {
-        id: 'week',
-        text: '주'
-    }, {
-        id: 'month',
-        text: '월'
-    }, {
-        id: 'year',
-        text: '년'
-    }];
-    $scope.cbScale = paramScale;
-    $scope.cbScaleChanged = function(selected) {
-        if (selected != paramScale) {
-            $state.go(KUiRouterName, {
-                scale: selected
-            }, {
-                inherit: true
-            });
-        }
-    };
+    UiUtils.ScaleHelper.createCombo(context, document.getElementById('idScale'), paramScale, function(id) {
+        $state.go(KUiRouterName, {
+            scale: id
+        }, {
+            inherit: true
+        });
+    });
 
     /**
      * Filter options
@@ -685,22 +560,8 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
         filters = filters | filterTypeById[filterId];
     });
 
-    var sortingTypeById = {
-        'short_by_none': CbUtils.TSortingType.None,
-        'short_by_start_date_asc': CbUtils.TSortingType.ByStartTime,
-        'short_by_start_date_dsc': CbUtils.TSortingType.ByStartTimeDsc
-    };
-    sortingTypeById[KSortIdNone] = CbUtils.TSortingType.None;
-    sortingTypeById[KSortIdStartTimeAsc] = CbUtils.TSortingType.ByStartTime;
-    sortingTypeById[KSortIdStartTimeDsc] = CbUtils.TSortingType.ByStartTimeDsc;
-    sortingTypeById[KSortIdEndTimeAsc] = CbUtils.TSortingType.ByEndTime;
-    sortingTypeById[KSortIdEndTimeDsc] = CbUtils.TSortingType.ByEndTimeDsc;
-    sortingTypeById[KSortIdSubmittedTimeAsc] = CbUtils.TSortingType.BySubmittedTime;
-    sortingTypeById[KSortIdSubmittedTimeDsc] = CbUtils.TSortingType.BySubmittedTimeDsc;
-    sortingTypeById[KSortIdModifiedTimeAsc] = CbUtils.TSortingType.ByModifiedTime;
-    sortingTypeById[KSortIdModifiedTimeDsc] = CbUtils.TSortingType.ByModifiedTimeDsc;
 
-    var sorting: CbUtils.TSortingType = sortingTypeById[paramSorting];
+    var sorting: CbUtils.TSortingType = UiUtils.SortHelper.getSortType(paramSort);
 
     UiUtils.getDhxDataByProject(paramProjectUri, groupings, filters,  sorting, function(err, resp, markers) {
 

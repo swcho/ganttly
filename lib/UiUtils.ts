@@ -1,6 +1,7 @@
 
 /// <reference path="../directive/dhxGantt/dhxGantt.ts"/>
 /// <reference path="CodeBeamer.ts"/>
+/// <reference path="DhxExt.ts"/>
 
 declare var dhtmlXWindows;
 
@@ -517,6 +518,20 @@ module UiUtils {
         return addDays(roundDay(new Date()), -7);
     }
 
+    export class CAngularContext extends DhxExt.CContext {
+
+        _$scope: any;
+
+        constructor($scope) {
+            super();
+            this._$scope = $scope;
+
+            $scope.$on('$destroy', () => {
+                this.destroy();
+            });
+        }
+    }
+
     export module ModalHelper {
 
         var hdxWins = new dhtmlXWindows();
@@ -549,7 +564,236 @@ module UiUtils {
         }
     }
 
-    export function setCombo(aName: string) {
+    export module SortHelper {
+        var KSortIdNone = 'sort_none';
+        var KSortIdStartTimeAsc = 'sort_start_date_asc';
+        var KSortIdStartTimeDsc = 'sort_start_date_dsc';
+        var KSortIdEndTimeAsc = 'sort_end_date_asc';
+        var KSortIdEndTimeDsc = 'sort_end_date_dsc';
+        var KSortIdSubmittedTimeAsc = 'sort_submitted_date_asc';
+        var KSortIdSubmittedTimeDsc = 'sort_submitted_date_dsc';
+        var KSortIdModifiedTimeAsc = 'sort_modified_date_asc';
+        var KSortIdModifiedTimeDsc = 'sort_modified_date_dsc';
+
+        var KAvailableIdList = [
+            KSortIdNone,
+            KSortIdStartTimeAsc,
+            KSortIdStartTimeDsc,
+            KSortIdEndTimeAsc,
+            KSortIdEndTimeDsc,
+            KSortIdSubmittedTimeAsc,
+            KSortIdSubmittedTimeDsc,
+            KSortIdModifiedTimeAsc,
+            KSortIdModifiedTimeDsc
+        ];
+
+        var KSortingTypeById = {};
+        KSortingTypeById[KSortIdNone] = CbUtils.TSortingType.None;
+        KSortingTypeById[KSortIdStartTimeAsc] = CbUtils.TSortingType.ByStartTime;
+        KSortingTypeById[KSortIdStartTimeDsc] = CbUtils.TSortingType.ByStartTimeDsc;
+        KSortingTypeById[KSortIdEndTimeAsc] = CbUtils.TSortingType.ByEndTime;
+        KSortingTypeById[KSortIdEndTimeDsc] = CbUtils.TSortingType.ByEndTimeDsc;
+        KSortingTypeById[KSortIdSubmittedTimeAsc] = CbUtils.TSortingType.BySubmittedTime;
+        KSortingTypeById[KSortIdSubmittedTimeDsc] = CbUtils.TSortingType.BySubmittedTimeDsc;
+        KSortingTypeById[KSortIdModifiedTimeAsc] = CbUtils.TSortingType.ByModifiedTime;
+        KSortingTypeById[KSortIdModifiedTimeDsc] = CbUtils.TSortingType.ByModifiedTimeDsc;
+
+        var KComboItems = [{
+            id: KSortIdNone,
+            text: 'None'
+        }, {
+            id: KSortIdStartTimeAsc,
+            text: 'Start date \u25B2'
+        }, {
+            id: KSortIdStartTimeDsc,
+            text: 'Start date \u25BC'
+        }, {
+            id: KSortIdEndTimeAsc,
+            text: 'End date \u25B2'
+        }, {
+            id: KSortIdEndTimeDsc,
+            text: 'End date \u25BC'
+        }, {
+            id: KSortIdSubmittedTimeAsc,
+            text: 'Submitted date \u25B2'
+        }, {
+            id: KSortIdSubmittedTimeDsc,
+            text: 'Submitted date \u25BC'
+        }, {
+            id: KSortIdModifiedTimeAsc,
+            text: 'Modified date \u25B2'
+        }, {
+            id: KSortIdModifiedTimeDsc,
+            text: 'Modified date \u25BC'
+        }];
+
+        function isValidId(aId) {
+            return KAvailableIdList.indexOf(aId) != -1;
+        }
+
+        export function createCombo(
+                aContext: DhxExt.CContext,
+                aEl: HTMLElement,
+                aInitialId: string,
+                aOnChange: DhxExt.FnComboOnChange) {
+            var cbSort = new DhxExt.CCombo(aEl);
+            cbSort.setItems(KComboItems);
+            if (aInitialId && isValidId(aInitialId)) {
+                cbSort.selectItemById(aInitialId);
+            } else {
+                cbSort.selectItemById(KSortIdNone);
+            }
+            cbSort.onChange = function(id) {
+                if (id != aInitialId) {
+                    aOnChange(id);
+                }
+            };
+            aContext.addComponent(cbSort);
+        }
+
+        export function getSortType(aSortId: string) {
+            return KSortingTypeById[aSortId];
+        }
+    }
+
+    export module GroupHelper {
+
+        var KIdNone = 'grp_none';
+        var KIdUser = 'grp_user';
+        var KIdProject = 'grp_project';
+        var KIdRelease = 'grp_release';
+
+        var KAvailableIdList = [
+            KIdNone,
+            KIdUser,
+            KIdProject,
+            KIdRelease
+        ];
+
+        var KGroupingItems: DhxExt.TComboItem[] = [{
+            id: KIdNone,
+            text: 'None'
+        }, {
+            id: KIdUser,
+            text: 'By user'
+        }, {
+            id: KIdProject,
+            text: 'By project'
+        }, {
+            id: KIdRelease,
+            text: 'By release'
+        }];
+
+        export interface FnGroupComboSelect {
+            (aSelections: string[]): void;
+        }
+
+        export function createComboForProject(aContext: CAngularContext, aElList: HTMLElement[], aInitialValues: string[], aOnSelect: FnGroupComboSelect) {
+            createCombo(aContext, KGroupingItems, aElList, aInitialValues, aOnSelect);
+        }
+
+        export function createComboForUser(aContext: CAngularContext, aElList: HTMLElement[], aInitialValues: string[], aOnSelect: FnGroupComboSelect) {
+            var forUser = KGroupingItems.splice(0);
+            forUser.slice(1);
+            createCombo(aContext, KGroupingItems, aElList, aInitialValues, aOnSelect);
+        }
+
+        function isValidId(aId: string) {
+            return KAvailableIdList.indexOf(aId) != -1;
+        }
+
+        function removeItem(aItems: DhxExt.TComboItem[], aId: string) {
+            var index = -1, i, len=aItems.length;
+            for (i=0; i<len; i++) {
+                if (aItems[i].id == aId) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index != -1) {
+                aItems.splice(index, 1);
+            }
+        }
+
+        function createCombo(
+                aContext: CAngularContext,
+                aComboItems: DhxExt.TComboItem[],
+                aElList: HTMLElement[],
+                aInitialValues: string[],
+                aOnSelect: FnGroupComboSelect) {
+
+            var comboItems = aComboItems.splice(0);
+            var initialValues = aInitialValues.splice(0);
+
+            aElList.forEach(function(el, i) {
+                var cb = new DhxExt.CCombo(el);
+                cb.setItems(comboItems);
+                var initialValue = initialValues[i];
+                if (initialValue && isValidId(initialValue)) {
+                    cb.selectItemById(initialValue);
+                    removeItem(comboItems, initialValue);
+                } else {
+                    cb.selectItemById(KIdNone);
+                }
+                cb.onChange = function(id) {
+                    if (id != initialValue) {
+                        initialValues[i] = id;
+                        aOnSelect(initialValues);
+                    }
+                };
+                aContext.addComponent(cb);
+            });
+        }
+    }
+
+    export module ScaleHelper {
+
+        var KIdDay = 'day';
+        var KIdWeek = 'week';
+        var KIdMonth = 'month';
+        var KIdYear = 'year';
+
+        var KAvailableIdList = [
+            KIdDay,
+            KIdWeek,
+            KIdMonth,
+            KIdYear
+        ];
+
+        var KItems = [{
+            id: KIdDay,
+            text: '일'
+        }, {
+            id: KIdWeek,
+            text: '주'
+        }, {
+            id: KIdMonth,
+            text: '월'
+        }, {
+            id: KIdYear,
+            text: '년'
+        }];
+
+        function isValidId(aId: string) {
+            return KAvailableIdList.indexOf(aId) != -1;
+        }
+
+        export function createCombo(aContext: CAngularContext, aEl: HTMLElement, aInitialId: string, aOnChange: DhxExt.FnComboOnChange) {
+
+            var combo = new DhxExt.CCombo(aEl);
+            combo.setItems(KItems);
+            if (aInitialId && isValidId(aInitialId)) {
+                combo.selectItemById(aInitialId);
+            } else {
+                combo.selectItemById(KIdWeek);
+            }
+            combo.onChange = function(id) {
+                if (id != aInitialId) {
+                    aOnChange(id);
+                }
+            };
+        }
 
     }
+
 }

@@ -3,48 +3,28 @@
     <div id="topPane">
         <div class="combo_group">
             <label>User</label>
-
             <div id="cbUser" style="width:180px;" class="combo"></div>
         </div>
 
         <div class="combo_group">
             <label>Sort</label>
-
-            <div dhx-combo style="width: 120px;" class="combo"
-                 dhx-data="cbSort"
-                 dhx-selected="cbSortSelected"
-                 dhx-change="cbSortChanged"
-                    ></div>
+            <div id="cbSort" style="width: 120px;" class="combo"></div>
         </div>
 
         <div class="combo_group">
             <label>1st grouping</label>
-
-            <div dhx-combo style="width:120px;" class="combo"
-                 dhx-data="cb1Data"
-                 dhx-selected="cb1Selected"
-                 dhx-disabled="cb1Disabled"
-                 dhx-change="cb1SetGrouping"></div>
+            <div id="cbGroup1" style="width:120px;" class="combo"></div>
         </div>
 
         <div class="combo_group">
             <label>2nd grouping</label>
-
-            <div dhx-combo style="width: 120px;" class="combo"
-                 dhx-data="cb2Data"
-                 dhx-selected="cb2Selected"
-                 dhx-disabled="cb2Disabled"
-                 dhx-change="cb2SetGrouping"></div>
+            <div id="cbGroup2" style="width: 120px;" class="combo"></div>
         </div>
 
         <div class="combo_group">
             <label>Scale</label>
 
-            <div dhx-combo style="width: 80px;" class="combo"
-                 dhx-data="cbScaleItems"
-                 dhx-selected="cbScale"
-                 dhx-change="cbScaleChanged"
-                    ></div>
+            <div id="idScale" style="width: 80px;" class="combo"></div>
         </div>
 
         <div dhx-form style="width: 160px;height: 50px;" class="form" dhx-form-items="frmFilters"></div>

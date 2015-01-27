@@ -29,6 +29,31 @@ module DhxExt {
         }
     }
 
+    export class CContext {
+
+        private _components: CComponent[];
+
+        constructor() {
+            this._components = [];
+        }
+
+        destroy() {
+            this._components.forEach(function(c) {
+                c.destroy();
+            });
+            delete this._components;
+        }
+
+        addComponent(aComponent: CComponent) {
+            this._components.push(aComponent);
+        }
+
+    }
+
+    /**
+     * Combo box
+     */
+
     export interface TComboItem {
         id: string;
         text: string;
@@ -38,11 +63,15 @@ module DhxExt {
         (text: string, cb: (items: TComboItem[]) => void): void;
     }
 
+    export interface FnComboOnChange {
+        (id: string): void;
+    }
+
     export class CCombo extends CComponent {
 
         _combo;
 
-        onChange: (id: string) => void;
+        onChange: FnComboOnChange;
 
         constructor(aElement: HTMLElement, aFilter?: TComboFilter) {
             super();
