@@ -1,7 +1,7 @@
 
 
 declare var dhtmlXCombo;
-
+declare var dhtmlXForm;
 
 module DhxExt {
 
@@ -50,7 +50,7 @@ module DhxExt {
 
     }
 
-    /**
+    /**************************************************************************
      * Combo box
      */
 
@@ -128,6 +128,76 @@ module DhxExt {
             }
         }
 
+        openSelect() {
+            this._combo.openSelect();
+        }
+
+    }
+
+    /**************************************************************************
+     * Form
+     */
+
+    export interface TFormItem {
+        blockOffset?: number; // left-side offset of the item content (default 20)
+        className?: string; // the user-defined css class for block's items
+        disabled?: boolean; // disables/enables the block's items
+        hidden?: boolean; // hides/shows the item. The default value - *false* (the item is shown)
+        inputLeft?: number; // sets the left absolute offset of input.The attribute is applied only if the *position* is set as "absolute"
+        inputTop?: number; // sets the top absolute offset of input. The attribute is applied only if the *position* is set as "absolute"
+        name: string; // the identification name. Used for referring to item
+        type: string;
+        list?: TFormItem[]; // defines the array of nested elements
+        offsetLeft?: number; // sets the left relative offset of item
+        offsetTop?: number; // sets the top relative offset of item
+        position?: string; // label-left, label-right, label-top or absolute, defines the position of label relative to block. As just labels are defined for block, just value absolute makes sense and is used for setting absolute label position
+        width?: number; // the width of block
+
+        label?: string;
+        checked?: boolean; // for check box
+        eventHandlers?: {
+            onChange?: (value: any, state: boolean) => void;
+            onButtonClick? : () => void;
+        }
+    }
+
+    export class CForm extends CComponent {
+
+        _form: any;
+        _eventHandlers = {};
+
+        constructor(aEl: HTMLElement, aItems: TFormItem[]) {
+            super();
+            this._form = new dhtmlXForm(aEl, aItems);
+            this._setComponent(this._form);
+            this._addEventHandler(aItems);
+            this._addEventId(
+                this._form.attachEvent("onChange", (name, value, state) => {
+                    if (this._eventHandlers[name] && this._eventHandlers[name]['onChange']) {
+                        this._eventHandlers[name]['onChange'](value, state);
+                    }
+                })
+            );
+            this._addEventId(
+                this._form.attachEvent("onButtonClick", (name) => {
+                    if (this._eventHandlers[name] && this._eventHandlers[name]['onButtonClick']) {
+                        this._eventHandlers[name]['onButtonClick']();
+                    }
+                })
+            );
+        }
+
+        private _addEventHandler(aFormItems: TFormItem[]) {
+            aFormItems.forEach((formItem) => {
+                if (formItem.eventHandlers) {
+                    this._eventHandlers[formItem.name] = formItem.eventHandlers;
+                    delete formItem.eventHandlers;
+                }
+                if (formItem.type === 'block') {
+                    this._addEventHandler(formItem.list);
+                }
+            });
+        }
     }
 
 }

@@ -11,7 +11,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
     var unitWorkingDay = gConfig.workingHours ? gConfig.workingHours * unitHour : unitDay;
     var holidayAwareness = gConfig.holidayAwareness;
 
-    var paramProjectUri = $stateParams.project;
+    var paramUser = $stateParams.user;
     var paramScale = $stateParams.scale || 'week';
     var paramSort = $stateParams.sorting || 'short_by_none';
     var paramGroupings = $stateParams.groupings ? $stateParams.groupings.split(',') : [];
@@ -26,34 +26,13 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
     /**
     * User selections
     */
-    var cbUser = new DhxExt.CCombo(document.getElementById('cbUser'), function (text, cb) {
-        Cb.project.getPage(1, text, function (err, projectsPage) {
-            if (err) {
-                return;
-            }
-
-            var items = [];
-            projectsPage.projects.forEach(function (project) {
-                items.push({
-                    id: project.uri,
-                    text: project.name
-                });
-            });
-            cb(items);
-        });
-    });
-    cbUser.onChange = function (id) {
-        console.log('onChange', id);
-        if (id === paramProjectUri) {
-            return;
-        }
+    UiUtils.UserHelper.create(context, document.getElementById('cbUser'), paramUser, function (id) {
         $state.go(KUiRouterName, {
-            project: id
+            user: id
         }, {
             inherit: true
         });
-    };
-    context.addComponent(cbUser);
+    });
 
     /**
     * Sorting
@@ -93,32 +72,13 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
     /**
     * Filter options
     */
-    var KFilterIdWithoutCompletedTask = 'fid_without_task';
-    var frmFilters = [{
-            name: KFilterIdWithoutCompletedTask,
-            type: 'checkbox',
-            label: 'Hide Completed Tasks',
-            checked: paramFilters.indexOf(KFilterIdWithoutCompletedTask) != -1,
-            eventHandlers: {
-                onChange: function (value, state) {
-                    var prevIndex = paramFilters.indexOf(KFilterIdWithoutCompletedTask);
-                    var prevState = prevIndex != -1;
-                    if (state != prevState) {
-                        if (state) {
-                            paramFilters.push(KFilterIdWithoutCompletedTask);
-                        } else {
-                            paramFilters.splice(prevIndex);
-                        }
-                        $state.go(KUiRouterName, {
-                            filters: paramFilters.join(',')
-                        }, {
-                            inherit: true
-                        });
-                    }
-                }
-            }
-        }];
-    $scope.frmFilters = frmFilters;
+    UiUtils.FilterHelper.create(context, document.getElementById('idFilters'), paramFilters, function (filters) {
+        $state.go(KUiRouterName, {
+            filters: filters.join(',')
+        }, {
+            inherit: true
+        });
+    });
 
     /**
     * Navigation button
@@ -456,7 +416,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
     };
 
     //    $scope.contextMenu = contextMenu;
-    if (!paramProjectUri) {
+    if (!paramUser) {
         try  {
             gantt.clearAll();
         } catch (e) {
@@ -470,28 +430,11 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
     */
     UiUtils.ModalHelper.showModal('Getting information...');
 
-    var groupTypeById = {
-        'group_by_user': 1 /* ByUser */,
-        'group_by_project': 2 /* ByProject */,
-        'group_by_release': 3 /* BySprint */
-    };
-    var groupings = [];
-    paramGroupings.forEach(function (groupingId) {
-        if (groupTypeById[groupingId]) {
-            groupings.push(groupTypeById[groupingId]);
-        }
-    });
-
-    var filterTypeById = {};
-    filterTypeById[KFilterIdWithoutCompletedTask] = 1 /* ByWithoutCompletedTask */;
-    var filters = 0 /* None */;
-    paramFilters.forEach(function (filterId) {
-        filters = filters | filterTypeById[filterId];
-    });
-
+    var groupings = UiUtils.GroupHelper.getGroupings(paramGroupings);
+    var filters = UiUtils.FilterHelper.getFilterType(paramFilters);
     var sorting = UiUtils.SortHelper.getSortType(paramSort);
 
-    UiUtils.getDhxDataByProject(paramProjectUri, groupings, filters, sorting, function (err, resp, markers) {
+    UiUtils.getDhxDataByProject(paramUser, groupings, filters, sorting, function (err, resp, markers) {
         var prev_date = DhxGanttExt.getCenteredDate();
 
         // draw gantt chart

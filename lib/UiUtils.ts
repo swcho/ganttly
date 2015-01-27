@@ -564,6 +564,58 @@ module UiUtils {
         }
     }
 
+    export module UserHelper {
+
+        function getUserPage(aText, aCb) {
+            Cb.user.getPage(1, aText, function(err, userPage) {
+                if (err) {
+                    return;
+                }
+
+                var items = [];
+                userPage.users.forEach(function(user) {
+                    items.push({
+                        id: user.uri,
+                        text: user.name
+                    });
+                });
+                aCb(items);
+            });
+        }
+
+        export function create(aContext: CAngularContext, aEl: HTMLElement, aInitialId: string, aOnChange: DhxExt.FnComboOnChange) {
+
+            var cbUser = new DhxExt.CCombo(aEl, getUserPage);
+
+            cbUser.onChange = function (id) {
+                console.log('onChange', id);
+                if (id === aInitialId) {
+                    return;
+                }
+                aOnChange(id);
+            };
+
+            Cb.user.getByUri(aInitialId, function(err, user) {
+                if (err || !user) {
+                    getUserPage('', function(items) {
+                        cbUser.setItems(items);
+                        cbUser.openSelect();
+                    });
+                } else {
+                    cbUser.setItems([{
+                        id: user.uri,
+                        text: user.name
+                    }]);
+
+                    cbUser.selectItemById(user.uri);
+                }
+            });
+
+            aContext.addComponent(cbUser);
+        }
+
+    }
+
     export module SortHelper {
         var KSortIdNone = 'sort_none';
         var KSortIdStartTimeAsc = 'sort_start_date_asc';
@@ -684,6 +736,11 @@ module UiUtils {
             text: 'By release'
         }];
 
+        var KGroupTypeById = {};
+        KGroupTypeById[KIdUser] = CbUtils.TGroupType.ByUser;
+        KGroupTypeById[KIdProject] = CbUtils.TGroupType.ByProject;
+        KGroupTypeById[KIdRelease] = CbUtils.TGroupType.BySprint;
+
         export interface FnGroupComboSelect {
             (aSelections: string[]): void;
         }
@@ -693,7 +750,7 @@ module UiUtils {
         }
 
         export function createComboForUser(aContext: CAngularContext, aElList: HTMLElement[], aInitialValues: string[], aOnSelect: FnGroupComboSelect) {
-            var forUser = KGroupingItems.splice(0);
+            var forUser = KGroupingItems.slice(0);
             forUser.slice(1);
             createCombo(aContext, KGroupingItems, aElList, aInitialValues, aOnSelect);
         }
@@ -722,8 +779,8 @@ module UiUtils {
                 aInitialValues: string[],
                 aOnSelect: FnGroupComboSelect) {
 
-            var comboItems = aComboItems.splice(0);
-            var initialValues = aInitialValues.splice(0);
+            var comboItems = aComboItems.slice(0);
+            var initialValues = aInitialValues.slice(0);
 
             aElList.forEach(function(el, i) {
                 var cb = new DhxExt.CCombo(el);
@@ -743,6 +800,16 @@ module UiUtils {
                 };
                 aContext.addComponent(cb);
             });
+        }
+
+        export function getGroupings(aGroups: string[]) {
+            var groupings = [];
+            aGroups.forEach(function(groupingId) {
+                if (KGroupTypeById[groupingId]) {
+                    groupings.push(KGroupTypeById[groupingId]);
+                }
+            });
+            return groupings;
         }
     }
 
@@ -794,6 +861,78 @@ module UiUtils {
             };
         }
 
+    }
+
+    export module FilterHelper {
+
+        var KIdWithoutCompletedTask = 'fid_wo_task';
+
+        var KAvailableIdList = [KIdWithoutCompletedTask];
+
+        var KFilterItems: DhxExt.TFormItem[] = [{
+            name: KIdWithoutCompletedTask,
+            type: 'checkbox',
+            label: 'Hide Completed Tasks'
+        }];
+
+        function isValidId(aId: string) {
+            return KAvailableIdList.indexOf(aId) != -1;
+        }
+
+        function normalizeInitialFilters(aInitialFilters) {
+            var ret = aInitialFilters.slice(0), i, len = ret.length;
+            for (i=len-1; i>=len; i--) {
+                if (!isValidId(ret[i])) {
+                    ret.splice(i, 1);
+                }
+            }
+            return ret;
+        }
+
+        export interface FnFilterChanged {
+            (aFilters: string[]): void;
+        }
+
+        export function create(
+                aContext: CAngularContext,
+                aEl: HTMLElement,
+                aInitialFilters: string[],
+                aOnChanged: FnFilterChanged) {
+
+            var initialFilters = normalizeInitialFilters(aInitialFilters);
+
+            var filterItems = KFilterItems.slice(0);
+            filterItems.forEach(function(item) {
+                item.checked = initialFilters.indexOf(item.name) != -1;
+                item.eventHandlers = {
+                    onChange: function(value, state) {
+                        var prevIndex = initialFilters.indexOf(item.name);
+                        var prevState = prevIndex != -1;
+                        if (state != prevState) {
+                            if (state) {
+                                initialFilters.push(item.name);
+                            } else {
+                                initialFilters.splice(prevIndex);
+                            }
+                            aOnChanged(initialFilters);
+                        }
+                    }
+                }
+            });
+
+            var form = new DhxExt.CForm(aEl, filterItems);
+            aContext.addComponent(form);
+        }
+
+        export function getFilterType(aFilters: string[]) {
+            var filterTypeById = {};
+            filterTypeById[KIdWithoutCompletedTask] = CbUtils.TFilterType.ByWithoutCompletedTask;
+            var filters: CbUtils.TFilterType = CbUtils.TFilterType.None;
+            aFilters.forEach(function(filterId) {
+                filters = filters | filterTypeById[filterId];
+            });
+            return filters;
+        }
     }
 
 }
