@@ -167,7 +167,8 @@ module UiUtils {
         return ret;
     };
     KGroupKeyIdentifiers[CbUtils.TGroupType.ByProject] = function(aAllMaps: CbUtils.TAllMaps, aTask: Cb.TTask) {
-        return aAllMaps.trackerMap[aTask.tracker.uri].project.uri;
+
+        return aAllMaps.trackerMap[aTask.tracker.uri]['_projectUri'] || aAllMaps.trackerMap[aTask.tracker.uri].project.uri;
     };
     KGroupKeyIdentifiers[CbUtils.TGroupType.BySprint] = function(aAllMaps: CbUtils.TAllMaps, aTask: Cb.TTask) {
         var ret = KUnknownIdentifier;
@@ -524,8 +525,6 @@ module UiUtils {
             var groupTasks = processGrouping(allMaps, cbTasks, aGroupings, 0);
             tasks = getTasks(groupTasks);
             links = processLinks(allMaps, cbTasks);
-
-            debugger;
 
             done();
         });

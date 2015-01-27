@@ -641,7 +641,7 @@ module CbUtils {
         });
     }
 
-    function getTasksByTrackers(aPrefix: string, aTrackers: Cb.TTracker[], aCb: (err, tasks: Cb.TTask[]) => void) {
+    function getTasksByTrackers(aPrefix: string, aTrackers: Cb.TTracker[], aCb: (err, tasks: Cb.TTask[], projectUriList: string[]) => void) {
 
         console.log('getTasksByTrackers');
 
@@ -649,11 +649,17 @@ module CbUtils {
         aTrackers = aTrackers || [];
         var p = [];
         var tasks = [];
+        var mapProject = {};
         aTrackers.forEach(function(tracker) {
             if (tracker.type.name == 'Task') {
                 p.push(function(done) {
                     Cb.tracker.getItems(prefix + tracker.uri, function(err, items) {
-                        tasks = tasks.concat(items);
+                        if (items && items.length) {
+                            tasks = tasks.concat(items);
+                            if (tracker['_projectUri']) {
+                                mapProject[tracker['_projectUri']] = null;
+                            }
+                        }
                         done(err);
                     });
                 });
@@ -661,7 +667,7 @@ module CbUtils {
         });
 
         async.parallel(p, function(err) {
-            aCb(err, tasks);
+            aCb(err, tasks, Object.keys(mapProject));
         });
     }
 
@@ -894,6 +900,7 @@ module CbUtils {
     }
 
     interface TUserInfo {
+        projects: Cb.TProject[];
         releaseCmdbList: Cb.TCmdb[];
         releaseList: Cb.TRelease[];
         taskTrackerList: Cb.TTracker[];
@@ -902,7 +909,7 @@ module CbUtils {
         outerItemUriList: string;
     }
 
-    function getTaskInfoByUser(aUserUri, aCb: (err, trackers: Cb.TTracker[], tasks: Cb.TTask[], associations: Cb.TAssociation[]) => void) {
+    function getTaskInfoByUser(aUserUri, aCb: (err, trackers: Cb.TTracker[], tasks: Cb.TTask[], associations: Cb.TAssociation[], projects: Cb.TProject[]) => void) {
 
         console.log('getTaskInfoByUser');
 
@@ -910,11 +917,16 @@ module CbUtils {
         var mapProjectUri = {};
         var trackers: Cb.TTracker[] = [];
         var tasks: Cb.TTask[];
+        var projectUriList: string[];
+        var projects: Cb.TProject[];
 
         s.push(function(done) {
             Cb.tracker.getTaskTrackersByUser(aUserUri, function(err, trackerByProjectList) {
                 trackerByProjectList.forEach(function(trackerByProject) {
                     mapProjectUri[trackerByProject.project.uri] = null;
+                    trackerByProject.trackers.forEach(function(t) {
+                        t['_projectUri'] = trackerByProject.project.uri;
+                    });
                     trackers = trackers.concat(trackerByProject.trackers);
                 });
                 done(err);
@@ -922,8 +934,9 @@ module CbUtils {
         });
 
         s.push(function(done) {
-            getTasksByTrackers(aUserUri, trackers, function(err, tlist) {
+            getTasksByTrackers(aUserUri, trackers, function(err, tlist, purilist) {
                 tasks = tlist;
+                projectUriList = purilist;
                 done(err);
             });
         });
@@ -936,8 +949,15 @@ module CbUtils {
             });
         });
 
+        s.push(function(done) {
+            getItems(projectUriList, function(err, plist) {
+                projects = <Cb.TProject[]><any>plist;
+                done(err);
+            });
+        });
+
         async.series(s, function(err) {
-            aCb(err, trackers, tasks, associations);
+            aCb(err, trackers, tasks, associations, projects);
         });
     }
 
@@ -953,12 +973,14 @@ module CbUtils {
         var tasks: Cb.TTask[] = [];
         var associations: Cb.TAssociation[] = [];
         var outerItemUriList: string;
+        var projects: Cb.TProject[];
 
         p.push(function(done) {
-            getTaskInfoByUser(aUserUri, function(err, trklist, tlist, alist) {
+            getTaskInfoByUser(aUserUri, function(err, trklist, tlist, alist, plist) {
                 taskTrackerList = trklist;
                 tasks = tlist;
                 associations = alist;
+                projects = plist;
                 done(err);
             });
         });
@@ -983,6 +1005,7 @@ module CbUtils {
 
         async.parallel(p, function(err) {
             aCb(err, {
+                projects: projects,
                 releaseCmdbList: releaseCmdbList,
                 releaseList: releaseList,
                 taskTrackerList: taskTrackerList,
@@ -1246,6 +1269,8 @@ module CbUtils {
             var userUriList;
             var outerTasks;
 
+            var projectMap = this._projectMap;
+            var trackerMap = this._trackerMap;
             s.push(function(done) {
                 getUserInfo(aUserUri, function(err, userInfo) {
                     releases = userInfo.releaseList;
@@ -1260,6 +1285,12 @@ module CbUtils {
                     });
                     userUriList = Object.keys(mapUser);
                     userUriList.push(aUserUri);
+                    userInfo.projects.forEach(function(p) {
+                        projectMap[p.uri] = p;
+                    });
+                    userInfo.taskTrackerList.forEach(function(t) {
+                        trackerMap[t.uri] = t;
+                    });
                     done(err);
                 });
             });
