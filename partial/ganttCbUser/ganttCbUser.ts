@@ -10,21 +10,14 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
 
     console.log($stateParams);
 
-    var unitDay = 1000 * 60 * 60 * 24;
-    var unitHour = 1000 * 60 * 60;
-    var unitWorkingDay = gConfig.workingHours ? gConfig.workingHours * unitHour: unitDay;
-    var holidayAwareness = gConfig.holidayAwareness;
-
     var paramUser = $stateParams.user;
     var paramScale = $stateParams.scale || 'week';
-    var paramSort = $stateParams.sorting || 'short_by_none';
+    var paramSort = $stateParams.sort || 'short_by_none';
     var paramGroupings: string[] = $stateParams.groupings ? $stateParams.groupings.split(',') : [];
     var paramFilters: string[] = $stateParams.filters ? $stateParams.filters.split(',') : [];
 
-    var taskTrackerUriList: string[];
 
     var KUiRouterName = 'ganttCbUser';
-
     var context = new UiUtils.CAngularContext($scope);
 
     /**
@@ -138,7 +131,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
     var filters = UiUtils.FilterHelper.getFilterType(paramFilters);
     var sorting = UiUtils.SortHelper.getSortType(paramSort);
 
-    UiUtils.getDhxDataByUser(paramUser, groupings, filters,  sorting, function(err, resp, markers) {
+    UiUtils.getDhxDataByUser(paramUser, groupings, filters,  sorting, function(err, resp) {
 
         var prev_date = DhxGanttExt.getCenteredDate();
 

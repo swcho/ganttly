@@ -522,6 +522,19 @@ module UiUtils {
 
             cbTasks = cbTasks.concat(cachedUserInfo.tasks);
 
+            var filters = [];
+            if (aFilter & CbUtils.TFilterType.ByWithoutCompletedTask) {
+                filters.push(generatePropertyFilter(['status', 'name'], KCompletedStatusValues, false));
+            }
+            filters.forEach(function(f) {
+                cbTasks = cbTasks.filter(f);
+            });
+
+            var sorter = generateSorter(aSorting);
+            if (sorter) {
+                cbTasks = cbTasks.sort(sorter);
+            }
+
             var groupTasks = processGrouping(allMaps, cbTasks, aGroupings, 0);
             tasks = getTasks(groupTasks);
             links = processLinks(allMaps, cbTasks);
@@ -608,7 +621,7 @@ module UiUtils {
                 userPage.users.forEach(function(user) {
                     items.push({
                         id: user.uri,
-                        text: user.name
+                        text: getUserName(user)
                     });
                 });
                 aCb(items);
@@ -636,7 +649,7 @@ module UiUtils {
                 } else {
                     cbUser.setItems([{
                         id: user.uri,
-                        text: user.name
+                        text: getUserName(user)
                     }]);
 
                     cbUser.selectItemById(user.uri);
