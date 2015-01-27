@@ -1,4 +1,3 @@
-
 /// <reference path='../typings/tsd.d.ts'/>
 
 declare var gConfig;
@@ -137,6 +136,7 @@ module Cb {
         version?: number;
         comment?: string;
     }
+
     export enum TTrackerDescFormat{
         EPlain,
         EHtml,
@@ -228,6 +228,16 @@ module Cb {
 
     export interface TUsersPage extends TPage {
         users: TUser[];
+    }
+
+    export interface TTrackersByProject {
+        project: TItem;
+        trackers: TTracker[];
+    }
+
+    export interface TCmdbListByProject {
+        project: TItem;
+        categories: TCmdb[];
     }
 
     var host = gConfig.cbBaseUrl + '/rest';
@@ -358,6 +368,12 @@ module Cb {
             }, aCb);
         }
 
+        getReleaseCmdbListByUser(aUserUri, aCb: (err, cmdbList: TCmdbListByProject[]) => void) {
+            send('GET', aUserUri + '/categories', {
+                type: 'Release'
+            }, aCb);
+        }
+
         getItemsByCmdb(aCmdbUri: string, aCb: (err, items: any[]) => void) {
             send('GET', aCmdbUri + '/items', null, aCb);
         }
@@ -378,7 +394,7 @@ module Cb {
          * @param aTypes
          */
 
-        getTrackers(aProjectUri: string, aTypes: string[], aCb: (err, trackers: TTracker[]) => void) {
+        getTrackers(aProjectUri: string, aTypes: string[], aCb: (err, trackers: any[]) => void) {
             var typeList = aTypes.join(',');
             var param = null;
             if (typeList.length) {
@@ -389,6 +405,10 @@ module Cb {
 
         getTaskTrackers(aProjectUri: string, aCb: (err, trackers: TTracker[]) => void) {
             this.getTrackers(aProjectUri, ['Task'], aCb);
+        }
+
+        getTaskTrackersByUser(aUserUri: string, aCb: (err, trackers: TTrackersByProject[]) => void) {
+            this.getTrackers(aUserUri, ['Task'], aCb);
         }
 
         getItems(aTrackerUri: string, aCb: (err, items: any[]) => void) {
@@ -621,17 +641,18 @@ module CbUtils {
         });
     }
 
-    function getTasksByTrackers(aTrackers: Cb.TTracker[], aCb: (err, tasks: Cb.TTask[]) => void) {
+    function getTasksByTrackers(aPrefix: string, aTrackers: Cb.TTracker[], aCb: (err, tasks: Cb.TTask[]) => void) {
 
         console.log('getTasksByTrackers');
 
+        var prefix = aPrefix || '';
         aTrackers = aTrackers || [];
         var p = [];
         var tasks = [];
         aTrackers.forEach(function(tracker) {
             if (tracker.type.name == 'Task') {
                 p.push(function(done) {
-                    Cb.tracker.getItems(tracker.uri, function(err, items) {
+                    Cb.tracker.getItems(prefix + tracker.uri, function(err, items) {
                         tasks = tasks.concat(items);
                         done(err);
                     });
@@ -723,7 +744,7 @@ module CbUtils {
         });
 
         s.push(function(done) {
-            getTasksByTrackers(trackers, function(err, tlist) {
+            getTasksByTrackers(null, trackers, function(err, tlist) {
                 tasks = tlist;
                 done(err);
             });
@@ -872,7 +893,114 @@ module CbUtils {
 
     }
 
+    interface TUserInfo {
+        releaseCmdbList: Cb.TCmdb[];
+        releaseList: Cb.TRelease[];
+        taskTrackerList: Cb.TTracker[];
+        tasks: Cb.TTask[];
+        associations: Cb.TAssociation[];
+        outerItemUriList: string;
+    }
+
+    function getTaskInfoByUser(aUserUri, aCb: (err, trackers: Cb.TTracker[], tasks: Cb.TTask[], associations: Cb.TAssociation[]) => void) {
+
+        console.log('getTaskInfoByUser');
+
+        var s = [];
+        var mapProjectUri = {};
+        var trackers: Cb.TTracker[] = [];
+        var tasks: Cb.TTask[];
+
+        s.push(function(done) {
+            Cb.tracker.getTaskTrackersByUser(aUserUri, function(err, trackerByProjectList) {
+                trackerByProjectList.forEach(function(trackerByProject) {
+                    mapProjectUri[trackerByProject.project.uri] = null;
+                    trackers = trackers.concat(trackerByProject.trackers);
+                });
+                done(err);
+            });
+        });
+
+        s.push(function(done) {
+            getTasksByTrackers(aUserUri, trackers, function(err, tlist) {
+                tasks = tlist;
+                done(err);
+            });
+        });
+
+        var associations: Cb.TAssociation[];
+        s.push(function(done) {
+            populateAssociation(tasks, function(err, alist) {
+                associations = alist;
+                done(err);
+            });
+        });
+
+        async.series(s, function(err) {
+            aCb(err, trackers, tasks, associations);
+        });
+    }
+
+    function getUserInfo(aUserUri: string, aCb: (err, userInfo: TUserInfo) => void) {
+
+        console.log('getUserInfo');
+
+        var p = [];
+
+        var releaseCmdbList: Cb.TCmdb[] = [];
+        var releaseList: Cb.TRelease[] = [];
+        var taskTrackerList: Cb.TTracker[] = [];
+        var tasks: Cb.TTask[] = [];
+        var associations: Cb.TAssociation[] = [];
+        var outerItemUriList: string;
+
+        p.push(function(done) {
+            getTaskInfoByUser(aUserUri, function(err, trklist, tlist, alist) {
+                taskTrackerList = trklist;
+                tasks = tlist;
+                associations = alist;
+                done(err);
+            });
+        });
+
+//        p.push(function(done) {
+//
+//            Cb.cmdb.getReleaseCmdbListByUser(aUserUri, function(err, cmdbByProjectList) {
+//
+//                cmdbByProjectList.forEach(function(cmdbByProject) {
+//
+//                    mapProjectUri[cmdbByProject.project.uri] = null;
+//
+//                    releaseCmdbList = releaseCmdbList.concat(cmdbByProject.categories);
+//                });
+//
+//                debugger;
+//
+//                done(err);
+//            });
+//
+//        });
+
+        async.parallel(p, function(err) {
+            aCb(err, {
+                releaseCmdbList: releaseCmdbList,
+                releaseList: releaseList,
+                taskTrackerList: taskTrackerList,
+                tasks: tasks,
+                associations: associations,
+                outerItemUriList: outerItemUriList
+            });
+        });
+
+    }
+
     export interface TCachedProjectInfo {
+        releases: Cb.TRelease[];
+        tasks: Cb.TTask[];
+        outerTasks: Cb.TTask[];
+    }
+
+    export interface TCachedUserInfo {
         releases: Cb.TRelease[];
         tasks: Cb.TTask[];
         outerTasks: Cb.TTask[];
@@ -903,6 +1031,7 @@ module CbUtils {
     export class CCbCache {
 
         _cache: { [projectUri: string]: TCachedProjectInfo; } = {};
+        _cacheByUser: { [userUri: string]: TCachedUserInfo; } = {};
         _userMap: TUserMap = {};
         _projectMap: TProjectMap = {};
         _trackerMap: TTrackerMap = {};
@@ -1030,7 +1159,7 @@ module CbUtils {
                     outerTrackerUriList = Object.keys(mapTracker);
                     outerProjectUriList = Object.keys(mapProject);
                     outerUserUriList = Object.keys(mapUser);
-                    done();
+                    done(err);
                 });
             });
 
@@ -1047,7 +1176,7 @@ module CbUtils {
                                 release._type = Cb.TItemType.Release;
                                 itemMap[release.uri] = <Cb.TRelease><any>release;
                             });
-                            done();
+                            done(err);
                         });
                     },
                     function(done) {
@@ -1063,7 +1192,7 @@ module CbUtils {
                             ilist.forEach(function(i) {
                                 userMap[i.uri] = <Cb.TUser><any>i;
                             });
-                            done();
+                            done(err);
                         });
                     },
                     function(done) {
@@ -1071,7 +1200,7 @@ module CbUtils {
                             ilist.forEach(function(i) {
                                 projectMap[i.uri] = <Cb.TProject><any>i;
                             });
-                            done();
+                            done(err);
                         });
                     }
                 ], function(err) {
@@ -1102,6 +1231,60 @@ module CbUtils {
             });
         }
 
+        getCachedUserInfo(aUserUri: string, aCb: (err, cached: TCachedUserInfo) => void) {
+
+            console.log('getCachedUserInfo');
+
+            if (this._cache[aUserUri]) {
+                aCb(null, this._cache[aUserUri]);
+                return;
+            }
+
+            var s = [];
+            var releases;
+            var tasks;
+            var userUriList;
+            var outerTasks;
+
+            s.push(function(done) {
+                getUserInfo(aUserUri, function(err, userInfo) {
+                    releases = userInfo.releaseList;
+                    tasks = userInfo.tasks;
+                    var mapUser = {};
+                    tasks.forEach(function(t) {
+                        if (t.assignedTo) {
+                            t.assignedTo.forEach(function(u) {
+                                mapUser[u.uri] = null;
+                            });
+                        }
+                    });
+                    userUriList = Object.keys(mapUser);
+                    userUriList.push(aUserUri);
+                    done(err);
+                });
+            });
+
+            var userMap = this._userMap;
+            s.push(function(done) {
+                getItems(userUriList, function(err, list) {
+                    list.forEach(function(i) {
+                        userMap[i.uri] = <Cb.TUser><any>i;
+                    });
+                    done(err);
+                });
+            });
+
+            async.series(s, (err) => {
+                var ret: TCachedProjectInfo = {
+                    releases: releases,
+                    tasks: tasks,
+                    outerTasks: outerTasks
+                };
+                this._cache[aUserUri] = ret;
+                aCb(err, ret);
+            });
+
+        }
     }
 
     export var cache = new CCbCache();

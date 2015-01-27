@@ -487,21 +487,54 @@ module UiUtils {
                 text: 'Today'
             }];
 
-//                Object.keys(cachedProjectInfo.releaseMap).forEach(function(releaseUri) {
-//                    var release = cachedProjectInfo.releaseMap[releaseUri];
-//                    var date = release.plannedReleaseDate ? new Date(release.plannedReleaseDate): new Date(release.modifiedAt);
-//                    markers.push({
-//                        start_date: date,
-//                        css: "release",
-//                        title: date_to_str(date),
-//                        text: release.name
-//                    });
-//                });
-
             aCb(err, {
                 data: tasks,
                 links: links
             }, markers);
+        });
+
+    }
+
+    export function getDhxDataByUser(
+        aUserUri: string,
+        aGroupings: CbUtils.TGroupType[],
+        aFilter: CbUtils.TFilterType,
+        aSorting: CbUtils.TSortingType,
+        aCb: (err, aDhxData: DhxGantt.TData) => void ) {
+
+        var s = [];
+        var cachedUserInfo: CbUtils.TCachedUserInfo;
+
+        s.push(function(done) {
+            CbUtils.cache.getCachedUserInfo(aUserUri, function(err, cache) {
+                cachedUserInfo = cache;
+                done(err);
+            });
+        });
+
+        var tasks;
+        var links;
+        s.push(function(done) {
+
+            var allMaps = CbUtils.cache.getAllMaps();
+            var cbTasks = [];
+
+            cbTasks = cbTasks.concat(cachedUserInfo.tasks);
+
+            var groupTasks = processGrouping(allMaps, cbTasks, aGroupings, 0);
+            tasks = getTasks(groupTasks);
+            links = processLinks(allMaps, cbTasks);
+
+            debugger;
+
+            done();
+        });
+
+        async.series(s, function(err) {
+            aCb(err, {
+                data: tasks,
+                links: links
+            });
         });
 
     }
@@ -933,6 +966,12 @@ module UiUtils {
             });
             return filters;
         }
+    }
+
+    export module NaviHelper {
+
+
+
     }
 
 }

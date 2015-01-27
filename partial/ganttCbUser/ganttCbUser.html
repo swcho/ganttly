@@ -28,24 +28,9 @@
         </div>
 
         <div id="idFilters" style="width: 160px;height: 50px;" class="form"></div>
-        <div dhx-form style="width: 80px;height: 50px;" class="form" dhx-form-items="frmNavi"></div>
+        <div id="idNavi" style="width: 80px;height: 50px;" class="form"></div>
 
     </div>
 
-    <div dhx-gantt
-         id="gantt"
-         dhx-scale="ganttScale"
-         dhx-task-shift-clicked="onTaskShiftClicked"
-         dhx-task-dbl-click="onTaskDblClick"
-         dhx-task-add="onTaskAdd"
-         dhx-task-update="onTaskUpdate"
-         dhx-task-delete="onTaskDelete"
-         dhx-task-opened="onTaskOpened"
-         dhx-task-closed="onTaskClosed"
-         dhx-link-add="onLinkAdd"
-         dhx-link-update="onLinkUpdate"
-         dhx-link-delete="onLinkDelete"
-         dhx-context-menu="contextMenu"
-         dhx-tool-tip="tooltip"
-            ></div>
+    <div id="gantt" ></div>
 </div>
