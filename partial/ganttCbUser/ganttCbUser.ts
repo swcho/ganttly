@@ -96,7 +96,13 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
     }]);
     context.addComponent(frmNavi);
 
-    $scope.tooltip = function(start,end,task){
+    /**
+     * Gantt
+     */
+
+    var gantt = new DhxExt.Gantt.CGantt(document.getElementById('idGantt'));
+
+    gantt.setToolTipProvider(function(start,end,task){
         var ret = '';
         ret += '<p><b>' + task.text + '</b></p>';
         ret += '<hr>';
@@ -110,7 +116,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
         ret += '<p>' + DhxGanttExt.formatDate(start) + ' - ' + DhxGanttExt.formatDate(end) + ' (' + task.duration + ')</p>';
 
         return ret;
-    };
+    });
 
     if (!paramUser) {
         try {
@@ -140,7 +146,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
 
         gantt.clearAll();
 
-        gantt.parse(resp, "json");
+        gantt.parse(resp);
 
         setTimeout(function() {
             DhxGanttExt.setDateCentered(prev_date || new Date());

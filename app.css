@@ -7789,7 +7789,7 @@ button.close {
 #ganttCbUser #topPane .combo_group .combo {
   clear: both;
 }
-#ganttCbUser #gantt {
+#ganttCbUser #idGantt {
   height: 100%;
   width: 100%;
   padding-top: 60px;

@@ -501,7 +501,7 @@ module UiUtils {
         aGroupings: CbUtils.TGroupType[],
         aFilter: CbUtils.TFilterType,
         aSorting: CbUtils.TSortingType,
-        aCb: (err, aDhxData: DhxGantt.TData) => void ) {
+        aCb: (err, aDhxData: DhxExt.Gantt.TData) => void ) {
 
         var s = [];
         var cachedUserInfo: CbUtils.TCachedUserInfo;
