@@ -90,7 +90,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
     /**
     * Gantt
     */
-    var gantt = new DhxExt.Gantt.CGantt(document.getElementById('idGantt'));
+    var gantt = new DhxExt.Gantt.CGantt(document.getElementById('idGantt'), false);
 
     gantt.setToolTipProvider(function (start, end, task) {
         var ret = '';
@@ -108,6 +108,19 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
         return ret;
     });
 
+    //    gantt.onDblClicked = function(taskId) {
+    //        var url = taskId;
+    //        var width = 1280;
+    //        var height = 720;
+    //        var params = [
+    //                'width=' + width,
+    //                'height=' + height,
+    //            'fullscreen=yes' // only works in IE, but here for completeness
+    //        ].join(',');
+    //        var win = open(gConfig.cbBaseUrl + url, null, params);
+    //        win.moveTo((screen.width - width)/2, (screen.height - height)/2);
+    //        win.resizeTo(width, height);
+    //    };
     if (!paramUser) {
         try  {
             gantt.clearAll();

@@ -298,7 +298,7 @@ module DhxExt {
             return date_to_str(date);
         }
 
-        export function init(aEl: HTMLElement) {
+        export function init(aEl: HTMLElement, aReadOnly: boolean) {
             function columnTaskRender(task) {
                 var classNames = [];
                 //            if (classes_priority[task.priority]) {
@@ -327,7 +327,7 @@ module DhxExt {
 
             gantt.config.row_height = 26;
 
-            gantt.config.readonly = true;
+            gantt.config.readonly = aReadOnly;
             gantt.config.initial_scroll = false;
             gantt.config['preserve_scroll'] = true;
 
@@ -965,23 +965,34 @@ module DhxExt {
             (aStart: Date, aEnd: Date, aTask: TTask): void;
         }
 
+        export interface FNOnDblClicked {
+            (aTaskId: string, aEvent: TTask): void;
+        }
+
         export class CGantt extends CComponent {
 
             private _gantt;
 
-            constructor(aEl: HTMLElement) {
+            onDblClicked: FNOnDblClicked;
+
+            constructor(aEl: HTMLElement, aReadOnly) {
                 super();
-                init(aEl);
+                init(aEl, aReadOnly);
 
                 this._gantt = gantt;
 
                 this._setComponent(this._gantt);
-//                this._addEventId(
-//                    this._gantt.attachEvent("onContextMenu", (taskId, linkId, event) => {
-//
-//
-//                    })
-//                );
+
+                if (aReadOnly) {
+                    this._addEventId(
+                        this._gantt.attachEvent("onTaskDblClick", (id, event) => {
+                            if (this.onDblClicked) {
+                                this.onDblClicked(id, event);
+                            }
+                        })
+                    );
+                }
+
             }
 
             parse(aData: TData) {
