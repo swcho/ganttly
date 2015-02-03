@@ -202,7 +202,68 @@ module DhxExt {
         }
     }
 
-    /**
+    /**************************************************************************
+     * CContextMenu
+     */
+
+    export interface TContextMenuItem {
+        id: string;
+        text: string;
+        onClick: (id: string, param: any) => void;
+        child?: TContextMenuItem[];
+    }
+
+    export interface TContextMenu {
+        menuItems: TContextMenuItem[];
+    }
+
+    export class CContextMenu extends CComponent {
+
+        _menu;
+        private _cbMap;
+        private _contextParam;
+
+        constructor() {
+            super();
+
+            this._menu = new dhtmlXMenuObject();
+            this._setComponent(this._menu);
+
+            this._menu.setIconsPath("bower_components/dhtmlxMenu/sample_images/");
+            this._menu.renderAsContextMenu();
+            this._menu.setSkin("dhx_terrace");
+
+            this._addEventId(
+                this._menu.attachEvent('onClick', (id, zoneId, cas) => {
+                    if (this._cbMap[id]) {
+                        this._cbMap[id](id, this._contextParam);
+                        this._contextParam = null;
+                    }
+                })
+            );
+        }
+
+        setMenu(aMenu: TContextMenu) {
+            this._cbMap = {};
+            aMenu.menuItems.forEach((menuItem, pos) => {
+                this._menu.addNewChild(null, pos, menuItem.id, menuItem.text);
+                this._cbMap[menuItem.id] = menuItem.onClick;
+                if (menuItem.child) {
+                    menuItem.child.forEach((child) => {
+                        this._menu.addNewChild(menuItem.id, pos, child.id, child.text);
+                        this._cbMap[child.id] = child.onClick;
+                    });
+                }
+            });
+        }
+
+        showContextMenu(aX: number, aY: number, aParam: any) {
+            this._contextParam = aParam;
+            this._menu.showContextMenu(aX, aY);
+        }
+    }
+
+    /**************************************************************************
      * Gantt
      */
 
@@ -255,23 +316,6 @@ module DhxExt {
             css: string;
             title: string;
             text: string;
-        }
-
-        export interface TContextCbParam {
-            taskId?: string;
-            linkId?: string;
-            event?: any;
-        }
-
-        export interface TContextMenuItem {
-            id: string;
-            text: string;
-            cb: (param:TContextCbParam) => void;
-            child?: TContextMenuItem[];
-        }
-
-        export interface TContextMenu {
-            menuItems: TContextMenuItem[];
         }
 
         var KClassPriority = {
@@ -889,77 +933,77 @@ module DhxExt {
             setScale(available_scales[index]);
         }
 
-        function initContextMenu(contextMenu: TContextMenu) {
-
-            var outstanding_param = {};
-
-            var menu = new dhtmlXMenuObject();
-            menu.setIconsPath("bower_components/dhtmlxMenu/sample_images/");
-            menu.renderAsContextMenu();
-            menu.setSkin("dhx_terrace");
-            //menu.loadXML("data/dhxmenu.xml");
-            var cbMap = (function() {
-                var _cbMap = {};
-                return {
-                    addMap: function(id, cb) {
-                        if (_cbMap[id]) {
-                            throw "Id already exists";
-                        }
-                        _cbMap[id] = cb;
-                    },
-                    call: function(id, param) {
-                        _cbMap[id](param);
-                    }
-                }
-            })();
-            contextMenu.menuItems.forEach(function(menuItem, pos) {
-                menu.addNewChild(null, pos, menuItem.id, menuItem.text);
-                cbMap.addMap(menuItem.id, menuItem.cb);
-                if (menuItem.child) {
-                    menuItem.child.forEach(function(child) {
-                        menu.addNewChild(menuItem.id, pos, child.id, child.text);
-                        cbMap.addMap(child.id, child.cb);
-                    });
-                }
-            });
-            menu.attachEvent("onClick", function(id, zoneId, cas) {
-                cbMap.call(id, outstanding_param);
-            });
-            var _is_tooltip_orig;
-            menu.attachEvent("onShow", function() {
-                gantt['_hide_tooltip']();
-                _is_tooltip_orig = gantt['_is_tooltip'];
-                gantt['_is_tooltip'] = function() {
-                    return true;
-                };
-            });
-            menu.attachEvent("onHide", function() {
-                gantt['_is_tooltip'] = _is_tooltip_orig;
-            });
-
-            gantt.attachEvent("onContextMenu", function(taskId, linkId, event){
-                var x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft,
-                    y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-
-                outstanding_param = {
-                    taskId: taskId,
-                    linkId: linkId,
-                    event: event
-                };
-
-                if(taskId){
-                    menu.showContextMenu(x, y);
-                }else if(linkId){
-                    menu.showContextMenu(x, y);
-                }
-
-                if(taskId || linkId){
-                    return false;
-                }
-
-                return true;
-            });
-        }
+//        function initContextMenu(contextMenu: TContextMenu) {
+//
+//            var outstanding_param = {};
+//
+//            var menu = new dhtmlXMenuObject();
+//            menu.setIconsPath("bower_components/dhtmlxMenu/sample_images/");
+//            menu.renderAsContextMenu();
+//            menu.setSkin("dhx_terrace");
+//            //menu.loadXML("data/dhxmenu.xml");
+//            var cbMap = (function() {
+//                var _cbMap = {};
+//                return {
+//                    addMap: function(id, cb) {
+//                        if (_cbMap[id]) {
+//                            throw "Id already exists";
+//                        }
+//                        _cbMap[id] = cb;
+//                    },
+//                    call: function(id, param) {
+//                        _cbMap[id](param);
+//                    }
+//                }
+//            })();
+//            contextMenu.menuItems.forEach(function(menuItem, pos) {
+//                menu.addNewChild(null, pos, menuItem.id, menuItem.text);
+//                cbMap.addMap(menuItem.id, menuItem.cb);
+//                if (menuItem.child) {
+//                    menuItem.child.forEach(function(child) {
+//                        menu.addNewChild(menuItem.id, pos, child.id, child.text);
+//                        cbMap.addMap(child.id, child.cb);
+//                    });
+//                }
+//            });
+//            menu.attachEvent("onClick", function(id, zoneId, cas) {
+//                cbMap.call(id, outstanding_param);
+//            });
+//            var _is_tooltip_orig;
+//            menu.attachEvent("onShow", function() {
+//                gantt['_hide_tooltip']();
+//                _is_tooltip_orig = gantt['_is_tooltip'];
+//                gantt['_is_tooltip'] = function() {
+//                    return true;
+//                };
+//            });
+//            menu.attachEvent("onHide", function() {
+//                gantt['_is_tooltip'] = _is_tooltip_orig;
+//            });
+//
+//            gantt.attachEvent("onContextMenu", function(taskId, linkId, event){
+//                var x = event.clientX + document.body.scrollLeft + document.documentElement.scrollLeft,
+//                    y = event.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+//
+//                outstanding_param = {
+//                    taskId: taskId,
+//                    linkId: linkId,
+//                    event: event
+//                };
+//
+//                if(taskId){
+//                    menu.showContextMenu(x, y);
+//                }else if(linkId){
+//                    menu.showContextMenu(x, y);
+//                }
+//
+//                if(taskId || linkId){
+//                    return false;
+//                }
+//
+//                return true;
+//            });
+//        }
 
         export interface FNTooltipProvider {
             (aStart: Date, aEnd: Date, aTask: TTask): void;
@@ -969,9 +1013,50 @@ module DhxExt {
             (aTaskId: string, aEvent: TTask): void;
         }
 
+        export interface TGanttContextCbParam {
+            taskId?: string;
+            linkId?: string;
+            event?: any;
+        }
+
+        export interface TGanttContextMenuItem extends TContextMenuItem {
+            onClick: (id: string, param: TGanttContextCbParam) => void;
+            child?: TGanttContextMenuItem[];
+        }
+
+        export interface TGanttContextMenu extends TContextMenu {
+            menuItems: TGanttContextMenuItem[];
+        }
+
+        class CGanttContextMenu extends CContextMenu {
+
+            constructor() {
+                super();
+            }
+
+            show(aEvent: MouseEvent, aTaskId: string, aLinkId: string) {
+
+                if (!aTaskId && !aLinkId) {
+                    return false;
+                }
+
+                var x = aEvent.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+                var y = aEvent.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+
+                this.showContextMenu(x, y, {
+                    taskId: aTaskId,
+                    linkId: aLinkId,
+                    event: aEvent
+                });
+                return true;
+            }
+
+        }
+
         export class CGantt extends CComponent {
 
             private _gantt;
+            private _contextMenu: CGanttContextMenu;
 
             onDblClicked: FNOnDblClicked;
 
@@ -993,6 +1078,14 @@ module DhxExt {
                     );
                 }
 
+                this._addEventId(
+                    this._gantt.attachEvent("onContextMenu", (taskId, linkId, event) => {
+                        if (this._contextMenu) {
+                            this._contextMenu.show(event, taskId, linkId);
+                        }
+                    })
+                );
+
             }
 
             parse(aData: TData) {
@@ -1007,6 +1100,10 @@ module DhxExt {
                 this._gantt.templates.tooltip_text = aProvider;
             }
 
+            setContextMenu(aContextMenu: TGanttContextMenu) {
+                this._contextMenu = new CGanttContextMenu();
+                this._contextMenu.setMenu(aContextMenu);
+            }
         }
 
     }

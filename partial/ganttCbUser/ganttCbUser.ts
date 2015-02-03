@@ -118,6 +118,26 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
         return ret;
     });
 
+    gantt.setContextMenu({
+        menuItems: [{
+            id: 'open_task',
+            text: '새창에서 열기',
+            onClick: function (id: string, param: DhxExt.Gantt.TGanttContextCbParam) {
+                var url = param.taskId || param.linkId;
+                var width = 1280;
+                var height = 720;
+                var params = [
+                    'width=' + width,
+                    'height=' + height,
+                    'fullscreen=yes' // only works in IE, but here for completeness
+                ].join(',');
+                var win = open(gConfig.cbBaseUrl + url, null, params);
+                win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+                win.resizeTo(width, height);
+            }
+        }]
+    });
+
 //    gantt.onDblClicked = function(taskId) {
 //        var url = taskId;
 //        var width = 1280;

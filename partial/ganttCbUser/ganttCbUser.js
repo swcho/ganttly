@@ -108,6 +108,26 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
         return ret;
     });
 
+    gantt.setContextMenu({
+        menuItems: [{
+                id: 'open_task',
+                text: '새창에서 열기',
+                onClick: function (id, param) {
+                    var url = param.taskId || param.linkId;
+                    var width = 1280;
+                    var height = 720;
+                    var params = [
+                        'width=' + width,
+                        'height=' + height,
+                        'fullscreen=yes'
+                    ].join(',');
+                    var win = open(gConfig.cbBaseUrl + url, null, params);
+                    win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+                    win.resizeTo(width, height);
+                }
+            }]
+    });
+
     //    gantt.onDblClicked = function(taskId) {
     //        var url = taskId;
     //        var width = 1280;
