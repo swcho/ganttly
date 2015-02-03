@@ -1062,6 +1062,8 @@ module UiUtils {
 
                 });
 
+                this.clearAll();
+
                 this.parse(resp);
 
                 setTimeout(function() {
