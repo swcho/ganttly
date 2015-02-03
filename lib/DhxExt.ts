@@ -1068,6 +1068,7 @@ module DhxExt {
             onAfterTaskDelete: (taskId: string, task: TTask) => void;
             onTaskOpened: (taskId: string) => void;
             onTaskClosed: (taskId: string) => void;
+            handleNewTaskAdded: (taskId: string, task: TTask) => boolean;
 
             constructor(aEl: HTMLElement, aReadOnly) {
                 super();
@@ -1101,6 +1102,7 @@ module DhxExt {
             private _addTaskEvents() {
                 var taskChangeMode;
                 var moveStartDate;
+                var onBeforeLightbox;
 
                 this._addEvent('onAfterTaskAdd', (taskId, task) => {
                     if (this.onAfterTaskAdd) {
@@ -1115,6 +1117,9 @@ module DhxExt {
                     return true;
                 });
                 this._addEvent('onAfterTaskUpdate', (id, task) => {
+                    if (onBeforeLightbox) {
+                        return;
+                    }
                     if (taskChangeMode == 'move' && moveStartDate.getTime() == task.start_date.getTime()) {
                     } else if (this.onAfterTaskUpdate) {
                         this.onAfterTaskUpdate(id, task, taskChangeMode);
@@ -1136,6 +1141,16 @@ module DhxExt {
                     if (this.onTaskClosed) {
                         this.onTaskClosed(id);
                     }
+                });
+
+                this._addEvent('onBeforeLightbox', (taskId) => {
+                    onBeforeLightbox = true;
+                    var task = this._gantt.getTask(taskId);
+                    if (task.$new && this.handleNewTaskAdded) {
+                        return this.handleNewTaskAdded(taskId, task);
+                    }
+                    onBeforeLightbox = false;
+                    return true;
                 });
             }
 

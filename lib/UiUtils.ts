@@ -1027,6 +1027,16 @@ module UiUtils {
             this.onTaskClosed = (id) => {
                 delete this._openedTaskMap[id];
             };
+
+            this.handleNewTaskAdded = (id, task) => {
+                var now = new Date();
+                var start = roundDay(addDays(now, 1));
+                var end = roundDay(addDays(now, 2));
+                task.start_date = start;
+                task.end_date = end;
+                this._gantt.updateTask(id, task);
+                return true;
+            };
         }
 
         showTaskByUser(
@@ -1096,7 +1106,12 @@ module UiUtils {
 
             CbUtils.cache.createTask(this._userUri, newCbTask, (err, task) => {
 
-                this._gantt.changeTaskId(aTaskId, task.uri);
+                if (task) {
+
+                    this._gantt.selectTask(aTaskId);
+
+                    this._gantt.changeTaskId(aTaskId, task.uri);
+                }
 
                 this._update();
             });
