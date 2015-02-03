@@ -265,6 +265,7 @@ module Cb {
         options.url = url;
         if (aParam) {
             if (aMethod === 'POST' || aMethod === 'PUT') {
+                options.contentType = 'json';
                 options.body = aParam;
             } else {
                 options.url = url + '?' + encodeQueryData(aParam);
@@ -420,6 +421,17 @@ module Cb {
          */
         getItemsPage(aTrackerUri: string, aPage: number, aCb: (err, itemsPage: TItemsPage) => void) {
             send('GET', aTrackerUri + '/items/page/' + aPage, null, aCb);
+        }
+
+        createItem(aItem: TItem, aCb: (err, item: TItem) => void) {
+            send('POST', '/item', aItem, function(err, resp) {
+                if (err) {
+                    aCb(err, resp);
+                    return;
+                }
+
+                send('GET', resp.uri, null, aCb);
+            });
         }
     }
 
@@ -1080,6 +1092,10 @@ module CbUtils {
 
         }
 
+        getItem(aItemUri: string): Cb.TItem {
+            return this._itemMap[aItemUri];
+        }
+
         getProject(aProjectUri: string): Cb.TProject {
             return this._projectMap[aProjectUri];
         }
@@ -1297,6 +1313,7 @@ module CbUtils {
                     tasks = userInfo.tasks;
                     var mapUser = {};
                     tasks.forEach(function(t) {
+                        itemMap[t.uri] = t;
                         if (t.assignedTo) {
                             t.assignedTo.forEach(function(u) {
                                 mapUser[u.uri] = null;
@@ -1335,6 +1352,18 @@ module CbUtils {
                 aCb(err, ret);
             });
 
+        }
+
+        createTaskByUser(aUserUri: string, aNewItem: Cb.TTask, aCb: (err, task: Cb.TTask) => void) {
+            Cb.tracker.createItem(aNewItem, (err, item) => {
+
+                if (item) {
+                    this._itemMap[item.uri] = item;
+                    this._cache[aUserUri].tasks.unshift(item);
+                }
+
+                aCb(err, item);
+            });
         }
     }
 

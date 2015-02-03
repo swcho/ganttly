@@ -24,6 +24,10 @@ module DhxExt {
             this._eventAttachIds.push(aEventId);
         }
 
+        _addEvent(aEventName: string, aEventCb: Function) {
+            this._addEventId(this._component.attachEvent(aEventName, aEventCb));
+        }
+
         destroy() {
             this._eventAttachIds.forEach((id) => {
                 this._component.detachEvent(id);
@@ -1055,10 +1059,15 @@ module DhxExt {
 
         export class CGantt extends CComponent {
 
-            private _gantt;
+            _gantt;
             private _contextMenu: CGanttContextMenu;
 
             onDblClicked: FNOnDblClicked;
+            onAfterTaskAdd: (taskId: string, task: TTask) => void;
+            onAfterTaskUpdate: (taskId: string, task: TTask, changeMode: string) => void;
+            onAfterTaskDelete: (taskId: string, task: TTask) => void;
+            onTaskOpened: (taskId: string) => void;
+            onTaskClosed: (taskId: string) => void;
 
             constructor(aEl: HTMLElement, aReadOnly) {
                 super();
@@ -1069,23 +1078,65 @@ module DhxExt {
                 this._setComponent(this._gantt);
 
                 if (aReadOnly) {
-                    this._addEventId(
-                        this._gantt.attachEvent("onTaskDblClick", (id, event) => {
-                            if (this.onDblClicked) {
-                                this.onDblClicked(id, event);
-                            }
-                        })
-                    );
+                    this._addReadOnlyEvent();
                 }
 
-                this._addEventId(
-                    this._gantt.attachEvent("onContextMenu", (taskId, linkId, event) => {
-                        if (this._contextMenu) {
-                            this._contextMenu.show(event, taskId, linkId);
-                        }
-                    })
-                );
+                this._addEvent('onContextMenu', (taskId, linkId, event) => {
+                    if (this._contextMenu) {
+                        this._contextMenu.show(event, taskId, linkId);
+                    }
+                });
 
+                this._addTaskEvents();
+            }
+
+            private _addReadOnlyEvent() {
+                this._addEvent('onTaskDblClick', (id, event) => {
+                    if (this.onDblClicked) {
+                        this.onDblClicked(id, event);
+                    }
+                });
+            }
+
+            private _addTaskEvents() {
+                var taskChangeMode;
+                var moveStartDate;
+
+                this._addEvent('onAfterTaskAdd', (taskId, task) => {
+                    if (this.onAfterTaskAdd) {
+                        this.onAfterTaskAdd(taskId, task);
+                    }
+                });
+                this._addEvent('onBeforeTaskChanged', (taskId, mode, task) => {
+                    if (mode == 'move') {
+                        moveStartDate = task.start_date;
+                    }
+                    taskChangeMode = mode;
+                    return true;
+                });
+                this._addEvent('onAfterTaskUpdate', (id, task) => {
+                    if (taskChangeMode == 'move' && moveStartDate.getTime() == task.start_date.getTime()) {
+                    } else if (this.onAfterTaskUpdate) {
+                        this.onAfterTaskUpdate(id, task, taskChangeMode);
+                    }
+                    moveStartDate = null;
+                    taskChangeMode = null;
+                });
+                this._addEvent('onAfterTaskDelete', (id, task) => {
+                    if (this.onAfterTaskDelete) {
+                        this.onAfterTaskDelete(id, task);
+                    }
+                });
+                this._addEvent('onTaskOpened', (id) => {
+                    if (this.onTaskOpened) {
+                        this.onTaskOpened(id);
+                    }
+                });
+                this._addEvent('onTaskClosed', (id) => {
+                    if (this.onTaskClosed) {
+                        this.onTaskClosed(id);
+                    }
+                });
             }
 
             parse(aData: TData) {

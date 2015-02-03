@@ -100,7 +100,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
      * Gantt
      */
 
-    var gantt = new DhxExt.Gantt.CGantt(document.getElementById('idGantt'), false);
+    var gantt = new UiUtils.CCbGantt(document.getElementById('idGantt'), false);
 
     gantt.setToolTipProvider(function(start,end,task){
         var ret = '';
@@ -114,7 +114,6 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
         }
 
         ret += '<p>' + DhxGanttExt.formatDate(start) + ' - ' + DhxGanttExt.formatDate(end) + ' (' + task.duration + ')</p>';
-
         return ret;
     });
 
@@ -165,28 +164,15 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
      * Display Tasks
      * @type {{}}
      */
-    UiUtils.ModalHelper.showModal('Getting information...');
 
     var groupings = UiUtils.GroupHelper.getGroupings(paramGroupings);
     var filters = UiUtils.FilterHelper.getFilterType(paramFilters);
     var sorting = UiUtils.SortHelper.getSortType(paramSort);
 
-    UiUtils.getDhxDataByUser(paramUser, groupings, filters,  sorting, function(err, resp) {
+    UiUtils.ModalHelper.showModal('Getting information...');
 
-        var prev_date = DhxGanttExt.getCenteredDate();
+    gantt.showTaskByUser(paramUser, groupings, filters, sorting, paramScale, function() {
 
-        // draw gantt chart
-        DhxGanttExt.setScale(paramScale);
-
-        gantt.clearAll();
-
-        gantt.parse(resp);
-
-        setTimeout(function() {
-            DhxGanttExt.setDateCentered(prev_date || new Date());
-        }, 5);
-
-        // close modal
         UiUtils.ModalHelper.closeModal();
     });
 

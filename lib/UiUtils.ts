@@ -980,9 +980,101 @@ module UiUtils {
         }
     }
 
-    export module NaviHelper {
+    export class CCbGantt extends DhxExt.Gantt.CGantt {
 
+        private _userUri: string;
+        private _groupings: CbUtils.TGroupType[];
+        private _filter: CbUtils.TFilterType;
+        private _sorting: CbUtils.TSortingType;
+        private _openedTaskMap;
 
+        constructor(aEl: HTMLElement, aReadOnly: boolean) {
+            super(aEl, aReadOnly);
+
+            this._openedTaskMap = {};
+
+            this.onAfterTaskAdd = (id, task) => {
+                this._onAfterTaskAdd(id, task);
+            };
+            this.onTaskOpened = (id) => {
+                this._openedTaskMap[id] = true;
+            };
+            this.onTaskClosed = (id) => {
+                delete this._openedTaskMap[id];
+            };
+        }
+
+        showTaskByUser(
+            aUserUri: string,
+            aGroupings: CbUtils.TGroupType[],
+            aFilter: CbUtils.TFilterType,
+            aSorting: CbUtils.TSortingType,
+            aScale: string,
+            aCb: () => void) {
+
+            this._userUri = aUserUri;
+            this._groupings = aGroupings;
+            this._filter = aFilter;
+            this._sorting = aSorting;
+
+            DhxGanttExt.setScale(aScale);
+
+            this._update(aCb);
+        }
+
+        private _update(aCb?) {
+            UiUtils.getDhxDataByUser(this._userUri, this._groupings, this._filter, this._sorting, (err, resp) => {
+
+                var prev_date = DhxGanttExt.getCenteredDate();
+
+                var opened_task_ids = Object.keys(this._openedTaskMap);
+
+                resp.data.forEach(function(t) {
+
+                    if (opened_task_ids.indexOf(t.id) != -1) {
+                        t.open = true;
+                    }
+
+                });
+
+                this.parse(resp);
+
+                setTimeout(function() {
+                    DhxGanttExt.setDateCentered(prev_date || new Date());
+                }, 5);
+
+                if (aCb) {
+                    aCb();
+                }
+            });
+        }
+
+        private _onAfterTaskAdd(aTaskId: string, aTask: DhxExt.Gantt.TTask) {
+
+            console.log('_onAfterTaskAdd', aTaskId);
+
+            var newCbTask: any = {
+                uri: null,
+                name: aTask.text,
+                startDate: aTask.start_date,
+                description: aTask.text + '\n\nCreated by ganttly',
+                descFormat: "html"
+            };
+
+            if (aTask.parent) {
+                newCbTask.parent = aTask.parent;
+                var parentTask = <Cb.TTask><any>CbUtils.cache.getItem(aTask.parent);
+                newCbTask.tracker = parentTask.tracker.uri;
+            }
+
+            CbUtils.cache.createTaskByUser(this._userUri, newCbTask, (err, task) => {
+
+                this._gantt.changeTaskId(aTaskId, task.uri);
+
+                this._update();
+            });
+
+        }
 
     }
 
