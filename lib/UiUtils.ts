@@ -980,6 +980,36 @@ module UiUtils {
         }
     }
 
+    function get_holiday_awared_task(aTask: DhxExt.Gantt.TTask, aMode: string): Cb.TTask {
+        var holidayAwared = holidayAwareness? CalendarUtils.getStartAndEndDate(aTask.start_date, aTask.estimatedMillis): {
+            start: aTask.start_date,
+            end: aTask.end_date
+        };
+
+        var task: any = {
+            uri: aTask.id,
+            name: aTask.text,
+            startDate: holidayAwared.start
+        };
+        if (aMode === 'resize') { // by dragging end date only changes end date
+            task.endDate = aTask.end_date;
+        } else if (aMode === 'move') { // by dragging task bar, apply holiday awareness by estimatedMillis
+            task.endDate = holidayAwared.end;
+        } else if (aMode === 'progress') { // by dragging progress bar, do nothing
+        } else { // by duration change in light box, apply holiday awareness
+            task.estimatedMillis = aTask.duration * unitWorkingDay;
+            if (holidayAwareness) {
+                task.endDate = CalendarUtils.getStartAndEndDate(aTask.start_date, aTask.duration * unitWorkingDay).end;
+            } else {
+                task.endDate = holidayAwared.end;
+            }
+        }
+        if (aTask.progress) {
+            task.spentMillis = Math.round(aTask.estimatedMillis * aTask.progress);
+        }
+        return task;
+    }
+
     export class CCbGantt extends DhxExt.Gantt.CGantt {
 
         private _userUri: string;
@@ -995,6 +1025,12 @@ module UiUtils {
 
             this.onAfterTaskAdd = (id, task) => {
                 this._onAfterTaskAdd(id, task);
+            };
+            this.onAfterTaskUpdate = (taskId, task, changeMode) => {
+                this._onAfterTaskUpdate(taskId, task, changeMode);
+            };
+            this.onAfterTaskDelete = (taskId, task) => {
+                this._onAfterTaskDelete(taskId, task);
             };
             this.onTaskOpened = (id) => {
                 this._openedTaskMap[id] = true;
@@ -1067,9 +1103,33 @@ module UiUtils {
                 newCbTask.tracker = parentTask.tracker.uri;
             }
 
-            CbUtils.cache.createTaskByUser(this._userUri, newCbTask, (err, task) => {
+            CbUtils.cache.createTask(this._userUri, newCbTask, (err, task) => {
 
                 this._gantt.changeTaskId(aTaskId, task.uri);
+
+                this._update();
+            });
+
+        }
+
+        private _onAfterTaskUpdate(aTaskId: string, aTask: DhxExt.Gantt.TTask, aChangeMode: string) {
+
+            console.log('_onAfterTaskUpdate', aTaskId);
+
+            var updateTask = get_holiday_awared_task(aTask, aChangeMode);
+
+            CbUtils.cache.updateTask(this._userUri, updateTask, (err, task) => {
+
+                this._update();
+            });
+
+        }
+
+        private _onAfterTaskDelete(aTaskId: string, aTask: DhxExt.Gantt.TTask) {
+
+            console.log('_onAfterTaskDelete', aTaskId);
+
+            CbUtils.cache.deleteTask(this._userUri, aTaskId, (err) => {
 
                 this._update();
             });

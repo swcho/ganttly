@@ -433,6 +433,21 @@ module Cb {
                 send('GET', resp.uri, null, aCb);
             });
         }
+
+        updateItem(aItem: TItem, aCb: (err, item: TItem) => void) {
+            send('PUT', '/item', aItem, function(err, resp) {
+                if (err) {
+                    aCb(err, resp);
+                    return;
+                }
+
+                send('GET', aItem.uri, null, aCb);
+            });
+        }
+
+        deleteItem(aItemUri: string, aCb: (err) => void) {
+            send('DELETE', aItemUri, null, aCb);
+        }
     }
 
     export class CItemApi extends CRestApi {
@@ -1354,15 +1369,57 @@ module CbUtils {
 
         }
 
-        createTaskByUser(aUserUri: string, aNewItem: Cb.TTask, aCb: (err, task: Cb.TTask) => void) {
+        createTask(aCacheUri: string, aNewItem: Cb.TTask, aCb: (err, task: Cb.TTask) => void) {
             Cb.tracker.createItem(aNewItem, (err, item) => {
 
                 if (item) {
                     this._itemMap[item.uri] = item;
-                    this._cache[aUserUri].tasks.unshift(item);
+                    this._cache[aCacheUri].tasks.unshift(item);
                 }
 
                 aCb(err, item);
+            });
+        }
+
+        private _getTaskIndex(aCacheUri: string, aTaskUri: string): number {
+            var tasks = this._cache[aCacheUri].tasks;
+            var i, len = tasks.length, t;
+            for (i=0; i<len; i++) {
+                t = tasks[i];
+                if (t.uri == aTaskUri) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        updateTask(aCacheUri: string, aUpdatedTask: Cb.TTask, aCb: (err, task: Cb.TTask) => void) {
+            Cb.tracker.updateItem(aUpdatedTask, (err, item) => {
+
+                if (item) {
+                    this._itemMap[item.uri] = item;
+                    var index = this._getTaskIndex(aCacheUri, item.uri);
+                    if (index != -1) {
+                        this._cache[aCacheUri].tasks[index] = item;
+                    }
+                }
+
+                aCb(err, item);
+            });
+        }
+
+        deleteTask(aCacheUri: string, aTaskUri: string, aCb: (err) => void) {
+            Cb.tracker.deleteItem(aTaskUri, (err) => {
+
+                if (!err) {
+                    delete this._itemMap[aTaskUri];
+                    var index = this._getTaskIndex(aCacheUri, aTaskUri);
+                    if (index != -1) {
+                        this._cache[aCacheUri].tasks.splice(index);
+                    }
+                }
+
+                aCb(err);
             });
         }
     }
