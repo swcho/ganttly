@@ -107,10 +107,10 @@ module UiUtils {
 //                dhxTask.duration = 1;
 //            }
 
-        if (aParentUri) {
-            dhxTask.parent = aParentUri;
-        } else if (cbTask.parent) {
+        if (cbTask.parent) {
             dhxTask.parent = cbTask.parent.uri;
+        } else if (aParentUri) {
+            dhxTask.parent = aParentUri;
         }
 
         // color
@@ -213,17 +213,6 @@ module UiUtils {
         console.log(release);
 
         return covertCbItemToDhxTask(aAllMaps, release, aParentId);
-//            var ret: DhxGantt.TTask = {
-//                id: release.uri,
-//                text: release.name,
-//                user: '-',
-//                _type: DhxGanttExt.TTaskType.Release
-//            };
-//            if (release.parent) {
-//                var parentId = aParentId ? aParentId + '>' : '';
-//                ret.parent = parentId + release.parent.uri;
-//            }
-//            return ret;
     };
 
     var KUnknownConverter = {};
