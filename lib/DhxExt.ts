@@ -227,6 +227,9 @@ module DhxExt {
         private _cbMap;
         private _contextParam;
 
+        onShow: () => void;
+        onHide: () => void;
+
         constructor() {
             super();
 
@@ -242,6 +245,20 @@ module DhxExt {
                     if (this._cbMap[id]) {
                         this._cbMap[id](id, this._contextParam);
                         this._contextParam = null;
+                    }
+                })
+            );
+            this._addEventId(
+                this._menu.attachEvent('onShow', () => {
+                    if (this.onShow) {
+                        this.onShow();
+                    }
+                })
+            );
+            this._addEventId(
+                this._menu.attachEvent('onHide', () => {
+                    if (this.onHide) {
+                        this.onHide();
                     }
                 })
             );
@@ -1037,8 +1054,23 @@ module DhxExt {
 
         class CGanttContextMenu extends CContextMenu {
 
-            constructor() {
+            private _gantt;
+
+            constructor(aGantt) {
                 super();
+                this._gantt = aGantt;
+
+                var _is_tooltip_orig;
+                this.onShow = () => {
+                    gantt['_hide_tooltip']();
+                    _is_tooltip_orig = gantt['_is_tooltip'];
+                    gantt['_is_tooltip'] = function() {
+                        return true;
+                    };
+                };
+                this.onHide = () => {
+                    gantt['_is_tooltip'] = _is_tooltip_orig;
+                };
             }
 
             show(aEvent: MouseEvent, aTaskId: string, aLinkId: string) {
@@ -1170,7 +1202,7 @@ module DhxExt {
             }
 
             setContextMenu(aContextMenu: TGanttContextMenu) {
-                this._contextMenu = new CGanttContextMenu();
+                this._contextMenu = new CGanttContextMenu(this._gantt);
                 this._contextMenu.setMenu(aContextMenu);
             }
         }
