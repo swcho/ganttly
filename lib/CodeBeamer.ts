@@ -135,6 +135,7 @@ module Cb {
         lastModifiedBy?: TUser;
         version?: number;
         comment?: string;
+        _projectUri?: string;
     }
 
     export enum TTrackerDescFormat{
@@ -166,6 +167,7 @@ module Cb {
         _associations?: TAssociation[];
         _references?: TItem[];
         _type?: TItemType;
+        _projectUri?: string;
     }
 
     export interface TTask extends TItem {
@@ -683,8 +685,8 @@ module CbUtils {
                     Cb.tracker.getItems(prefix + tracker.uri, function(err, items) {
                         if (items && items.length) {
                             tasks = tasks.concat(items);
-                            if (tracker['_projectUri']) {
-                                mapProject[tracker['_projectUri']] = null;
+                            if (tracker._projectUri) {
+                                mapProject[tracker._projectUri] = null;
                             }
                         }
                         done(err);
@@ -928,6 +930,7 @@ module CbUtils {
 
     interface TUserInfo {
         projects: Cb.TProject[];
+        cmdbList: Cb.TCmdb[];
         releaseList: Cb.TRelease[];
         taskTrackerList: Cb.TTracker[];
         tasks: Cb.TTask[];
@@ -935,7 +938,7 @@ module CbUtils {
         outerItemUriList: string;
     }
 
-    function getTaskInfoByUser(aUserUri, aCb: (err, trackers: Cb.TTracker[], tasks: Cb.TTask[], associations: Cb.TAssociation[], projects: Cb.TProject[], releases: Cb.TRelease[]) => void) {
+    function getTaskInfoByUser(aUserUri, aCb: (err, trackers: Cb.TTracker[], tasks: Cb.TTask[], associations: Cb.TAssociation[], projects: Cb.TProject[], releases: Cb.TRelease[], cmdbList: Cb.TCmdb[]) => void) {
 
         console.log('getTaskInfoByUser');
 
@@ -947,13 +950,14 @@ module CbUtils {
         var projects: Cb.TProject[];
         var releaseUriList: string[];
         var releases: Cb.TRelease[] = [];
+        var cmdbList: Cb.TCmdb[];
 
         s.push(function(done) {
             Cb.tracker.getTaskTrackersByUser(aUserUri, function(err, trackerByProjectList) {
                 trackerByProjectList.forEach(function(trackerByProject) {
                     mapProjectUri[trackerByProject.project.uri] = null;
                     trackerByProject.trackers.forEach(function(t) {
-                        t['_projectUri'] = trackerByProject.project.uri;
+                        t._projectUri = trackerByProject.project.uri;
                     });
                     trackers = trackers.concat(trackerByProject.trackers);
                 });
@@ -993,15 +997,28 @@ module CbUtils {
             });
         });
 
+        var cmdbUriList = [];
         s.push(function(done) {
             getItems(releaseUriList, function(err, rlist) {
                 releases = rlist;
+                var mapCmdb = {};
+                releases.forEach(function(r) {
+                    mapCmdb[r.tracker.uri] = null;
+                });
+                cmdbUriList = Object.keys(mapCmdb);
+                done(err);
+            });
+        });
+
+        s.push(function(done) {
+            getItems(cmdbUriList, function(err, clist) {
+                cmdbList = <Cb.TCmdb[]><any>clist;
                 done(err);
             });
         });
 
         async.series(s, function(err) {
-            aCb(err, trackers, tasks, associations, projects, releases);
+            aCb(err, trackers, tasks, associations, projects, releases, cmdbList);
         });
     }
 
@@ -1017,14 +1034,16 @@ module CbUtils {
         var outerItemUriList: string;
         var projects: Cb.TProject[];
         var releaseList: Cb.TRelease[];
+        var cmdbList: Cb.TCmdb[];
 
         p.push(function(done) {
-            getTaskInfoByUser(aUserUri, function(err, trklist, tlist, alist, plist, rlist) {
+            getTaskInfoByUser(aUserUri, function(err, trklist, tlist, alist, plist, rlist, clist) {
                 taskTrackerList = trklist;
                 tasks = tlist;
                 associations = alist;
                 projects = plist;
                 releaseList = rlist;
+                cmdbList = clist;
                 done(err);
             });
         });
@@ -1050,6 +1069,7 @@ module CbUtils {
         async.parallel(p, function(err) {
             aCb(err, {
                 projects: projects,
+                cmdbList: cmdbList,
                 releaseList: releaseList,
                 taskTrackerList: taskTrackerList,
                 tasks: tasks,
@@ -1342,6 +1362,9 @@ module CbUtils {
                     });
                     userInfo.taskTrackerList.forEach(function(t) {
                         trackerMap[t.uri] = t;
+                    });
+                    userInfo.cmdbList.forEach(function(c) {
+                        trackerMap[c.uri] = <any>c;
                     });
                     done(err);
                 });

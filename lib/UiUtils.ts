@@ -183,7 +183,7 @@ module UiUtils {
     };
     KGroupKeyIdentifiers[CbUtils.TGroupType.ByProject] = function(aAllMaps: CbUtils.TAllMaps, aTask: Cb.TTask) {
 
-        return aAllMaps.trackerMap[aTask.tracker.uri]['_projectUri'] || aAllMaps.trackerMap[aTask.tracker.uri].project.uri;
+        return aTask._projectUri || aAllMaps.trackerMap[aTask.tracker.uri]['_projectUri'] || aAllMaps.trackerMap[aTask.tracker.uri].project.uri;
     };
     KGroupKeyIdentifiers[CbUtils.TGroupType.BySprint] = function(aAllMaps: CbUtils.TAllMaps, aTask: Cb.TTask) {
         var ret = KUnknownIdentifier;
@@ -524,6 +524,7 @@ module UiUtils {
             var cbTasks = [];
 
             cbTasks = cbTasks.concat(cachedUserInfo.tasks);
+            cbTasks = cbTasks.concat(cachedUserInfo.releases);
 
             var filters = [];
             if (aFilter & CbUtils.TFilterType.ByWithoutCompletedTask) {
