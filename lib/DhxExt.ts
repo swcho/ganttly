@@ -281,6 +281,9 @@ module DhxExt {
         }
 
         export interface TTask {
+            $source?: string[];
+            $target?: string[];
+
             id: string;
             text?: string;
             start_date?: Date;

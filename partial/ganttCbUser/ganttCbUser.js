@@ -108,7 +108,8 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
     });
 
     gantt.setContextMenu({
-        menuItems: [{
+        menuItems: [
+            {
                 id: 'open_task',
                 text: '새창에서 열기',
                 onClick: function (id, param) {
@@ -123,6 +124,16 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
                     var win = open(gConfig.cbBaseUrl + url, null, params);
                     win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
                     win.resizeTo(width, height);
+                }
+            }, {
+                id: 'adjust_schedule',
+                text: '연관 작업 일정 조정',
+                onClick: function (id, param) {
+                    //                console.log(param);
+                    UiUtils.ModalHelper.showModal("Rescheduling tasks");
+                    gantt.adjustDependentTasks(param.taskId, function () {
+                        UiUtils.ModalHelper.closeModal();
+                    });
                 }
             }]
     });

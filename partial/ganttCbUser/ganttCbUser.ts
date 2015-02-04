@@ -134,6 +134,16 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
                 win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
                 win.resizeTo(width, height);
             }
+        }, {
+            id: 'adjust_schedule',
+            text: '연관 작업 일정 조정',
+            onClick: function(id: string, param: DhxExt.Gantt.TGanttContextCbParam) {
+//                console.log(param);
+                UiUtils.ModalHelper.showModal("Rescheduling tasks");
+                gantt.adjustDependentTasks(param.taskId, function() {
+                    UiUtils.ModalHelper.closeModal();
+                });
+            }
         }]
     });
 

@@ -30,6 +30,7 @@ declare module DhxGantt {
         _status?: string;
         _data?: any;
         _warnings?: string[];
+        _depends?: string[];
     }
 
     interface TLink {

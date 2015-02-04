@@ -136,6 +136,21 @@ module UiUtils {
 
         dhxTask._data = aCbItem;
 
+//        if (aCbItem._associations) {
+//            aCbItem._associations.forEach(function(a) {
+//
+//                if (a.type.name == 'depends') {
+//
+//                    if (!dhxTask._depends) {
+//                        dhxTask._depends = [];
+//                    }
+//                    dhxTask._depends.push();
+//                    debugger;
+//                }
+//
+//            });
+//        }
+
         return dhxTask;
     }
 
@@ -355,7 +370,6 @@ module UiUtils {
 
         return ret;
     }
-
 
     function generatePropertyFilter(aPropOrder: string[], aValues: any[], aInclude: boolean) {
         return function(obj) {
@@ -1055,6 +1069,62 @@ module UiUtils {
             DhxGanttExt.setScale(aScale);
 
             this._update(aCb);
+        }
+
+        private _processDependsTasks(aTask: DhxExt.Gantt.TTask, aCb, aLoopFunc: (aPrecedentTask: DhxExt.Gantt.TTask, aTask: DhxExt.Gantt.TTask, aCb) => void) {
+            var series = [];
+            var dependentTaskId = [];
+            if (aTask.$source && aTask.$source.length) {
+                aTask.$source.forEach((linkId) => {
+                    var link = this._gantt.getLink(linkId);
+                    if (link.type === '0') {
+                        dependentTaskId.push(link.target);
+                    }
+                });
+            }
+
+            dependentTaskId.forEach((taskId: string) => {
+                var task = this._gantt.getTask(taskId);
+                if (task) {
+                    series.push((cb) => {
+                        aLoopFunc(aTask, task, (err) => {
+                            if (err) {
+                                cb(err);
+                                return;
+                            }
+                            this._processDependsTasks(task, cb, aLoopFunc);
+                        });
+                    });
+                }
+            });
+            async.series(series, function(err) {
+                aCb(err);
+            });
+        }
+
+        adjustDependentTasks(aTaskId, aCb) {
+            var task = this._gantt.getTask(aTaskId);
+            var allMap = CbUtils.cache.getAllMaps();
+            this._processDependsTasks(task,
+                () => {
+                    aCb();
+                },
+                (precedentTask, task, aCb) => {
+                    task.start_date = precedentTask.end_date;
+                    var adjusted_task = get_holiday_awared_task(task, "move");
+                    CbUtils.cache.updateTask(this._userUri, adjusted_task, (err, resp) => {
+                        if (!err) {
+                            var task_from_cb = covertCbItemToDhxTask(allMap, resp, task.parent);
+                            task.start_date = task_from_cb.start_date;
+                            task.estimatedMillis = task_from_cb.estimatedMillis;
+                            task.progress = task_from_cb.progress;
+                            task.end_date = task_from_cb.end_date;
+                            this._gantt.refreshTask(task.id);
+                        }
+                        aCb(err);
+                    });
+                }
+            );
         }
 
         private _update(aCb?) {
