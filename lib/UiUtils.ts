@@ -298,7 +298,9 @@ module UiUtils {
             aTasks.forEach(function(t) {
                 var key = groupKeyIdentifier(aAllMaps, t);
                 if (key == KSelfIdnetifier) {
-                    map[t.uri] = [];
+                    if (!map[t.uri]) {
+                        map[t.uri] = [];
+                    }
                 } else if (map[key]) {
                     map[key].push(t);
                 } else {

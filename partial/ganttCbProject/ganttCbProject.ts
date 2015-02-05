@@ -28,7 +28,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
 
     UiUtils.ProjectHelper.create(context, document.getElementById('cbProject'), paramProject, function(id) {
         $state.go(KUiRouterName, {
-            user: id
+            project: id
         }, {
             inherit: true
         });
@@ -129,7 +129,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                 var task = gantt._gantt.getTask(param.taskId);
                 if (task._userIdList && task._userIdList.length) {
                     $state.go('ganttCbUser', {
-                        user: task._userIdList[0]
+                        user: task._userIdList[0],
+                        sort: 'sort_end_date_asc',
+                        groupings: 'grp_release'
                     }, {
                         inherit: false
                     });
