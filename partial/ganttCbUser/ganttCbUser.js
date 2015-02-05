@@ -94,7 +94,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
 
     gantt.setToolTipProvider(function (start, end, task) {
         var ret = '';
-        ret += '<p><b>' + task.text + '</b></p>';
+        ret += '<p><b>' + task.text + ' (' + task.id + ')</b></p>';
         ret += '<hr>';
 
         if (task._warnings) {

@@ -11,3 +11,7 @@
 
 . Gather springs information
 . Gather multiple release trackers from a project
+
+
+Depend 와 Release 의 선 두께 및 색상 변경
+Editing on/off 기능

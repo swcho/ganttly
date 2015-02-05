@@ -65,7 +65,7 @@ module UiUtils {
         }
     }];
 
-    function covertCbItemToDhxTask(aAllMaps: CbUtils.TAllMaps, aCbItem: Cb.TItem, aParentUri?: string): DhxGantt.TTask {
+    function covertCbItemToDhxTask(aAllMaps: CbUtils.TAllMaps, aCbItem: Cb.TItem, aLogPadding: string, aParentUri: string): DhxGantt.TTask {
 
         var cbTask: Cb.TTask = <Cb.TTask>aCbItem;
         var cbRelease: Cb.TRelease = <Cb.TRelease>aCbItem;
@@ -107,11 +107,13 @@ module UiUtils {
 //                dhxTask.duration = 1;
 //            }
 
-        if (cbTask.parent) {
-            dhxTask.parent = cbTask.parent.uri;
-        } else if (aParentUri) {
+        if (aParentUri) {
             dhxTask.parent = aParentUri;
+        } else if (cbTask.parent && aAllMaps.itemMap[cbTask.parent.uri]) {
+            dhxTask.parent = cbTask.parent.uri;
         }
+
+        console.log(aLogPadding, aCbItem.uri, dhxTask.parent);
 
         // color
         if (cbTask.status) {
@@ -154,10 +156,18 @@ module UiUtils {
         return dhxTask;
     }
 
-    function convertCbTasksToDhxTasks(aAllMaps: CbUtils.TAllMaps, aCbTasks: Cb.TTask[], aParentUri?: string): DhxGantt.TTask[] {
+    function convertCbTasksToDhxTasks(aAllMaps: CbUtils.TAllMaps, aCbTasks: Cb.TTask[], aLogPadding: string, aParentUri?: string): DhxGantt.TTask[] {
+
+        var siblings = [];
+        aCbTasks.forEach(function(cbTask) {
+            siblings.push(cbTask.uri);
+        });
+
         var dhxTasks = [];
         aCbTasks.forEach(function(cbTask) {
-            dhxTasks.push(covertCbItemToDhxTask(aAllMaps, cbTask, aParentUri));
+            var parentUri = cbTask.parent ? cbTask.parent.uri : null;
+            var parentId = parentUri && siblings.indexOf(parentUri) != -1 ? parentUri: aParentUri;
+            dhxTasks.push(covertCbItemToDhxTask(aAllMaps, cbTask, aLogPadding, parentId));
         });
         return dhxTasks;
     }
@@ -201,9 +211,9 @@ module UiUtils {
         return ret;
     };
 
-    var KGroupConverters = {};
-    KGroupConverters[CbUtils.TGroupType.ByUser] = function(aAllMaps: CbUtils.TAllMaps, aUserUri: string): DhxGantt.TTask {
-        var user = aAllMaps.userMap[aUserUri];
+    var KGroupConverters: { [type: number]: (aAllMaps: CbUtils.TAllMaps, aUri: string, aLoggingPadding: string, aParentId: string) => DhxGantt.TTask } = {};
+    KGroupConverters[CbUtils.TGroupType.ByUser] = function(aAllMaps: CbUtils.TAllMaps, aUri: string, aLoggingPadding: string, aParentId: string): DhxGantt.TTask {
+        var user = aAllMaps.userMap[aUri];
         return {
             id: user.uri,
             text: getUserName(user),
@@ -212,9 +222,8 @@ module UiUtils {
             _type: DhxGanttExt.TTaskType.User
         };
     };
-    KGroupConverters[CbUtils.TGroupType.ByProject] = function(aAllMaps: CbUtils.TAllMaps, aProjectUri: string): DhxGantt.TTask {
-        var project = aAllMaps.projectMap[aProjectUri];
-        console.log(project);
+    KGroupConverters[CbUtils.TGroupType.ByProject] = function(aAllMaps: CbUtils.TAllMaps, aUri: string, aLoggingPadding: string, aParentId: string): DhxGantt.TTask {
+        var project = aAllMaps.projectMap[aUri];
         return {
             id: project.uri,
             text: project.name,
@@ -223,11 +232,9 @@ module UiUtils {
             _type: DhxGanttExt.TTaskType.Project
         };
     };
-    KGroupConverters[CbUtils.TGroupType.BySprint] = function(aAllMaps: CbUtils.TAllMaps, aReleaseUri: string, aParentId?: string): DhxGantt.TTask {
-        var release: Cb.TRelease = aAllMaps.itemMap[aReleaseUri];
-        console.log(release);
-
-        return covertCbItemToDhxTask(aAllMaps, release, aParentId);
+    KGroupConverters[CbUtils.TGroupType.BySprint] = function(aAllMaps: CbUtils.TAllMaps, aUri: string, aLoggingPadding: string, aParentId: string): DhxGantt.TTask {
+        var release: Cb.TRelease = aAllMaps.itemMap[aUri];
+        return covertCbItemToDhxTask(aAllMaps, release, aLoggingPadding, aParentId);
     };
 
     var KUnknownConverter = {};
@@ -253,12 +260,19 @@ module UiUtils {
         };
     };
 
-    function processGrouping(aAllMaps: CbUtils.TAllMaps, aTasks: Cb.TTask[], aGroupings: CbUtils.TGroupType[], aDepth: number, aParentId?: string): TGroupTask[] {
+    function processGrouping(
+            aAllMaps: CbUtils.TAllMaps,
+            aTasks: Cb.TTask[],
+            aGroupings: CbUtils.TGroupType[],
+            aDepth: number,
+            aParentId?: string): TGroupTask[] {
         var type = aGroupings[aDepth];
         var ret = [];
+        var log_padding = '';
+        for (var i=0; i<aDepth; i++) {
+            log_padding = log_padding + '  ';
+        }
         if (type) {
-            console.log('processGrouping: ' + aDepth + ':' + type);
-
             var groupKeyIdentifier = KGroupKeyIdentifiers[type];
             var map = {};
             aTasks.forEach(function(t) {
@@ -272,7 +286,11 @@ module UiUtils {
 
             var groupConverter = KGroupConverters[type];
             var unknownTask: TGroupTask = KUnknownConverter[type]();
-            Object.keys(map).forEach(function(key) {
+            var groupKeys = Object.keys(map);
+
+            console.log('processGrouping: depth=' + aDepth + ', type=' + type + ', count=' + groupKeys.length);
+
+            groupKeys.forEach(function(key) {
 
                 if (key == KIgnoreIdentifier) {
                     return;
@@ -282,12 +300,13 @@ module UiUtils {
                 if (key == KUnknownIdentifier) {
                     task = unknownTask;
                 } else {
-                    task = groupConverter(aAllMaps, key, aParentId);
+                    task = groupConverter(aAllMaps, key, log_padding, aParentId);
                 }
                 if (aParentId) {
                     task.parent = aParentId;
                     task.id = aParentId + '>' + task.id;
                 }
+                console.log(log_padding + task.id);
                 task.child = processGrouping(
                     aAllMaps,
                     map[key],
@@ -298,7 +317,7 @@ module UiUtils {
             });
 
         } else {
-            ret = convertCbTasksToDhxTasks(aAllMaps, aTasks, aParentId);
+            ret = convertCbTasksToDhxTasks(aAllMaps, aTasks, log_padding, aParentId);
         }
         return ret;
     }
@@ -1115,7 +1134,7 @@ module UiUtils {
                     var adjusted_task = get_holiday_awared_task(task, "move");
                     CbUtils.cache.updateTask(this._userUri, adjusted_task, (err, resp) => {
                         if (!err) {
-                            var task_from_cb = covertCbItemToDhxTask(allMap, resp, task.parent);
+                            var task_from_cb = covertCbItemToDhxTask(allMap, resp, '', task.parent);
                             task.start_date = task_from_cb.start_date;
                             task.estimatedMillis = task_from_cb.estimatedMillis;
                             task.progress = task_from_cb.progress;

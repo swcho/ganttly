@@ -1343,6 +1343,7 @@ module CbUtils {
                 getUserInfo(aUserUri, function(err, userInfo) {
                     releases = userInfo.releaseList;
                     releases.forEach(function(r) {
+                        r._type = Cb.TItemType.Release;
                         itemMap[r.uri] = r;
                     });
                     tasks = userInfo.tasks;
