@@ -103,37 +103,48 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
      *
      */
 
-    var gantt = new UiUtils.CCbGantt(document.getElementById('idGantt'), false);
+    var gantt = new UiUtils.CCbGantt(document.getElementById('idGantt'), true);
 
-//    gantt.setContextMenu({
-//        menuItems: [{
-//            id: 'open_task',
-//            text: '새창에서 열기',
-//            onClick: function (id: string, param: DhxExt.Gantt.TGanttContextCbParam) {
-//                var url = param.taskId || param.linkId;
-//                var width = 1280;
-//                var height = 720;
-//                var params = [
-//                        'width=' + width,
-//                        'height=' + height,
-//                    'fullscreen=yes' // only works in IE, but here for completeness
-//                ].join(',');
-//                var win = open(gConfig.cbBaseUrl + url, null, params);
-//                win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
-//                win.resizeTo(width, height);
-//            }
-//        }, {
-//            id: 'adjust_schedule',
-//            text: '연관 작업 일정 조정',
-//            onClick: function(id: string, param: DhxExt.Gantt.TGanttContextCbParam) {
-////                console.log(param);
-//                UiUtils.ModalHelper.showModal("Rescheduling tasks");
-//                gantt.adjustDependentTasks(param.taskId, function() {
-//                    UiUtils.ModalHelper.closeModal();
-//                });
-//            }
-//        }]
-//    });
+    gantt.setContextMenu({
+        menuItems: [{
+            id: 'open_task',
+            text: 'Open item',
+            onClick: function (id: string, param: DhxExt.Gantt.TGanttContextCbParam) {
+                var url = param.taskId || param.linkId;
+                var width = 1280;
+                var height = 720;
+                var params = [
+                        'width=' + width,
+                        'height=' + height,
+                    'fullscreen=yes' // only works in IE, but here for completeness
+                ].join(',');
+                var win = open(gConfig.cbBaseUrl + url, null, params);
+                win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+                win.resizeTo(width, height);
+            }
+        }, {
+            id: 'open_by_user',
+            text: 'Edit in user view',
+            onClick: function (id: string, param: DhxExt.Gantt.TGanttContextCbParam) {
+                var task = gantt._gantt.getTask(param.taskId);
+                if (task._userIdList && task._userIdList.length) {
+                    $state.go('ganttCbUser', {
+                        user: task._userIdList[0]
+                    }, {
+                        inherit: false
+                    });
+                }
+            }
+        }, {
+            id: 'debug_task',
+            text: 'Debug Task',
+            onClick: function(id: string, param: DhxExt.Gantt.TGanttContextCbParam) {
+                var task = gantt._gantt.getTask(param.taskId);
+                console.log(task);
+                debugger;
+            }
+        }]
+    });
 
     if (!paramProject) {
         try {

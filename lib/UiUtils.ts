@@ -112,6 +112,8 @@ module UiUtils {
             dhxTask.parent = aParentUri;
         } else if (cbTask.parent && aAllMaps.itemMap[cbTask.parent.uri]) {
             dhxTask.parent = cbTask.parent.uri;
+        } else if (cbRelease._parentReleaseUri) {
+            dhxTask.parent = cbRelease._parentReleaseUri;
         }
 
         console.log(aLogPadding, aCbItem.uri, dhxTask.parent);
@@ -180,33 +182,36 @@ module UiUtils {
 
     var KUnknownIdentifier = 'UNKNOWN';
     var KIgnoreIdentifier = 'IGNORE';
-    var KGroupKeyIdentifiers = {};
-    KGroupKeyIdentifiers[CbUtils.TGroupType.ByUser] = function(aAllMaps: CbUtils.TAllMaps, aTask: Cb.TTask) {
+    var KSelfIdnetifier = 'SELF';
+    var KGroupKeyIdentifiers: {[type: number]: (aAllMaps: CbUtils.TAllMaps, aItem: Cb.TItem) => string} = {};
+    KGroupKeyIdentifiers[CbUtils.TGroupType.ByUser] = function(aAllMaps: CbUtils.TAllMaps, aItem: Cb.TItem) {
         var ret = KUnknownIdentifier;
-        if (aTask.assignedTo) {
-            ret = aTask.assignedTo[0].uri;
-            if (aTask.assignedTo.length != 1) {
+        var task = <Cb.TTask>aItem
+        if (task.assignedTo) {
+            ret = task.assignedTo[0].uri;
+            if (task.assignedTo.length != 1) {
                 console.warn('More than one user');
-                console.warn(aTask);
+                console.warn(task);
             }
         }
         return ret;
     };
-    KGroupKeyIdentifiers[CbUtils.TGroupType.ByProject] = function(aAllMaps: CbUtils.TAllMaps, aTask: Cb.TTask) {
-
-        return aTask._projectUri || aAllMaps.trackerMap[aTask.tracker.uri]['_projectUri'] || aAllMaps.trackerMap[aTask.tracker.uri].project.uri;
+    KGroupKeyIdentifiers[CbUtils.TGroupType.ByProject] = function(aAllMaps: CbUtils.TAllMaps, aItem: Cb.TItem) {
+        var task = <Cb.TTask>aItem;
+        return aItem._projectUri || aAllMaps.trackerMap[task.tracker.uri]['_projectUri'] || aAllMaps.trackerMap[task.tracker.uri].project.uri;
     };
-    KGroupKeyIdentifiers[CbUtils.TGroupType.BySprint] = function(aAllMaps: CbUtils.TAllMaps, aTask: Cb.TTask) {
+    KGroupKeyIdentifiers[CbUtils.TGroupType.BySprint] = function(aAllMaps: CbUtils.TAllMaps, aItem: Cb.TItem) {
         var ret = KUnknownIdentifier;
-        if (aTask._type == Cb.TItemType.Release) {
-            return KIgnoreIdentifier;
+        if (aItem._type == Cb.TItemType.Release) {
+            var release = <Cb.TRelease> aItem;
+            return release._parentReleaseUri || KSelfIdnetifier;
         }
-        var releaseUriList = CbUtils.getReleaseUriListFromTask(aTask);
+        var releaseUriList = CbUtils.getReleaseUriListFromTask(aItem);
         if (releaseUriList) {
             ret = releaseUriList[0];
             if (releaseUriList.length != 1) {
                 console.warn('More than one release');
-                console.warn(aTask);
+                console.warn(aItem);
             }
         }
         return ret;
@@ -261,12 +266,26 @@ module UiUtils {
         };
     };
 
+    var debug_duplication = true;
+
     function processGrouping(
             aAllMaps: CbUtils.TAllMaps,
             aTasks: Cb.TTask[],
             aGroupings: CbUtils.TGroupType[],
             aDepth: number,
             aParentId?: string): TGroupTask[] {
+
+
+        if (debug_duplication) {
+            var mapTask = {}
+            aTasks.forEach(function(t) {
+                if (mapTask[t.uri]) {
+                    debugger;
+                }
+                mapTask[t.uri] = true;
+            });
+        }
+
         var type = aGroupings[aDepth];
         var ret = [];
         var log_padding = '';
@@ -278,7 +297,9 @@ module UiUtils {
             var map = {};
             aTasks.forEach(function(t) {
                 var key = groupKeyIdentifier(aAllMaps, t);
-                if (map[key]) {
+                if (key == KSelfIdnetifier) {
+                    map[t.uri] = [];
+                } else if (map[key]) {
                     map[key].push(t);
                 } else {
                     map[key] = [t];

@@ -203,6 +203,7 @@ module Cb {
         modifier?: TUser;
         description?: string;
         descFormat?: string;
+        _parentReleaseUri?: string;
     }
 
     export interface TAssociation extends TItem {
@@ -487,6 +488,12 @@ module Cb {
                 inout: true
             }, aCb);
         }
+
+        getDerivedFrom(aItemUri: string, aCb: (err, associations: TAssociation[]) => void) {
+            send('GET', aItemUri + '/associations', {
+                type: 'derived'
+            }, aCb);
+        }
     }
 
     export var user = new CUserApi();
@@ -607,6 +614,19 @@ module CbUtils {
         [itemUri: string]: Cb.TItem;
     }
 
+    var verify = true;
+
+    function verifyDuplication(items) {
+        var map = {};
+        items.forEach(function(item) {
+            if (map[item.uri]) {
+                debugger;
+            } else {
+                map[item.uri] = true;
+            }
+        });
+    }
+
     function getItems(aItemUriList: string[], aCb: (err, items: Cb.TItem[]) => void) {
 
         console.log('getItems');
@@ -704,14 +724,74 @@ module CbUtils {
         });
     }
 
-    function getReleasesInfoByProject(aProjectUri: string, aCb: (err, cmdbList: Cb.TCmdb[], releases: Cb.TRelease[], associations: Cb.TAssociation[], outerItemUriList: string[]) => void) {
+    function findAllSubReleases(aDepth: number, aRelease: Cb.TRelease[], aCb: (err, releases: Cb.TRelease[]) => void) {
+
+        if (aDepth > 4) {
+            throw "Too much depth";
+        }
+
+        function findSubReleases(aRelease: Cb.TRelease, aCb: (err, releases: Cb.TRelease[]) => void) {
+
+            var s = [];
+            var releaseUriList: string[] = [];
+
+            s.push(function(done) {
+                Cb.association.getDerivedFrom(aRelease.uri, function(err, associations) {
+                    associations.forEach(function(a) {
+                        releaseUriList.push(a.to.uri);
+                    });
+                    done(err);
+                });
+            });
+
+            var releases: Cb.TRelease[];
+            s.push(function(done) {
+                getItems(releaseUriList, function(err, rlist) {
+                    releases = rlist;
+                    done(err);
+                });
+            });
+
+            async.series(s, function(err) {
+                aCb(err, releases);
+            });
+        }
+
+        var p = [];
+        var releases = [];
+
+        aRelease.forEach(function(r) {
+            p.push(function(done) {
+                findSubReleases(r, function(err, rlist) {
+                    if (rlist.length) {
+                        rlist.forEach(function(child) {
+                            child._parentReleaseUri = r.uri;
+                        });
+                        releases = releases.concat(rlist);
+                        findAllSubReleases(aDepth + 1, rlist, function(err, childList) {
+                            releases = releases.concat(childList);
+                            done(err);
+                        });
+                    } else {
+                        done(err);
+                    }
+                });
+            });
+        });
+
+        async.parallel(p, function(err) {
+            aCb(err, releases);
+        });
+    }
+
+    function getReleasesInfoByProject(aProjectUri: string, aCb: (err, cmdbList: Cb.TCmdb[], releases: Cb.TRelease[], outerItemUriList: string[]) => void) {
 
         console.log('getReleasesInfoByProject');
 
         var s = [];
         var cmdbList: Cb.TCmdb[];
         var releases = [];
-        var associations: Cb.TAssociation[];
+        var outerReleases: Cb.TRelease[];
 
         s.push(function(done) {
             Cb.cmdb.getReleaseCmdbList(aProjectUri, function(err, list) {
@@ -723,30 +803,20 @@ module CbUtils {
         s.push(function(done) {
             getReleasesByCmdbList(cmdbList, function(err, rlist) {
                 releases = rlist;
-                done(err);
-            });
-        });
-
-        var outerReleasesUriList: string[];
-        s.push(function(done) {
-            populateAssociation(releases, function(err, alist) {
-                associations = alist;
-                var mapRelease = {};
-                alist.forEach(function(a) {
-                    if (a.type.name == 'derived') {
-                        mapRelease[a.to.uri] = null;
-                    }
+                releases.forEach(function(r) {
+                    r._type = Cb.TItemType.Release;
                 });
-                outerReleasesUriList = Object.keys(mapRelease);
                 done(err);
             });
         });
 
-        var outerReleases;
         s.push(function(done) {
-            getItems(outerReleasesUriList, function(err, items) {
-                releases = releases.concat(items);
-                outerReleases = items;
+            findAllSubReleases(0, releases, function(err, rlist) {
+                outerReleases = rlist;
+                outerReleases.forEach(function(r) {
+                    r._type = Cb.TItemType.Release;
+                });
+                releases = releases.concat(outerReleases);
                 done(err);
             });
         });
@@ -762,7 +832,10 @@ module CbUtils {
         });
 
         async.series(s, function(err) {
-            aCb(err, cmdbList, releases, associations, outerItemUriList);
+            if (verify) {
+                verifyDuplication(releases);
+            }
+            aCb(err, cmdbList, releases, outerItemUriList);
         });
     }
 
@@ -899,10 +972,9 @@ module CbUtils {
         var associations: Cb.TAssociation[] = [];
 
         p.push(function(done) {
-            getReleasesInfoByProject(aProjectUri, function(err, clist, rlist, alist, urilist) {
+            getReleasesInfoByProject(aProjectUri, function(err, clist, rlist, urilist) {
                 releaseCmdbList = clist;
                 releaseList = rlist;
-                associations = associations.concat(alist);
                 outerItemUriList = urilist;
                 done(err);
             });
@@ -1166,7 +1238,7 @@ module CbUtils {
             var tasks;
             var userUriList: string[];
             var trackerUriList: string[] = [];
-            var outerReleaseUriList;
+            var outerReleaseUriMap = {};
             var outerItemUriList: string[];
             s.push(function(done) {
                 getProjectInfo(aProjectUri, function(err, projectInfo) {
@@ -1180,12 +1252,10 @@ module CbUtils {
                     });
 
                     projectInfo.releaseList.forEach(function(r) {
-                        r._type = Cb.TItemType.Release;
                         itemMap[r.uri] = r;
                     });
 
                     var mapUser = {};
-                    var mapRelease = {};
                     projectInfo.tasks.forEach(function(t) {
                         itemMap[t.uri] = <any>t;
 
@@ -1198,12 +1268,11 @@ module CbUtils {
                         var releaseUriList = getReleaseUriListFromTask(<any>t);
                         if (releaseUriList) {
                             releaseUriList.forEach(function(ruri) {
-                                mapRelease[ruri] = null;
+                                outerReleaseUriMap[ruri] = null;
                             });
                         }
                     });
                     userUriList = Object.keys(mapUser);
-                    outerReleaseUriList = Object.keys(mapRelease);
 
                     var mapAssociation = {};
                     projectInfo.associations.forEach(function(a) {
@@ -1221,12 +1290,12 @@ module CbUtils {
             });
 
             var outerItems;
+            var outerReleaseUriList = [];
             var outerTrackerUriList;
             var outerProjectUriList;
             var outerUserUriList;
             s.push(function(done) {
                 getItems(outerItemUriList, function(err, ilist) {
-                    var mapRelease = {};
                     var mapTracker = {};
                     var mapProject = {};
                     var mapUser = {};
@@ -1235,7 +1304,7 @@ module CbUtils {
                         var releaseUriList = getReleaseUriListFromTask(<any>item);
                         if (releaseUriList) {
                             releaseUriList.forEach(function(ruri) {
-                                mapRelease[ruri] = null;
+                                outerReleaseUriMap[ruri] = null;
                             });
                         }
 
@@ -1249,7 +1318,13 @@ module CbUtils {
                         }
                     });
                     outerItems = ilist;
-                    outerReleaseUriList = outerReleaseUriList.concat(Object.keys(mapRelease));
+
+                    Object.keys(outerReleaseUriMap).forEach(function(uri) {
+                        if (!itemMap[uri]) {
+                            outerReleaseUriList.push(uri);
+                        }
+                    });
+
                     outerTrackerUriList = Object.keys(mapTracker);
                     outerProjectUriList = Object.keys(mapProject);
                     outerUserUriList = Object.keys(mapUser);
@@ -1268,6 +1343,11 @@ module CbUtils {
                         getItems(outerReleaseUriList, function(err, ilist) {
                             ilist.forEach(function(release) {
                                 release._type = Cb.TItemType.Release;
+if (verify) {
+                                if (itemMap[release.uri]) {
+                                    debugger;
+                                }
+}
                                 itemMap[release.uri] = <Cb.TRelease><any>release;
                             });
                             done(err);

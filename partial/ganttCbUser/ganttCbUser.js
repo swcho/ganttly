@@ -92,21 +92,6 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
     */
     var gantt = new UiUtils.CCbGantt(document.getElementById('idGantt'), false);
 
-    gantt.setToolTipProvider(function (start, end, task) {
-        var ret = '';
-        ret += '<p><b>' + task.text + ' (' + task.id + ')</b></p>';
-        ret += '<hr>';
-
-        if (task._warnings) {
-            task._warnings.forEach(function (w) {
-                ret += '<p class="warning">' + w + '</p>';
-            });
-        }
-
-        ret += '<p>' + DhxGanttExt.formatDate(start) + ' - ' + DhxGanttExt.formatDate(end) + ' (' + task.duration + ')</p>';
-        return ret;
-    });
-
     gantt.setContextMenu({
         menuItems: [
             {

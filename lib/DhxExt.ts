@@ -393,7 +393,7 @@ module DhxExt {
                 {name: "add", width: 40 }
             ];
 
-            gantt.config.row_height = 26;
+            gantt.config.row_height = 22;
 
             gantt.config.readonly = aReadOnly;
             gantt.config.initial_scroll = false;

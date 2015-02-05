@@ -8,7 +8,7 @@ angular.module('ganttly').config(function($stateProvider, $urlRouterProvider, $l
         templateUrl: 'partial/configCb/configCb.html'
     });
     $stateProvider.state('ganttCbProject', {
-        url: '/ganttCbProject?project&scale&sorting&groupings&filters',
+        url: '/ganttCbProject?project&scale&sort&groupings&filters',
         templateUrl: 'partial/ganttCbProject/ganttCbProject.html'
     });
     $stateProvider.state('ganttCbUser', {
