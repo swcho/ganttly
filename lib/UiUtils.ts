@@ -83,6 +83,7 @@ module UiUtils {
 
         if (cbRelease.plannedReleaseDate) {
             dhxTask.start_date = new Date(cbRelease.plannedReleaseDate);
+            dhxTask.end_date = dhxTask.start_date;
             dhxTask._type = DhxGanttExt.TTaskType.Release;
             dhxTask.type = gantt.config.types.milestone;
         }
