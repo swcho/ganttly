@@ -15,3 +15,6 @@
 
 Depend 와 Release 의 선 두께 및 색상 변경
 Editing on/off 기능
+
+TACO 설정 오류로 인한 재 설정 작업
+TACO 동작 확인 및 버그 수정

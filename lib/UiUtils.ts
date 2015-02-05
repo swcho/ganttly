@@ -459,8 +459,8 @@ module UiUtils {
     var KSorterByType = {};
     KSorterByType[CbUtils.TSortingType.ByStartTime] = generatePropertySorter('startDate', true, dateStringCompare, 'plannedReleaseDate', 'submittedAt');
     KSorterByType[CbUtils.TSortingType.ByStartTimeDsc] = generatePropertySorter('startDate', false, dateStringCompare, 'plannedReleaseDate', 'submittedAt');
-    KSorterByType[CbUtils.TSortingType.ByEndTime] = generatePropertySorter('endDate', true, dateStringCompare);
-    KSorterByType[CbUtils.TSortingType.ByEndTimeDsc] = generatePropertySorter('endDate', false, dateStringCompare);
+    KSorterByType[CbUtils.TSortingType.ByEndTime] = generatePropertySorter('endDate', true, dateStringCompare, 'plannedReleaseDate', 'submittedAt');
+    KSorterByType[CbUtils.TSortingType.ByEndTimeDsc] = generatePropertySorter('endDate', false, dateStringCompare, 'plannedReleaseDate', 'submittedAt');
     KSorterByType[CbUtils.TSortingType.BySubmittedTime] = generatePropertySorter('submittedAt', true, dateStringCompare);
     KSorterByType[CbUtils.TSortingType.BySubmittedTimeDsc] = generatePropertySorter('submittedAt', false, dateStringCompare);
     KSorterByType[CbUtils.TSortingType.ByModifiedTime] = generatePropertySorter('modifiedAt', true, dateStringCompare);
