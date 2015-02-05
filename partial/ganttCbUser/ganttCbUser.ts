@@ -61,6 +61,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
     /**
      * Scales
      */
+
     UiUtils.ScaleHelper.createCombo(context, document.getElementById('idScale'), paramScale, function(id) {
         $state.go(KUiRouterName, {
             scale: id

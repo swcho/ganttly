@@ -17,7 +17,7 @@
 #ganttCbProject #topPane .combo_group .combo {
   clear: both;
 }
-#ganttCbProject #gantt {
+#ganttCbProject #idGantt {
   height: 100%;
   width: 100%;
   padding-top: 60px;

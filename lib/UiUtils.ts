@@ -452,7 +452,7 @@ module UiUtils {
         aGroupings: CbUtils.TGroupType[],
         aFilter: CbUtils.TFilterType,
         aSorting: CbUtils.TSortingType,
-        aCb: (err, aDhxData: DhxGantt.TData, aDhxMarkerList: DhxGantt.TMarker[]) => void ) {
+        aCb: (err, aDhxData: DhxExt.Gantt.TData) => void ) {
 
         var s = [];
 
@@ -514,7 +514,7 @@ module UiUtils {
             aCb(err, {
                 data: tasks,
                 links: links
-            }, markers);
+            });
         });
 
     }
@@ -631,6 +631,58 @@ module UiUtils {
         export function closeModal() {
             dialog.close();
         }
+    }
+
+    export module ProjectHelper {
+
+        function getProjectPage(aText, aCb) {
+            Cb.project.getPage(1, aText, function(err, projectPage) {
+                if (err) {
+                    return;
+                }
+
+                var items = [];
+                projectPage.projects.forEach(function(project) {
+                    items.push({
+                        id: project.uri,
+                        text: project.name
+                    });
+                });
+                aCb(items);
+            });
+        }
+
+        export function create(aContext: CAngularContext, aEl: HTMLElement, aInitialId: string, aOnChange: DhxExt.FnComboOnChange) {
+
+            var cbProject = new DhxExt.CCombo(aEl, getProjectPage);
+
+            cbProject.onChange = function (id) {
+                console.log('onChange', id);
+                if (id === aInitialId) {
+                    return;
+                }
+                aOnChange(id);
+            };
+
+            Cb.project.getByUri(aInitialId, function(err, project) {
+                if (err || !project) {
+                    getProjectPage('', function(items) {
+                        cbProject.setItems(items);
+                        cbProject.openSelect();
+                    });
+                } else {
+                    cbProject.setItems([{
+                        id: project.uri,
+                        text: project.name
+                    }]);
+
+                    cbProject.selectItemById(project.uri);
+                }
+            });
+
+            aContext.addComponent(cbProject);
+        }
+
     }
 
     export module UserHelper {
@@ -1036,6 +1088,7 @@ module UiUtils {
 
     export class CCbGantt extends DhxExt.Gantt.CGantt {
 
+        private _projectUri: string;
         private _userUri: string;
         private _groupings: CbUtils.TGroupType[];
         private _filter: CbUtils.TFilterType;
@@ -1072,6 +1125,39 @@ module UiUtils {
                 this._gantt.updateTask(id, task);
                 return true;
             };
+
+            this.setToolTipProvider(function(start,end,task){
+                var ret = '';
+                ret += '<p><b>' + task.text + ' (' + task.id  + ')</b></p>';
+                ret += '<hr>';
+
+                if (task._warnings) {
+                    task._warnings.forEach(function(w) {
+                        ret += '<p class="warning">' + w + '</p>';
+                    });
+                }
+
+                ret += '<p>' + DhxGanttExt.formatDate(start) + ' - ' + DhxGanttExt.formatDate(end) + ' (' + task.duration + ')</p>';
+                return ret;
+            });
+        }
+
+        showTaskByProject(
+            aProjectUri: string,
+            aGroupings: CbUtils.TGroupType[],
+            aFilter: CbUtils.TFilterType,
+            aSorting: CbUtils.TSortingType,
+            aScale: string,
+            aCb: () => void) {
+
+            this._projectUri = aProjectUri;
+            this._groupings = aGroupings;
+            this._filter = aFilter;
+            this._sorting = aSorting;
+
+            DhxGanttExt.setScale(aScale);
+
+            this._update(aCb);
         }
 
         showTaskByUser(
@@ -1149,32 +1235,64 @@ module UiUtils {
         }
 
         private _update(aCb?) {
-            UiUtils.getDhxDataByUser(this._userUri, this._groupings, this._filter, this._sorting, (err, resp) => {
 
-                var prev_date = DhxGanttExt.getCenteredDate();
+            if (this._projectUri) {
+                UiUtils.getDhxDataByProject(this._projectUri, this._groupings, this._filter, this._sorting, (err, resp) => {
 
-                var opened_task_ids = Object.keys(this._openedTaskMap);
+                    var prev_date = DhxGanttExt.getCenteredDate();
 
-                resp.data.forEach(function(t) {
+                    var opened_task_ids = Object.keys(this._openedTaskMap);
 
-                    if (opened_task_ids.indexOf(t.id) != -1) {
-                        t.open = true;
+                    resp.data.forEach(function(t) {
+
+                        if (opened_task_ids.indexOf(t.id) != -1) {
+                            t.open = true;
+                        }
+
+                    });
+
+                    this.clearAll();
+
+                    this.parse(resp);
+
+                    setTimeout(function() {
+                        DhxGanttExt.setDateCentered(prev_date || new Date());
+                    }, 5);
+
+                    if (aCb) {
+                        aCb();
                     }
-
                 });
+            }
 
-                this.clearAll();
+            if (this._userUri) {
+                UiUtils.getDhxDataByUser(this._userUri, this._groupings, this._filter, this._sorting, (err, resp) => {
 
-                this.parse(resp);
+                    var prev_date = DhxGanttExt.getCenteredDate();
 
-                setTimeout(function() {
-                    DhxGanttExt.setDateCentered(prev_date || new Date());
-                }, 5);
+                    var opened_task_ids = Object.keys(this._openedTaskMap);
 
-                if (aCb) {
-                    aCb();
-                }
-            });
+                    resp.data.forEach(function(t) {
+
+                        if (opened_task_ids.indexOf(t.id) != -1) {
+                            t.open = true;
+                        }
+
+                    });
+
+                    this.clearAll();
+
+                    this.parse(resp);
+
+                    setTimeout(function() {
+                        DhxGanttExt.setDateCentered(prev_date || new Date());
+                    }, 5);
+
+                    if (aCb) {
+                        aCb();
+                    }
+                });
+            }
         }
 
         private _onAfterTaskAdd(aTaskId: string, aTask: DhxExt.Gantt.TTask) {

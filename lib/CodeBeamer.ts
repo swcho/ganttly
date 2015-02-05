@@ -352,6 +352,10 @@ module Cb {
             getPageContainsString('/projects', aPageNo, aStr, aCb);
         }
 
+        getByUri(aProjectUri: string, aCb: (err, project: TProject) => void) {
+            send('GET', aProjectUri, null, aCb);
+        }
+
     }
 
     export class CTrackerTypeApi extends CRestApi {
