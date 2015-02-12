@@ -1318,9 +1318,22 @@ module UiUtils {
             }
         }
 
+        private _showMessage(aMessage: string) {
+            DhxExt.error(aMessage);
+        }
+
         private _onAfterTaskAdd(aTaskId: string, aTask: DhxExt.Gantt.TTask) {
 
             console.log('_onAfterTaskAdd', aTaskId);
+
+            /* if user mode */
+            if (this._userUri) {
+                if (!aTask.parent) {
+                    this._showMessage('You can add task from 2nd child.');
+                    this._gantt.deleteTask(aTaskId);
+                    return;
+                }
+            }
 
             var newCbTask: any = {
                 uri: null,
@@ -1366,6 +1379,12 @@ module UiUtils {
         private _onAfterTaskDelete(aTaskId: string, aTask: DhxExt.Gantt.TTask) {
 
             console.log('_onAfterTaskDelete', aTaskId);
+
+            if (typeof aTaskId === "number") {
+                return;
+            }
+
+            debugger;
 
             CbUtils.cache.deleteTask(this._userUri, aTaskId, (err) => {
 

@@ -1,11 +1,36 @@
 
 /// <reference path="Calendar.ts" />
 
+declare var dhtmlx;
 declare var dhtmlXCombo;
 declare var dhtmlXForm;
 declare var dhtmlXMenuObject;
 
 module DhxExt {
+
+    export function alert(aMessage, aCb) {
+        dhtmlx.alert(aMessage, aCb);
+    }
+
+    export function confirm(aMessage, aCb) {
+        dhtmlx.confirm(aMessage, aCb);
+    }
+
+    export function modalbox(aMessage, aCb) {
+        dhtmlx.modalbox(aMessage, aCb);
+    }
+
+    export function message(aText, aType?, aExpire?, aId?) {
+        dhtmlx.message(aText, aType, aExpire, aId);
+    }
+
+    export function assert(aTest, aMessage) {
+        dhtmlx.assert(aTest, aMessage);
+    }
+
+    export function error(aMessage: string) {
+        dhtmlx.message({ type:"error", text:aMessage, expire:3000 });
+    }
 
     export class CComponent {
 
