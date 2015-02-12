@@ -1221,6 +1221,22 @@ module CbUtils {
             };
         }
 
+        getTrackersByProject(aProjectUri: string): Cb.TTracker[] {
+
+            var ret = [];
+
+            Object.keys(this._trackerMap).forEach((k) => {
+
+                var t = this._trackerMap[k];
+
+                if (t._projectUri === aProjectUri) {
+                    ret.push(t);
+                }
+            });
+
+            return ret;
+        }
+
         getCachedProjectInfo(aProjectUri: string, aCb: (err, cached: TCachedProjectInfo) => void) {
 
             console.log('getCachedProjectInfo');
@@ -1520,10 +1536,11 @@ if (verify) {
             Cb.tracker.deleteItem(aTaskUri, (err) => {
 
                 if (!err) {
+
                     delete this._itemMap[aTaskUri];
                     var index = this._getTaskIndex(aCacheUri, aTaskUri);
                     if (index != -1) {
-                        this._cache[aCacheUri].tasks.splice(index);
+                        this._cache[aCacheUri].tasks.splice(index, 1);
                     }
                 }
 

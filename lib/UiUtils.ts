@@ -1334,9 +1334,18 @@ module UiUtils {
             /* if user mode */
             if (this._userUri) {
                 if (!aTask.parent) {
-                    this._showMessage('You can add task from 2nd child.');
+                    this._showMessage('You cannot add task from top level.');
                     this._gantt.deleteTask(aTaskId);
                     return false;
+                } else {
+//                    var parentTask = <Cb.TTask><any>CbUtils.cache.getItem(aTask.parent);
+                    var trackers = CbUtils.cache.getTrackersByProject(aTask.parent);
+
+                    if (1 < trackers.length) {
+                        this._showMessage('You cannot add a project with multiple trackers.');
+                        this._gantt.deleteTask(aTaskId);
+                        return false;
+                    }
                 }
             }
 
@@ -1360,9 +1369,25 @@ module UiUtils {
             };
 
             if (aTask.parent) {
-                newCbTask.parent = aTask.parent;
+                var trackerUri;
+                var parentUri;
                 var parentTask = <Cb.TTask><any>CbUtils.cache.getItem(aTask.parent);
-                newCbTask.tracker = parentTask.tracker.uri;
+                if (parentTask) {
+                    trackerUri = parentTask.tracker.uri;
+                    parentUri = aTask.parent;
+                } else {
+                    var trackers = CbUtils.cache.getTrackersByProject(aTask.parent);
+                    trackerUri = trackers[0].uri;
+                }
+
+                if (parentUri) {
+                    newCbTask.parent = parentUri;
+                }
+                if (trackerUri) {
+                    newCbTask.tracker = trackerUri;
+                } else {
+                    debugger;
+                }
             }
 
             CbUtils.cache.createTask(this._userUri, newCbTask, (err, task) => {
