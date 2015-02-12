@@ -1123,6 +1123,23 @@ module UiUtils {
 
             this._openedTaskMap = {};
 
+            this.doIsValidNewTask = (id, task) => {
+                return this._doIsValidNewTask(id, task);
+            };
+
+            this.handleNewTaskAdded = (id, task) => {
+                var now = new Date();
+                var start = roundDay(addDays(now, 1));
+                var end = roundDay(addDays(now, 2));
+                task.start_date = start;
+                task.end_date = end;
+                this._gantt.updateTask(id, task);
+                return true;
+            };
+
+            this.onBeforeTaskAdd = (id, task) => {
+                this._onBeforeTaskAdd(id, task);
+            };
             this.onAfterTaskAdd = (id, task) => {
                 this._onAfterTaskAdd(id, task);
             };
@@ -1137,16 +1154,6 @@ module UiUtils {
             };
             this.onTaskClosed = (id) => {
                 delete this._openedTaskMap[id];
-            };
-
-            this.handleNewTaskAdded = (id, task) => {
-                var now = new Date();
-                var start = roundDay(addDays(now, 1));
-                var end = roundDay(addDays(now, 2));
-                task.start_date = start;
-                task.end_date = end;
-                this._gantt.updateTask(id, task);
-                return true;
             };
 
             this.setToolTipProvider(function(start,end,task){
@@ -1322,18 +1329,27 @@ module UiUtils {
             DhxExt.error(aMessage);
         }
 
-        private _onAfterTaskAdd(aTaskId: string, aTask: DhxExt.Gantt.TTask) {
-
-            console.log('_onAfterTaskAdd', aTaskId);
+        private _doIsValidNewTask(aTaskId: string, aTask: DhxExt.Gantt.TTask): boolean {
 
             /* if user mode */
             if (this._userUri) {
                 if (!aTask.parent) {
                     this._showMessage('You can add task from 2nd child.');
                     this._gantt.deleteTask(aTaskId);
-                    return;
+                    return false;
                 }
             }
+
+            return true;
+        }
+
+        private _onBeforeTaskAdd(aTaskId: string, aTask: DhxExt.Gantt.TTask) {
+            return true;
+        }
+
+        private _onAfterTaskAdd(aTaskId: string, aTask: DhxExt.Gantt.TTask) {
+
+            console.log('_onAfterTaskAdd', aTaskId);
 
             var newCbTask: any = {
                 uri: null,
@@ -1383,8 +1399,6 @@ module UiUtils {
             if (typeof aTaskId === "number") {
                 return;
             }
-
-            debugger;
 
             CbUtils.cache.deleteTask(this._userUri, aTaskId, (err) => {
 

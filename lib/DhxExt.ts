@@ -1123,6 +1123,7 @@ module DhxExt {
             private _contextMenu: CGanttContextMenu;
 
             onDblClicked: FNOnDblClicked;
+            onBeforeTaskAdd: (taskId: string, task: TTask) => void;
             onAfterTaskAdd: (taskId: string, task: TTask) => void;
             onAfterTaskUpdate: (taskId: string, task: TTask, changeMode: string) => void;
             onAfterTaskDelete: (taskId: string, task: TTask) => void;
@@ -1164,6 +1165,11 @@ module DhxExt {
                 var moveStartDate;
                 var onBeforeLightbox;
 
+                this._addEvent('onBeforeTaskAdd', (taskId, task) => {
+                    if (this.onBeforeTaskAdd) {
+                        this.onBeforeTaskAdd(taskId, task);
+                    }
+                });
                 this._addEvent('onAfterTaskAdd', (taskId, task) => {
                     if (this.onAfterTaskAdd) {
                         this.onAfterTaskAdd(taskId, task);
@@ -1203,9 +1209,15 @@ module DhxExt {
                     }
                 });
 
+                /* Light box */
                 this._addEvent('onBeforeLightbox', (taskId) => {
                     onBeforeLightbox = true;
                     var task = this._gantt.getTask(taskId);
+
+                    if (!this._isValidNewTask(taskId, task)) {
+                        return false;
+                    }
+
                     if (task.$new && this.handleNewTaskAdded) {
                         return this.handleNewTaskAdded(taskId, task);
                     }
@@ -1230,6 +1242,15 @@ module DhxExt {
                 this._contextMenu = new CGanttContextMenu(this._gantt);
                 this._contextMenu.setMenu(aContextMenu);
             }
+
+            _isValidNewTask(aTaskId: string, aTask: TTask) {
+                if (this.doIsValidNewTask) {
+                    return this.doIsValidNewTask(aTaskId, aTask);
+                }
+                return true;
+            }
+
+            doIsValidNewTask: (aTaskId: string, aTask: TTask) => boolean;
         }
 
     }
