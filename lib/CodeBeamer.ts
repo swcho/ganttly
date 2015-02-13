@@ -707,6 +707,7 @@ module CbUtils {
             if (tracker.type.name == 'Task') {
                 p.push(function(done) {
                     Cb.tracker.getItems(prefix + tracker.uri, function(err, items) {
+
                         if (items && items.length) {
                             tasks = tasks.concat(items);
                             if (tracker._projectUri) {
@@ -1030,6 +1031,9 @@ module CbUtils {
 
         s.push(function(done) {
             Cb.tracker.getTaskTrackersByUser(aUserUri, function(err, trackerByProjectList) {
+
+                debugger;
+
                 trackerByProjectList.forEach(function(trackerByProject) {
                     mapProjectUri[trackerByProject.project.uri] = null;
                     trackerByProject.trackers.forEach(function(t) {
@@ -1045,7 +1049,7 @@ module CbUtils {
             getTasksByTrackers(aUserUri, trackers, function(err, tlist, purilist) {
                 tasks = tlist;
                 projectUriList = purilist;
-                var mapRelease = {}
+                var mapRelease = {};
                 tasks.forEach(function(t) {
                     if (t.release) {
                         t.release.forEach(function(r) {
