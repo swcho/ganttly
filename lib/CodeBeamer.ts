@@ -831,7 +831,7 @@ module CbUtils {
 
         var outerItemUriList = [];
         s.push(function(done) {
-            populateReferences(outerReleases, function(err, references) {
+            populateReferences(releases, function(err, references) {
                 references.forEach(function(i) {
                     outerItemUriList.push(i.uri);
                 });
@@ -981,6 +981,9 @@ module CbUtils {
 
         p.push(function(done) {
             getReleasesInfoByProject(aProjectUri, function(err, clist, rlist, urilist) {
+
+                debugger;
+
                 releaseCmdbList = clist;
                 releaseList = rlist;
                 outerItemUriList = urilist;
@@ -990,6 +993,9 @@ module CbUtils {
 
         p.push(function(done) {
             getTaskInfoByProject(aProjectUri, function(err, trklist, tlist, alist) {
+
+                debugger;
+
                 taskTrackerList = trklist;
                 tasks = tlist;
                 associations = associations.concat(alist);
