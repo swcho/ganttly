@@ -419,8 +419,8 @@ module Cb {
             this.getTrackers(aUserUri, ['Task'], aCb);
         }
 
-        getItems(aTrackerUri: string, aCb: (err, items: any[]) => void) {
-            send('GET', aTrackerUri + '/items', null, aCb);
+        getItems(aTrackerUri: string, aParam: any, aCb: (err, items: any[]) => void) {
+            send('GET', aTrackerUri + '/items', aParam, aCb);
         }
 
         /**
@@ -694,11 +694,18 @@ module CbUtils {
         });
     }
 
-    function getTasksByTrackers(aPrefix: string, aTrackers: Cb.TTracker[], aCb: (err, tasks: Cb.TTask[], projectUriList: string[]) => void) {
+    function getTasksByTrackers(aUserPrefix: string, aTrackers: Cb.TTracker[], aCb: (err, tasks: Cb.TTask[], projectUriList: string[]) => void) {
 
         console.log('getTasksByTrackers');
 
-        var prefix = aPrefix || '';
+        var prefix = aUserPrefix || '';
+        var param = null;
+        if (aUserPrefix) {
+            prefix = aUserPrefix;
+            param = {
+                status: 'Any status'
+            };
+        }
         aTrackers = aTrackers || [];
         var p = [];
         var tasks = [];
@@ -706,7 +713,7 @@ module CbUtils {
         aTrackers.forEach(function(tracker) {
             if (tracker.type.name == 'Task') {
                 p.push(function(done) {
-                    Cb.tracker.getItems(prefix + tracker.uri, function(err, items) {
+                    Cb.tracker.getItems(prefix + tracker.uri, param, function(err, items) {
 
                         if (items && items.length) {
                             tasks = tasks.concat(items);
@@ -1031,9 +1038,6 @@ module CbUtils {
 
         s.push(function(done) {
             Cb.tracker.getTaskTrackersByUser(aUserUri, function(err, trackerByProjectList) {
-
-                debugger;
-
                 trackerByProjectList.forEach(function(trackerByProject) {
                     mapProjectUri[trackerByProject.project.uri] = null;
                     trackerByProject.trackers.forEach(function(t) {

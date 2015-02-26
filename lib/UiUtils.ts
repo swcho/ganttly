@@ -50,6 +50,10 @@ module UiUtils {
         name: 'End date',
         checker: function(dhxTask: DhxGantt.TTask) {
 
+            if (KCompletedStatusValues.indexOf(dhxTask._status) !== -1) {
+                return null;
+            }
+
             if (!dhxTask._status) {
                 return "Status is not configured";
             }
@@ -58,7 +62,7 @@ module UiUtils {
                 return 'End date is not configured';
             }
 
-            if (KCompletedStatusValues.indexOf(dhxTask._status) == -1 && dhxTask.end_date < new Date()) {
+            if (dhxTask.end_date < new Date()) {
                 return "End date is overdue.";
             }
             return null;
