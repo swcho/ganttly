@@ -981,9 +981,6 @@ module CbUtils {
 
         p.push(function(done) {
             getReleasesInfoByProject(aProjectUri, function(err, clist, rlist, urilist) {
-
-                debugger;
-
                 releaseCmdbList = clist;
                 releaseList = rlist;
                 outerItemUriList = urilist;
@@ -993,9 +990,6 @@ module CbUtils {
 
         p.push(function(done) {
             getTaskInfoByProject(aProjectUri, function(err, trklist, tlist, alist) {
-
-                debugger;
-
                 taskTrackerList = trklist;
                 tasks = tlist;
                 associations = associations.concat(alist);
@@ -1315,6 +1309,10 @@ module CbUtils {
                         }
                     });
                     outerItemUriList = outerItemUriList.concat(Object.keys(mapAssociation));
+                    outerItemUriList = outerItemUriList.filter(function(uri) {
+                        return !itemMap[uri];
+                    });
+
                     done();
                 });
             });
