@@ -42,6 +42,28 @@ angular.module('ganttly').controller('GantttrelloCtrl',function($scope, $state, 
     var gantt = new DhxExt.Gantt.CGantt(document.getElementById('idGantt'), false);
     context.addComponent(gantt);
 
+    gantt.setContextMenu({
+        menuItems: [{
+            id: 'open_card',
+            text: 'Open card',
+            onClick: function(id, param: DhxExt.Gantt.TGanttContextCbParam) {
+                console.log(param);
+                var task = gantt._gantt.getTask(param.taskId);
+                var url = task._data.shortUrl;
+                var width = 1280;
+                var height = 720;
+                var params = [
+                    'width=' + width,
+                    'height=' + height,
+                    'fullscreen=yes' // only works in IE, but here for completeness
+                ].join(',');
+                var win = open(url, null, params);
+                win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+                win.resizeTo(width, height);
+            }
+        }]
+    });
+
     if (boardId) {
         $trello.getCards(boardId, function(err, board) {
             if (err) {
@@ -69,6 +91,8 @@ angular.module('ganttly').controller('GantttrelloCtrl',function($scope, $state, 
                 if (card.due) {
                     task.end_date = new Date(card.due);
                 }
+
+                task._data = card;
 
                 data.push(task);
             });
