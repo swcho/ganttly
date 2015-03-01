@@ -1,4 +1,5 @@
 /// <reference path="../../typings/tsd.d.ts"/>
+
 angular.module('ganttly').directive('dhxForm', function () {
     return {
         restrict: 'A',
@@ -8,6 +9,7 @@ angular.module('ganttly').directive('dhxForm', function () {
         link: function ($scope, element, $attrs, fn) {
             var formItems = $scope[$attrs['dhxFormItems']];
             var eventHandlers = {};
+
             function addEventHandler(formItems) {
                 formItems.forEach(function (formItem) {
                     if (formItem.eventHandlers) {
@@ -29,7 +31,9 @@ angular.module('ganttly').directive('dhxForm', function () {
                 });
             }
             addEventHandler(formItems);
+
             var myForm = new dhtmlXForm(element[0], formItems);
+
             var eventAttachIds = [
                 myForm.attachEvent("onChange", function (name, value, state) {
                     if (eventHandlers[name] && eventHandlers[name]['onChange']) {
@@ -42,6 +46,7 @@ angular.module('ganttly').directive('dhxForm', function () {
                     }
                 })
             ];
+
             $scope.$on('$destroy', function () {
                 console.log('dhxForm destroy');
                 eventAttachIds.forEach(function (id) {

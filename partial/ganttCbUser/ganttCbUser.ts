@@ -1,6 +1,4 @@
 
-/// <reference path="../../directive/dhxGantt/dhxGantt.ts"/>
-/// <reference path="../../directive/dhxForm/dhxForm.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../lib/DhxExt.ts"/>
 /// <reference path="../../lib/UiUtils.ts"/>
@@ -132,6 +130,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
             }
         }]
     });
+    context.addComponent(gantt);
 
 //    gantt.onDblClicked = function(taskId) {
 //        var url = taskId;

@@ -1,0 +1,28 @@
+#idGanttTrello {
+  height: 100%;
+  width: 100%;
+}
+#idGanttTrello #topPane {
+  position: absolute;
+  left: 0px;
+  height: 60px;
+  width: 100%;
+  z-index: 1;
+  margin: 4px;
+}
+#idGanttTrello #topPane .combo_group {
+  float: left;
+  margin-right: 4px;
+}
+#idGanttTrello #topPane .combo_group label {
+  line-height: 26px;
+  margin: 0px;
+}
+#idGanttTrello #topPane .combo_group .combo {
+  clear: both;
+}
+#idGanttTrello #idGantt {
+  height: 100%;
+  width: 100%;
+  padding-top: 60px;
+}

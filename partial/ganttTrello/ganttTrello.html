@@ -1,17 +1,24 @@
-<div class="col-md-12" ng-controller="GantttrelloCtrl">
+<div id="idGanttTrello" ng-controller="GantttrelloCtrl">
     <!-- Single button -->
-    <div class="btn-group" dropdown is-open="status.isopen">
-        <button type="button" class="btn btn-primary dropdown-toggle">
-            Select Project <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu" role="menu">
-            <li ng-repeat="board in boards">
-                <a href ng-click="goBoard(board)">{{board.name}}</a>
-            </li>
-        </ul>
+    <!--<div class="btn-group" dropdown is-open="status.isopen">-->
+        <!--<button type="button" class="btn btn-primary dropdown-toggle">-->
+            <!--Select Project <span class="caret"></span>-->
+        <!--</button>-->
+        <!--<ul class="dropdown-menu" role="menu">-->
+            <!--<li ng-repeat="board in boards">-->
+                <!--<a href ng-click="goBoard(board)">{{board.name}}</a>-->
+            <!--</li>-->
+        <!--</ul>-->
+    <!--</div>-->
+
+    <div id="topPane">
+        <div class="combo_group">
+            <label>Board</label>
+            <div id="idCbBoard" style="width:180px;" class="combo"></div>
+        </div>
+
     </div>
-    <div dhx-gantt data="tasks" style="height:350px; width:100%;"
-         dhx-task-update="onTaskUpdated"
-         dhx-link-add="onLinkAdded"></div>
+
+    <div id="idGantt"></div>
 
 </div>
