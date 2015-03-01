@@ -1,9 +1,9 @@
-
-/// <reference path="../typings/tsd.d.ts"/>
 /**
- * Trello client API
- * ref: https://trello.com/docs/gettingstarted/clientjs.html
+ * Created by sungwoo on 15. 3. 1.
  */
+
+/// <reference path='../typings/tsd.d.ts'/>
+
 declare module Trello {
 
     interface TScope {
@@ -179,8 +179,7 @@ declare module Trello {
     }
 }
 
-angular.module('ganttly').factory('$trello',function($http: ng.IHttpService) {
-
+module TrelloUtils {
     function authorize(cb) {
         Trello.authorize({
             type: 'popup',
@@ -201,7 +200,7 @@ angular.module('ganttly').factory('$trello',function($http: ng.IHttpService) {
         });
     }
 
-    function getBoards(cb) {
+    function _getBoards(cb) {
         Trello.get('members/me/boards', function(resp) {
             cb(null, resp);
         }, function(jqXHR, statusText, error) {
@@ -209,7 +208,7 @@ angular.module('ganttly').factory('$trello',function($http: ng.IHttpService) {
         });
     }
 
-    function getBoard(id, cb) {
+    function _getBoard(id, cb) {
         Trello.boards.get(id, function(resp) {
             cb(null, resp);
         }, function(err) {
@@ -227,24 +226,44 @@ angular.module('ganttly').factory('$trello',function($http: ng.IHttpService) {
         });
     }
 
-    return {
-        setKey: function(key) {
+    export function getBoards(cb) {
+        authorize(function(err) {
+            if (err) {
+                cb(err);
+                return;
+            }
+            _getBoards(cb);
+        });
+    }
 
-        },
-        getBoards: function(cb) {
-            authorize(function(err) {
-                if (err) {
-                    cb(err);
-                    return;
-                }
-                getBoards(cb);
-            });
-        },
-        getBoard: function(id, cb) {
-            getBoard(id, cb);
-        },
-        getCards: function(boardId, cb) {
-            getCardsByBoard(boardId, cb);
-        }
-    };
-});
+    export function getBoard(id, cb) {
+        _getBoard(id, cb);
+    }
+
+    export function getCards(boardId, cb) {
+        getCardsByBoard(boardId, cb);
+    }
+
+    export function getMembers(memberIdList: string[], cb) {
+
+        var p = [];
+
+        var mapMembers = {};
+
+        memberIdList.forEach(function(id) {
+            p.push(function(done) {
+                Trello.members.get(id, function(resp) {
+                    mapMembers[id] = resp;
+                    done();
+                }, function(jqXHR, statusText, error) {
+                    done(error);
+                });
+            })
+        });
+
+        async.parallel(p, function(err) {
+            cb(err, mapMembers);
+        });
+
+    }
+}

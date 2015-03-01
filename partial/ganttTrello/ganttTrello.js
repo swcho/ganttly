@@ -1,8 +1,8 @@
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../lib/DhxExt.ts"/>
 /// <reference path="../../lib/UiUtils.ts"/>
-/// <reference path="../../service/trello.ts"/>
-angular.module('ganttly').controller('GantttrelloCtrl', function ($scope, $state, $stateParams, $trello) {
+/// <reference path="../../lib/TrelloUtils.ts"/>
+angular.module('ganttly').controller('GantttrelloCtrl', function ($scope, $state, $stateParams) {
     var boardId = $stateParams.board;
 
     var context = new UiUtils.CAngularContext($scope);
@@ -17,7 +17,7 @@ angular.module('ganttly').controller('GantttrelloCtrl', function ($scope, $state
         });
     };
 
-    $trello.getBoards(function (err, boards) {
+    TrelloUtils.getBoards(function (err, boards) {
         if (err) {
             console.log(err);
             return;
@@ -35,7 +35,7 @@ angular.module('ganttly').controller('GantttrelloCtrl', function ($scope, $state
         cbBoard.selectItemById(boardId);
     });
 
-    var gantt = new DhxExt.Gantt.CGantt(document.getElementById('idGantt'), false);
+    var gantt = new DhxExt.Gantt.CGantt(document.getElementById('idGantt'), true);
     context.addComponent(gantt);
 
     gantt.setContextMenu({
@@ -61,20 +61,39 @@ angular.module('ganttly').controller('GantttrelloCtrl', function ($scope, $state
     });
 
     if (boardId) {
-        $trello.getCards(boardId, function (err, board) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            console.log(board);
+        var s = [];
 
+        var board;
+        var memberIdList;
+        s.push(function (done) {
+            TrelloUtils.getCards(boardId, function (err, b) {
+                if (b) {
+                    board = b;
+                    var memberMap = {};
+                    b.cards.forEach(function (card) {
+                        card.idMembers.forEach(function (mid) {
+                            memberMap[mid] = true;
+                        });
+                    });
+                    memberIdList = Object.keys(memberMap);
+                }
+                done(err);
+            });
+        });
+
+        var mapMember;
+        s.push(function (done) {
+            TrelloUtils.getMembers(memberIdList, function (err, mm) {
+                mapMember = mm;
+                done(err);
+            });
+        });
+
+        s.push(function (done) {
             var data = [];
             var links = [];
-
             var today = UiUtils.roundDay(new Date());
             board.cards.forEach(function (card) {
-                console.log(card);
-
                 var task = {
                     id: card.id,
                     text: card.name,
@@ -87,25 +106,29 @@ angular.module('ganttly').controller('GantttrelloCtrl', function ($scope, $state
                     task.end_date = new Date(card.due);
                 }
 
+                var users = [];
+                card.idMembers.forEach(function (mid) {
+                    var name = mapMember[mid].fullName;
+                    users.push(name);
+                });
+
+                task.user = users.join(',');
+
                 task._data = card;
 
                 data.push(task);
             });
 
-            //data = [
-            //{id: 1, text: "Project #2", start_date: "01-04-2013", duration: 18, order: 10,
-            //    progress: 0.4, open: true},
-            //{id: 2, text: "Task #1", start_date: "02-04-2013", duration: 8, order: 10,
-            //    progress: 0.6, parent: 1},
-            //{id: 3, text: "Task #2", start_date: "11-04-2013", duration: 8, order: 20,
-            //    progress: 0.6, parent: 1}
-            //];
             gantt.clearAll();
 
             gantt.parse({
                 data: data,
                 links: links
             });
+            done();
+        });
+
+        async.series(s, function (err) {
         });
     }
 });
