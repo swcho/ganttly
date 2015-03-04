@@ -2,7 +2,6 @@
 /// <reference path="../../directive/dhxSchedule/dhxSchedule.ts"/>
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
-
 angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state, $stateParams, $calendar, $codeBeamer) {
     var paramProject = $stateParams.project || '/project/98';
     var paramGrouping = $stateParams.grouping || 'project';
@@ -10,12 +9,10 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
     var paramText = $stateParams.text || 'test단계';
     var paramStart = $stateParams.start;
     var paramEnd = $stateParams.end;
-
     if (!paramStart || !paramEnd) {
         var start = new Date();
         start.setDate(1);
         var end = start.getTime() + 5 * 7 * 24 * 60 * 60 * 1000;
-
         $state.go('scheduleCb', {
             start: start.getTime(),
             end: end
@@ -24,68 +21,64 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
         });
         return;
     }
-
     function updateRange(startDate, endDate) {
         console.log(startDate, endDate);
         if (startDate < endDate) {
             scheduler.setCurrentView(startDate);
             var diff = (endDate - startDate) / (1000 * 60 * 60 * 24);
             scheduler['matrix'].timeline.x_size = Math.ceil(diff);
-
             //            scheduler.update_view();
             scheduler.updateView();
             return true;
         }
         return false;
     }
-
-    var formItems = [
-        {
-            type: "settings", position: "label-top"
-        }, {
-            type: 'block',
-            list: [{
-                    name: 'start_date',
-                    type: "calendar",
-                    label: "Start Date",
-                    //            skin:"dhx_skyblue",
-                    //            enableTime:true,
-                    dateFormat: "%Y-%m-%d",
-                    //            value: dateFormat("%Y-%m-%d", schState.min_date),
-                    eventHandlers: {
-                        onChange: function (value, state) {
-                            var schState = scheduler.getState();
-                            if (schState.min_date !== value) {
-                                updateRange(value, schState.max_date);
-                            }
-                        }
+    var formItems = [{
+        type: "settings",
+        position: "label-top"
+    }, {
+        type: 'block',
+        list: [{
+            name: 'start_date',
+            type: "calendar",
+            label: "Start Date",
+            //            skin:"dhx_skyblue",
+            //            enableTime:true,
+            dateFormat: "%Y-%m-%d",
+            //            value: dateFormat("%Y-%m-%d", schState.min_date),
+            eventHandlers: {
+                onChange: function (value, state) {
+                    var schState = scheduler.getState();
+                    if (schState.min_date !== value) {
+                        updateRange(value, schState.max_date);
                     }
-                }]
-        }, {
-            type: "newcolumn"
-        }, {
-            type: 'block',
-            list: [{
-                    name: 'end_date',
-                    type: "calendar",
-                    label: "End Date",
-                    offesetLeft: 10,
-                    inputLeft: 10,
-                    //            skin:"dhx_skyblue",
-                    dateFormat: "%Y-%m-%d",
-                    //            value: dateFormat("%Y-%m-%d", schState.max_date),
-                    eventHandlers: {
-                        onChange: function (value, state) {
-                            var schState = scheduler.getState();
-                            if (schState.max_date !== value) {
-                                updateRange(schState.min_date, value);
-                            }
-                        }
+                }
+            }
+        }]
+    }, {
+        type: "newcolumn"
+    }, {
+        type: 'block',
+        list: [{
+            name: 'end_date',
+            type: "calendar",
+            label: "End Date",
+            offesetLeft: 10,
+            inputLeft: 10,
+            //            skin:"dhx_skyblue",
+            dateFormat: "%Y-%m-%d",
+            //            value: dateFormat("%Y-%m-%d", schState.max_date),
+            eventHandlers: {
+                onChange: function (value, state) {
+                    var schState = scheduler.getState();
+                    if (schState.max_date !== value) {
+                        updateRange(schState.min_date, value);
                     }
-                }]
-        }];
+                }
+            }
+        }]
+    }];
     $scope.formItems = formItems;
-
     $codeBeamer.getTasks({
         projectUri: paramProject
     }, function (err, trackerUriList, tasks) {
@@ -93,12 +86,10 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
         var sectionsMap = {};
         var types = [];
         var events = [];
-
         tasks.forEach(function (task) {
             var grouping = task[paramGrouping];
             var type = task[paramType];
             var text = task[paramText];
-
             var groupingKeyList = [];
             if (grouping && grouping.length) {
                 grouping.forEach(function (g) {
@@ -112,7 +103,6 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
                     groupingKeyList.push(g.uri);
                 });
             }
-
             if (type) {
                 if (types.indexOf(type.name) === -1) {
                     types.push(type.name);
@@ -130,7 +120,6 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
                 });
             }
         });
-
         sections.forEach(function (s) {
             s.children = [];
             scheduler.addSection(s, null);
@@ -144,7 +133,6 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
         scheduler.parse(events, 'json');
         scheduler.openAllSections();
         updateRange(new Date(parseInt(paramStart, 10)), new Date(parseInt(paramEnd, 10)));
-
         var schState = scheduler.getState();
         $scope.start_date = schState.min_date;
         $scope.end_date = schState.max_date;
@@ -152,7 +140,6 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
             console.log('onEventClicked: ' + id);
             var event = scheduler.getEvent(id);
             console.log(event);
-
             var url = event.uri;
             var width = 1280;
             var height = 720;
@@ -166,7 +153,6 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
             win.resizeTo(width, height);
         };
     });
-
     console.log('-------------------------');
 });
 //# sourceMappingURL=scheduleCb.js.map

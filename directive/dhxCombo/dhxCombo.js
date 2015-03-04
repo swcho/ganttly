@@ -1,5 +1,4 @@
 /// <reference path="../../typings/tsd.d.ts"/>
-
 angular.module('ganttly').directive('dhxCombo', function () {
     return {
         restrict: 'A',
@@ -11,14 +10,12 @@ angular.module('ganttly').directive('dhxCombo', function () {
             if ($attrs['dhxFilter']) {
                 comboFilter = $scope[$attrs['dhxFilter']] || null;
             }
-
             var options = {
                 parent: element[0]
             };
             if (comboFilter) {
                 options.filter_cache = true;
             }
-
             var combo = new dhtmlXCombo(options);
             if (comboFilter) {
                 combo.enableFilteringMode(true, "dummy");
@@ -34,7 +31,6 @@ angular.module('ganttly').directive('dhxCombo', function () {
                     });
                 });
             }
-
             $scope.$watch($attrs['dhxData'], function (items) {
                 if (items) {
                     combo.clearAll();
@@ -43,21 +39,19 @@ angular.module('ganttly').directive('dhxCombo', function () {
                     });
                 }
             });
-
             $scope.$watch($attrs['dhxDisabled'], function (disabled) {
                 if (disabled) {
                     combo.disable();
-                } else {
+                }
+                else {
                     combo.enable();
                 }
             });
-
             $scope.$watch($attrs['dhxSelected'], function (selected) {
                 if (selected) {
                     combo.setComboValue(selected);
                 }
             });
-
             var eventAttachIds = [
                 combo.attachEvent("onChange", function () {
                     //                    console.log('onChange');
@@ -72,7 +66,6 @@ angular.module('ganttly').directive('dhxCombo', function () {
                     }
                 })
             ];
-
             $scope.$on('$destroy', function () {
                 //                console.log('dhxCombo destroy');
                 eventAttachIds.forEach(function (id) {

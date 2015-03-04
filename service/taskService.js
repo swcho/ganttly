@@ -5,7 +5,6 @@ var CTaskService = (function () {
     }
     return CTaskService;
 })();
-
 angular.module('ganttly').factory('taskService', function ($http) {
     return new CTaskService($http);
 });

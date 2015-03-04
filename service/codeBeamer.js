@@ -1,5 +1,4 @@
 /// <reference path="../typings/tsd.d.ts"/>
-
 angular.module('ganttly').factory('$codeBeamer', function ($http) {
     var host = gConfig.cbBaseUrl + '/rest';
     var user = gConfig.cbUser;
@@ -11,7 +10,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
         withCredentials = true;
         credentials = btoa(user + ':' + pass);
     }
-
     function send(aMethod, aUrl, aParam, aCb) {
         var url = host + aUrl;
         console.log(aMethod + ': ' + url);
@@ -21,7 +19,8 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
         if (aParam) {
             if (aMethod === 'POST' || aMethod === 'PUT') {
                 options.data = aParam;
-            } else {
+            }
+            else {
                 options.params = aParam;
             }
         }
@@ -31,7 +30,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                 'Authorization': 'Basic ' + credentials
             };
         }
-
         $http(options).success(function (resp) {
             console.log(resp);
             aCb(null, resp);
@@ -44,23 +42,18 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
             });
         });
     }
-
     function get(aUrl, aParam, aCb) {
         send('GET', aUrl, aParam, aCb);
     }
-
     function put(aUrl, aParam, aCb) {
         send('PUT', aUrl, aParam, aCb);
     }
-
     function post(aUrl, aParam, aCb) {
         send('POST', aUrl, aParam, aCb);
     }
-
     function del(aUrl, aCb) {
         send('DELETE', aUrl, null, aCb);
     }
-
     var codeBeamber = {
         getByUri: function (aUri, aCb) {
             get(aUri, {}, aCb);
@@ -80,7 +73,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                 }
                 console.info(msg);
             }
-
             var baseUri = '';
             if (aParam.userUri) {
                 baseUri = baseUri + aParam.userUri;
@@ -88,9 +80,7 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
             if (aParam.projectUri) {
                 baseUri = baseUri + aParam.projectUri;
             }
-
             var series = [];
-
             // get uri for task
             var trackerUriList = [];
             series.push(function (cb) {
@@ -102,7 +92,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         if (item.uri) {
                             trackerUriList.push(item.uri);
                         }
-
                         // when base uri is /user/[id]
                         if (item.trackers) {
                             item.trackers.forEach(function (tracker) {
@@ -110,17 +99,14 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                             });
                         }
                     });
-
                     cb(err);
                 });
             });
-
             // get trackers all items
             var tasks = [];
             if (aParam.userUri) {
                 series.push(function (cb) {
                     progress('getting trackers all items');
-
                     get(baseUri + '/items', {
                         type: 'Task'
                     }, function (err, items) {
@@ -128,10 +114,10 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         cb(err);
                     });
                 });
-            } else {
+            }
+            else {
                 series.push(function (cb) {
                     progress('getting trackers all items');
-
                     var parallel = [];
                     trackerUriList.forEach(function (trackerUri) {
                         parallel.push(function (cb) {
@@ -146,17 +132,14 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                     });
                 });
             }
-
             // find associations for each task
             var additionalTaskUris = [];
             series.push(function (cb) {
                 progress('finding associations for each task');
-
                 var taskUriList = [];
                 tasks.forEach(function (task) {
                     taskUriList.push(task.uri);
                 });
-
                 var parallel = [];
                 tasks.forEach(function (task) {
                     parallel.push(function (cb) {
@@ -181,7 +164,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                     cb(err);
                 });
             });
-
             series.push(function (cb) {
                 progress('getting tasks and its associations outside project');
                 var parallel = [];
@@ -193,19 +175,15 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                                 cb(err);
                                 return;
                             }
-
                             if (!item.tracker) {
                                 cb();
                                 return;
                             }
-
                             if (item.tracker.name !== 'Task') {
                                 cb();
                                 return;
                             }
-
                             tasks.push(item);
-
                             get(item.uri + '/associations', {
                                 type: 'depends,child,parent',
                                 inout: true
@@ -224,7 +202,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                     cb(err);
                 });
             });
-
             async.series(series, function (err) {
                 aCb(err, trackerUriList, tasks);
             });
@@ -232,7 +209,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
         getReleases: function (aParam, aCb) {
             var projectUri = aParam.projectUri;
             var series = [];
-
             // get uri for task
             var trackerUriList = [];
             series.push(function (cb) {
@@ -243,7 +219,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                         if (item.uri) {
                             trackerUriList.push(item.uri);
                         }
-
                         // when base uri is /user/[id]
                         if (item.trackers) {
                             item.trackers.forEach(function (tracker) {
@@ -251,11 +226,9 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                             });
                         }
                     });
-
                     cb(err);
                 });
             });
-
             // get trackers all items
             var releases = [];
             series.push(function (cb) {
@@ -272,7 +245,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                     cb(err);
                 });
             });
-
             async.series(series, function (err) {
                 aCb(err, trackerUriList, releases);
             });
@@ -305,7 +277,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
                 aParam.description = "Generated by ganttly";
                 aParam.descFormat = "Wiki";
             }
-
             post('/association', aParam, aCb);
         },
         updateAssociation: function (aParam, aCb) {
@@ -315,7 +286,6 @@ angular.module('ganttly').factory('$codeBeamer', function ($http) {
             del(aAssociationUri, aCb);
         }
     };
-
     return codeBeamber;
 });
 //# sourceMappingURL=codeBeamer.js.map
