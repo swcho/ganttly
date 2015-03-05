@@ -80,6 +80,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
      * Gantt
      */
     var gantt = new UiUtils.CCbGantt(document.getElementById('idGantt'), false);
+    context.addComponent(gantt);
     gantt.setContextMenu({
         menuItems: [{
             id: 'open_task',
@@ -109,7 +110,6 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
             }
         }]
     });
-    context.addComponent(gantt);
     //    gantt.onDblClicked = function(taskId) {
     //        var url = taskId;
     //        var width = 1280;

@@ -83,6 +83,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
      *
      */
     var gantt = new UiUtils.CCbGantt(document.getElementById('idGantt'), true);
+    context.addComponent(gantt);
     gantt.setContextMenu({
         menuItems: [{
             id: 'open_task',

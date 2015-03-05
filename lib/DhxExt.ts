@@ -1152,6 +1152,13 @@ module DhxExt {
                 this._addTaskEvents();
             }
 
+            destroy() {
+                if (this._contextMenu) {
+                    this._contextMenu.destroy();
+                    this._contextMenu = null;
+                }
+            }
+
             private _addReadOnlyEvent() {
                 this._addEvent('onTaskDblClick', (id, event) => {
                     if (this.onDblClicked) {

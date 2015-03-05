@@ -100,6 +100,7 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
      */
 
     var gantt = new UiUtils.CCbGantt(document.getElementById('idGantt'), false);
+    context.addComponent(gantt);
 
     gantt.setContextMenu({
         menuItems: [{
@@ -130,7 +131,6 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
             }
         }]
     });
-    context.addComponent(gantt);
 
 //    gantt.onDblClicked = function(taskId) {
 //        var url = taskId;

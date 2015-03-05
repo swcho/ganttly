@@ -104,6 +104,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
      */
 
     var gantt = new UiUtils.CCbGantt(document.getElementById('idGantt'), true);
+    context.addComponent(gantt);
 
     gantt.setContextMenu({
         menuItems: [{
