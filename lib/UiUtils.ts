@@ -418,7 +418,7 @@ module UiUtils {
         return ret;
     }
 
-    function generatePropertyFilter(aPropOrder: string[], aValues: any[], aInclude: boolean) {
+    function generatePropertyStringFilter(aPropOrder: string[], aValues: any[], aInclude: boolean) {
         return function(obj) {
             var match = false, i, len = aPropOrder.length;
 
@@ -437,6 +437,34 @@ module UiUtils {
                         break;
                     }
                 }
+            }
+
+            return aInclude ? match: !match;
+        }
+    }
+
+    function generatePropertyArrayFilter(aFirstPropName: string, aSecondPropName: string, aValues: any[], aInclude: boolean) {
+        return function(obj) {
+
+            var match = false;
+
+            obj = obj[aFirstPropName];
+            if (obj instanceof Array) {
+                var i, iLen = obj.length;
+
+                if (iLen) {
+                    for (i=0; i<iLen; i++) {
+                        if (aValues.indexOf(obj[i][aSecondPropName]) !== -1) {
+                            match = true;
+                            break;
+                        }
+                    }
+                } else {
+                    match = true;
+                }
+
+            } else {
+                match = true;
             }
 
             return aInclude ? match: !match;
@@ -507,7 +535,7 @@ module UiUtils {
 
             var filters = [];
             if (aFilter & CbUtils.TFilterType.ByWithoutCompletedTask) {
-                filters.push(generatePropertyFilter(['status', 'name'], KCompletedStatusValues, false));
+                filters.push(generatePropertyStringFilter(['status', 'name'], KCompletedStatusValues, false));
             }
             filters.forEach(function(f) {
                 cbTasks = cbTasks.filter(f);
@@ -575,7 +603,8 @@ module UiUtils {
 
             var filters = [];
             if (aFilter & CbUtils.TFilterType.ByWithoutCompletedTask) {
-                filters.push(generatePropertyFilter(['status', 'name'], KCompletedStatusValues, false));
+                filters.push(generatePropertyStringFilter(['status', 'name'], KCompletedStatusValues, false));
+                filters.push(generatePropertyArrayFilter('assignedTo', 'uri', [aUserUri], true));
             }
             filters.forEach(function(f) {
                 cbTasks = cbTasks.filter(f);
