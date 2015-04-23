@@ -129,6 +129,16 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function (
                     UiUtils.ModalHelper.closeModal();
                 });
             }
+        }, {
+            id: 'update',
+            text: 'Update',
+            onClick: function(id: string, param: DhxExt.Gantt.TGanttContextCbParam) {
+//                console.log(param);
+                UiUtils.ModalHelper.showModal("Rescheduling tasks");
+                gantt.adjustDependentTasks(param.taskId, function() {
+                    UiUtils.ModalHelper.closeModal();
+                });
+            }
         }]
     });
 

@@ -1125,7 +1125,9 @@ module UiUtils {
         constructor(aEl: HTMLElement, aReadOnly: boolean) {
             super(aEl, aReadOnly);
 
-            this._openedTaskMap = {};
+            var openedTaskMap = localStorage.getItem('openedTaskMap');
+
+            this._openedTaskMap = openedTaskMap ? JSON.parse(openedTaskMap) : {};
 
             this.doIsValidNewTask = (id, task) => {
                 return this._doIsValidNewTask(id, task);
@@ -1155,6 +1157,7 @@ module UiUtils {
             };
             this.onTaskOpened = (id) => {
                 this._openedTaskMap[id] = true;
+                localStorage.setItem('openedTaskMap', JSON.stringify(this._openedTaskMap));
             };
             this.onTaskClosed = (id) => {
                 delete this._openedTaskMap[id];
