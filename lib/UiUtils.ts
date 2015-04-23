@@ -448,6 +448,11 @@ module UiUtils {
 
             var match = false;
 
+            // FIXME: quick fix for skipping release
+            if (obj.plannedReleaseDate) {
+                return true;
+            }
+
             obj = obj[aFirstPropName];
             if (obj instanceof Array) {
                 var i, iLen = obj.length;
