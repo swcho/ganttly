@@ -39,7 +39,7 @@ module UiUtils {
         'Resolved': '#00a85d'
     };
 
-    var KCompletedStatusValues = ['Closed', 'Completed'];
+    var KCompletedStatusValues = ['Closed', 'Completed', 'Released'];
 
     interface IValidityChecker {
         name: string;
