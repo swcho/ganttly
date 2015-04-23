@@ -459,12 +459,8 @@ module UiUtils {
                             break;
                         }
                     }
-                } else {
-                    match = true;
                 }
 
-            } else {
-                match = true;
             }
 
             return aInclude ? match: !match;
@@ -1190,6 +1186,7 @@ module UiUtils {
             };
             this.onTaskClosed = (id) => {
                 delete this._openedTaskMap[id];
+                localStorage.setItem('openedTaskMap', JSON.stringify(this._openedTaskMap));
             };
 
             this.setToolTipProvider(function(start,end,task){
@@ -1302,9 +1299,7 @@ module UiUtils {
 
         refreshTask(aTaskId, aCb) {
             var task = this._gantt.getTask(aTaskId);
-            debugger;
             CbUtils.cache.refreshTask(this._userUri, task._data, (err, cbTask) => {
-                debugger;
                 this._update();
                 aCb(err);
             });
@@ -1411,7 +1406,9 @@ module UiUtils {
                 name: aTask.text,
                 startDate: aTask.start_date,
                 description: aTask.text + '\n\nCreated by ganttly',
-                descFormat: "html"
+                descFormat: "html",
+                estimatedMillis: aTask.duration * unitWorkingDay,
+                endDate: aTask.end_date
             };
 
             if (aTask.parent) {
