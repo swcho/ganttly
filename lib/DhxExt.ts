@@ -323,6 +323,7 @@ module DhxExt {
         }
 
         export interface TTask {
+            $new?: boolean;
             $source?: string[];
             $target?: string[];
 

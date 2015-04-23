@@ -453,6 +453,7 @@ module Cb {
         }
 
         deleteItem(aItemUri: string, aCb: (err) => void) {
+            throw "DELETE " + aItemUri;
             send('DELETE', aItemUri, null, aCb);
         }
     }

@@ -1336,7 +1336,7 @@ module UiUtils {
         private _doIsValidNewTask(aTaskId: string, aTask: DhxExt.Gantt.TTask): boolean {
 
             /* if user mode */
-            if (this._userUri) {
+            if (this._userUri && aTask.$new) {
                 if (!aTask.parent) {
                     this._showMessage('You cannot add task from top level.');
                     this._gantt.deleteTask(aTaskId);
@@ -1347,7 +1347,7 @@ module UiUtils {
 
                     if (1 < trackers.length) {
                         this._showMessage('You cannot add a project with multiple trackers.');
-                        this._gantt.deleteTask(aTaskId);
+                        //this._gantt.deleteTask(aTaskId);
                         return false;
                     }
                 }
