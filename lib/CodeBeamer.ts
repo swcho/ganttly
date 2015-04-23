@@ -1545,6 +1545,21 @@ if (verify) {
             });
         }
 
+        refreshTask(aCacheUri: string, aUpdatedTask: Cb.TTask, aCb: (err, task: Cb.TTask) => void) {
+            Cb.item.getItem(aUpdatedTask.uri, (err, item) => {
+
+                if (item) {
+                    this._itemMap[item.uri] = item;
+                    var index = this._getTaskIndex(aCacheUri, item.uri);
+                    if (index != -1) {
+                        this._cache[aCacheUri].tasks[index] = item;
+                    }
+                }
+
+                aCb(err, item);
+            });
+        }
+
         deleteTask(aCacheUri: string, aTaskUri: string, aCb: (err) => void) {
             Cb.tracker.deleteItem(aTaskUri, (err) => {
 

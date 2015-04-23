@@ -1271,6 +1271,16 @@ module UiUtils {
             );
         }
 
+        refreshTask(aTaskId, aCb) {
+            var task = this._gantt.getTask(aTaskId);
+            debugger;
+            CbUtils.cache.refreshTask(this._userUri, task._data, (err, cbTask) => {
+                debugger;
+                this._update();
+                aCb(err);
+            });
+        }
+
         private _update(aCb?) {
 
             if (this._projectUri) {
