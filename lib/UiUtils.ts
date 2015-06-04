@@ -780,10 +780,13 @@ module UiUtils {
                         cbUser.openSelect();
                     });
                 } else {
+                    var userName = getUserName(user);
                     cbUser.setItems([{
                         id: user.uri,
-                        text: getUserName(user)
+                        text: userName
                     }]);
+
+                    document.title = userName + ' - simply gently ganttly';
 
                     cbUser.selectItemById(user.uri);
                 }
