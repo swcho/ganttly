@@ -330,8 +330,9 @@ module DhxGanttExt {
     export function setDateCentered(aDate: Date) {
 
         var pos = gantt.posFromDate(aDate) - gantt.$task.offsetWidth /2;
+        var scrollState = gantt.getScrollState();
 
-        gantt.scrollTo(pos, 0);
+        gantt.scrollTo(pos, scrollState.y);
 
     }
 

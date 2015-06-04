@@ -1327,9 +1327,7 @@ module UiUtils {
 
                     });
 
-                    this.clearAll();
-
-                    this.parse(resp);
+                    this.update(resp);
 
                     setTimeout(function() {
                         DhxGanttExt.setDateCentered(prev_date || new Date());
@@ -1356,9 +1354,7 @@ module UiUtils {
 
                     });
 
-                    this.clearAll();
-
-                    this.parse(resp);
+                    this.update(resp);
 
                     setTimeout(function() {
                         DhxGanttExt.setDateCentered(prev_date || new Date());

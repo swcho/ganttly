@@ -204,7 +204,8 @@ var DhxGanttExt;
     DhxGanttExt.init = init;
     function setDateCentered(aDate) {
         var pos = gantt.posFromDate(aDate) - gantt.$task.offsetWidth / 2;
-        gantt.scrollTo(pos, 0);
+        var scrollState = gantt.getScrollState();
+        gantt.scrollTo(pos, scrollState.y);
     }
     DhxGanttExt.setDateCentered = setDateCentered;
     function setParentOpen(aTask) {

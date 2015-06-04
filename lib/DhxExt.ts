@@ -1242,6 +1242,12 @@ module DhxExt {
                 this._gantt.clearAll();
             }
 
+            update(aData) {
+                //var scrollState = this._gantt.getScrollState();
+                //this._gantt.clearAll();
+                this._gantt.parse(aData);
+            }
+
             setToolTipProvider(aProvider: FNTooltipProvider) {
                 this._gantt.templates.tooltip_text = aProvider;
             }
