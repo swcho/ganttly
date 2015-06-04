@@ -1208,6 +1208,14 @@ module UiUtils {
                 ret += '<p>' + DhxGanttExt.formatDate(start) + ' - ' + DhxGanttExt.formatDate(end) + ' (' + task.duration + ')</p>';
                 return ret;
             });
+
+            //window.addEventListener('beforeunload', function(e) {
+            //    debugger;
+            //});
+            window.onbeforeunload = (e) => {
+                var scrollState = this._gantt.getScrollState();
+                localStorage.setItem('scrollStateBeforeUnload', JSON.stringify(scrollState));
+            };
         }
 
         showTaskByProject(
@@ -1327,7 +1335,7 @@ module UiUtils {
 
                     });
 
-                    this.update(resp);
+                    this.parse(resp);
 
                     setTimeout(function() {
                         DhxGanttExt.setDateCentered(prev_date || new Date());
@@ -1354,7 +1362,13 @@ module UiUtils {
 
                     });
 
-                    this.update(resp);
+                    this.parse(resp);
+
+                    var scrollStateBeforeUnload = JSON.parse(localStorage.getItem('scrollStateBeforeUnload'));
+                    if (scrollStateBeforeUnload) {
+                        localStorage.removeItem('scrollStateBeforeUnload');
+                        this._gantt.scrollTo(scrollStateBeforeUnload.x, scrollStateBeforeUnload.y);
+                    }
 
                     setTimeout(function() {
                         DhxGanttExt.setDateCentered(prev_date || new Date());
