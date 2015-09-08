@@ -3,6 +3,7 @@
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
 /// <reference path="../../lib/CodeBeamer.ts"/>
+/// <reference path="../../lib/UiUtils.ts"/>
 angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $state, $stateParams, $calendar, $codeBeamer) {
     console.log($stateParams);
     var unitDay = 1000 * 60 * 60 * 24;
@@ -392,8 +393,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     $scope.onTaskShiftClicked = function (gantt, id) {
         var match = /\/(\d+)$/.exec(id);
         if (match) {
-            contextWin.show('task_details', gConfig.cbBaseUrl + id);
-            contextWin.show('task_relations', gConfig.cbBaseUrl + '/proj/tracker/itemDependencyGraph.spr?task_id=' + match[1]);
+            contextWin.show('task_details', Settings.getBaseUrl() + id);
+            contextWin.show('task_relations', Settings.getBaseUrl() + '/proj/tracker/itemDependencyGraph.spr?task_id=' + match[1]);
         }
     };
     $scope.onTaskUpdate = function (id, item, mode) {
@@ -518,7 +519,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                     'height=' + height,
                     'fullscreen=yes'
                 ].join(',');
-                var win = open(gConfig.cbBaseUrl + url, null, params);
+                var win = open(Settings.getBaseUrl() + url, null, params);
                 win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
                 win.resizeTo(width, height);
             }

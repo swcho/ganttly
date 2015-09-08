@@ -167,7 +167,7 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function (
                     'height=' + height,
                 'fullscreen=yes' // only works in IE, but here for completeness
             ].join(',');
-            var win = open(gConfig.cbBaseUrl + url, null, params);
+            var win = open(Settings.getBaseUrl() + url, null, params);
             win.moveTo((screen.width - width)/2, (screen.height - height)/2);
             win.resizeTo(width, height);
         };

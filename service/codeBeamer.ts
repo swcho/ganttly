@@ -1,5 +1,6 @@
 
 /// <reference path="../typings/tsd.d.ts"/>
+/// <reference path="../lib/Settings.ts"/>
 
 /**
  * codeBeamer definitions
@@ -229,7 +230,7 @@ declare var gConfig;
 
 angular.module('ganttly').factory('$codeBeamer',function($http: ng.IHttpService) {
 
-    var host = gConfig.cbBaseUrl + '/rest';
+    var host = Settings.getBaseUrl() + '/rest';
     var user = gConfig.cbUser;
     var pass = gConfig.cbPass;
     var concurrentCount = gConfig.concurrentCount || 5;

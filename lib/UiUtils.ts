@@ -1,5 +1,6 @@
 
 /// <reference path="../directive/dhxGantt/dhxGantt.ts"/>
+/// <reference path="Settings.ts"/>
 /// <reference path="CodeBeamer.ts"/>
 /// <reference path="DhxExt.ts"/>
 

@@ -1,4 +1,5 @@
 /// <reference path='../typings/tsd.d.ts'/>
+/// <reference path='Settings.ts'/>
 
 declare var gConfig;
 declare var Http;
@@ -243,7 +244,7 @@ module Cb {
         categories: TCmdb[];
     }
 
-    var host = gConfig.cbBaseUrl + '/rest';
+    var host = Settings.getBaseUrl() + '/rest';
     var cbUser = gConfig.cbUser;
     var pass = gConfig.cbPass;
     var concurrentCount = gConfig.concurrentCount || 5;

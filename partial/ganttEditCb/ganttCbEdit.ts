@@ -4,6 +4,7 @@
 /// <reference path="../../typings/tsd.d.ts"/>
 /// <reference path="../../service/codeBeamer.ts"/>
 /// <reference path="../../lib/CodeBeamer.ts"/>
+/// <reference path="../../lib/UiUtils.ts"/>
 
 declare var dhtmlXWindows;
 
@@ -432,8 +433,8 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
     $scope.onTaskShiftClicked = function(gantt, id) {
         var match = /\/(\d+)$/.exec(id);
         if (match) {
-            contextWin.show('task_details', gConfig.cbBaseUrl + id);
-            contextWin.show('task_relations', gConfig.cbBaseUrl + '/proj/tracker/itemDependencyGraph.spr?task_id=' + match[1]);
+            contextWin.show('task_details', Settings.getBaseUrl() + id);
+            contextWin.show('task_relations', Settings.getBaseUrl() + '/proj/tracker/itemDependencyGraph.spr?task_id=' + match[1]);
         }
     };
 
@@ -569,7 +570,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function (
                     'height=' + height,
                     'fullscreen=yes' // only works in IE, but here for completeness
                 ].join(',');
-                var win = open(gConfig.cbBaseUrl + url, null, params);
+                var win = open(Settings.getBaseUrl() + url, null, params);
                 win.moveTo((screen.width - width)/2, (screen.height - height)/2);
                 win.resizeTo(width, height);
             }
