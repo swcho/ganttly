@@ -16,6 +16,7 @@ declare module DhxGantt {
         end_date?: Date;
         duration?: number;
         order?: number;
+        priority?: string;
         progress?: number;
         open?: boolean;
         parent?: string;

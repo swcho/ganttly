@@ -1148,6 +1148,9 @@ module DhxExt {
             onAfterTaskDelete: (taskId: string, task: TTask) => void;
             onTaskOpened: (taskId: string) => void;
             onTaskClosed: (taskId: string) => void;
+            onLinkAdd: (linkId: string, link: TLink) => void;
+            onLinkUpdate: (linkId: string, link: TLink) => void;
+            onLinkDelete: (linkId: string, link: TLink) => void;
             handleNewTaskAdded: (taskId: string, task: TTask) => boolean;
 
             constructor(aEl: HTMLElement, aReadOnly) {
@@ -1232,6 +1235,21 @@ module DhxExt {
                 this._addEvent('onTaskClosed', (id) => {
                     if (this.onTaskClosed) {
                         this.onTaskClosed(id);
+                    }
+                });
+                this._addEvent('onAfterLinkAdd', (id, item) => {
+                    if (this.onLinkAdd) {
+                        this.onLinkAdd(id, item);
+                    }
+                });
+                this._addEvent('onAfterLinkUpdate', (id, item) => {
+                    if (this.onLinkUpdate) {
+                        this.onLinkUpdate(id, item);
+                    }
+                });
+                this._addEvent('onAfterLinkDelete', (id, item) => {
+                    if (this.onLinkDelete) {
+                        this.onLinkDelete(id, item);
                     }
                 });
 

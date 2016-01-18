@@ -84,6 +84,12 @@ var DhxGanttExt;
         // Mark today
         gantt.config.lightbox.sections = [
             { name: "description", height: 38, map_to: "text", type: "textarea", focus: true },
+            //            {name: "priority", height: 22, map_to: "priority", type: "select", options: [
+            //                {key: "Hight", label: "Hight"},
+            //                {key: "Normal", label: "Normal"},
+            //                {key: "Low", label: "Low"}
+            //            ]},
+            //            {name: "time", height: 72, type: "time", map_to: "auto", time_format: ["%d", "%m", "%Y", "%H:%i"]}
             {
                 name: "time",
                 height: 72,
@@ -97,9 +103,9 @@ var DhxGanttExt;
         ];
         // Tree icons: ref:http://docs.dhtmlx.com/gantt/desktop__tree_column.html
         var task_class_names = {};
-        task_class_names[2 /* Project */] = 'task_type_project';
-        task_class_names[1 /* User */] = 'task_type_user';
-        task_class_names[3 /* Release */] = 'task_type_release';
+        task_class_names[DhxGanttExt.TTaskType.Project] = 'task_type_project';
+        task_class_names[DhxGanttExt.TTaskType.User] = 'task_type_user';
+        task_class_names[DhxGanttExt.TTaskType.Release] = 'task_type_release';
         gantt.templates.grid_folder = function (item) {
             var icon_class_by_type = task_class_names[item._type];
             var icon_class = icon_class_by_type || 'gantt_folder_' + (item.$open ? "open" : "closed");
@@ -167,7 +173,9 @@ var DhxGanttExt;
                     left: e.clientX + 10
                 });
                 var pos = getMousePos(e);
-                $debug.html('<p>' + pos.x + ',' + pos.y + '</p>' + '<p>' + date_to_str(getDateFromPos(pos.x)) + '</p>');
+                $debug.html('<p>' + pos.x + ',' + pos.y + '</p>' +
+                    //                        '<p>' + date_to_str(gantt['_date_from_pos'](pos.x)) + '</p>' +
+                    '<p>' + date_to_str(getDateFromPos(pos.x)) + '</p>');
             });
         }
         gantt.$task_data.addEventListener('mousewheel', function (evt) {
@@ -359,15 +367,15 @@ var DhxGanttExt;
             gantt.config.scale_height = 50;
             gantt.config.step = 1;
             gantt.config.subscales = [{
-                unit: "day",
-                step: 1,
-                //                        date:"%d %D",
-                template: function (date) {
-                    var dateToStr = gantt.date.date_to_str("%d %D");
-                    var holiday = null; //$calendar.isHoliday(date);
-                    return holiday ? holiday.title + '<br>' + dateToStr(date) : dateToStr(date);
-                }
-            }];
+                    unit: "day",
+                    step: 1,
+                    //                        date:"%d %D",
+                    template: function (date) {
+                        var dateToStr = gantt.date.date_to_str("%d %D");
+                        var holiday = null; //$calendar.isHoliday(date);
+                        return holiday ? holiday.title + '<br>' + dateToStr(date) : dateToStr(date);
+                    }
+                }];
             gantt.templates.date_scale = function (date) {
                 var dateToStr = gantt.date.date_to_str("%M w%W");
                 return dateToStr(date);
@@ -407,10 +415,10 @@ var DhxGanttExt;
             gantt.config.scale_height = 50;
             gantt.config.date_scale = "%F, %Y";
             gantt.config.subscales = [{
-                unit: "week",
-                step: 1,
-                date: "w%W"
-            }];
+                    unit: "week",
+                    step: 1,
+                    date: "w%W"
+                }];
             gantt.templates.date_scale = null;
             gantt.templates.scale_cell_class = function (date) {
                 if (date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
@@ -440,23 +448,23 @@ var DhxGanttExt;
             gantt.config.date_scale = "%Y";
             gantt.config.min_column_width = 50;
             gantt.config.subscales = [{
-                unit: "month",
-                step: 3,
-                template: function (date) {
-                    var dateToStr = gantt.date.date_to_str("%M");
-                    var quarter = {
-                        'Jan': '1',
-                        'Apr': '2',
-                        'Jul': '3',
-                        'Oct': '4'
-                    };
-                    return quarter[dateToStr(date)] + 'Q';
-                }
-            }, {
-                unit: "month",
-                step: 1,
-                date: "%M"
-            }];
+                    unit: "month",
+                    step: 3,
+                    template: function (date) {
+                        var dateToStr = gantt.date.date_to_str("%M");
+                        var quarter = {
+                            'Jan': '1',
+                            'Apr': '2',
+                            'Jul': '3',
+                            'Oct': '4'
+                        };
+                        return quarter[dateToStr(date)] + 'Q';
+                    }
+                }, {
+                    unit: "month",
+                    step: 1,
+                    date: "%M"
+                }];
             gantt.templates.date_scale = null;
             gantt.templates.scale_cell_class = function (date) {
                 if (date.getMonth() == now.getMonth() && date.getFullYear() == now.getFullYear()) {
@@ -596,11 +604,13 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                 DhxGanttExt.setScale(scale);
             }, true);
             var tooltip_handler = $scope[$attrs['dhxToolTip']];
-            gantt.templates.tooltip_text = tooltip_handler || function () {
-            };
+            gantt.templates.tooltip_text = tooltip_handler || function () { };
             var taskChangeMode;
             var moveStartDate;
             var eventAttachIds = [
+                /**
+                 * Task selection
+                 */
                 gantt.attachEvent("onTaskClick", function (id, e) {
                     var taskClickWithShift = e ? e.shiftKey : false;
                     if ($attrs['dhxTaskShiftClicked'] && taskClickWithShift) {
@@ -619,6 +629,9 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                         $scope[$attrs['dhxTaskDblClick']](gantt, id, event);
                     }
                 }),
+                /**
+                 * Task editing events
+                 */
                 gantt.attachEvent("onAfterTaskAdd", function (id, item) {
                     if ($attrs['dhxTaskAdd']) {
                         $scope[$attrs['dhxTaskAdd']](gantt, id, item);
@@ -650,6 +663,9 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                         $scope[$attrs['dhxTaskDelete']](gantt, id, item);
                     }
                 }),
+                /**
+                 *  Task open/close event
+                 */
                 gantt.attachEvent("onTaskOpened", function (id) {
                     if ($attrs['dhxTaskOpened']) {
                         $scope[$attrs['dhxTaskOpened']](gantt, id);
@@ -660,6 +676,9 @@ angular.module('ganttly').directive('dhxGantt', function ($calendar) {
                         $scope[$attrs['dhxTaskClosed']](gantt, id);
                     }
                 }),
+                /**
+                 * Link editing events
+                 */
                 gantt.attachEvent("onAfterLinkAdd", function (id, item) {
                     if ($attrs['dhxLinkAdd']) {
                         $scope[$attrs['dhxLinkAdd']](gantt, id, item);

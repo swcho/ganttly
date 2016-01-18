@@ -25,8 +25,10 @@ module CalendarUtils {
         end: Date;
     }
 
+    // http://kayaposoft.com/enrico/json/v1.0/index.php?action=getSupportedCountries
+    // http://kayaposoft.com/enrico/json/v1.0/index.php?action=getPublicHolidaysForYear&year=2013&country=kor
 //    var url = 'https://www.google.com/calendar/feeds/ko.south_korea%23holiday%40group.v.calendar.google.com/public/full-noattendees'
-    var url = 'http://www.google.com/calendar/feeds/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic'
+    var url = 'http://www.google.com/calendar/feeds/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic';
     var calEntries: TCalEntry[] = window['gCalData'] || [];
     var workingHours = gConfig.workingHours;
     var unitDay = 1000 * 60 * 60 * 24;

@@ -66,15 +66,15 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
      * Navigation button
      */
     var frmNavi = new DhxExt.CForm(document.getElementById('idNavi'), [{
-        name: 'bt_navi_today',
-        type: 'button',
-        value: 'Today',
-        eventHandlers: {
-            onButtonClick: function () {
-                DhxGanttExt.setDateCentered(new Date());
+            name: 'bt_navi_today',
+            type: 'button',
+            value: 'Today',
+            eventHandlers: {
+                onButtonClick: function () {
+                    DhxGanttExt.setDateCentered(new Date());
+                }
             }
-        }
-    }]);
+        }]);
     context.addComponent(frmNavi);
     /**
      * Gantt
@@ -83,39 +83,39 @@ angular.module('ganttly').controller('GanttCbUserCtrl', function ($scope, $state
     context.addComponent(gantt);
     gantt.setContextMenu({
         menuItems: [{
-            id: 'open_task',
-            text: 'Open in new window',
-            onClick: function (id, param) {
-                var url = param.taskId || param.linkId;
-                var width = 1280;
-                var height = 720;
-                var params = [
-                    'width=' + width,
-                    'height=' + height,
-                    'fullscreen=yes'
-                ].join(',');
-                var win = open(Settings.getBaseUrl() + url, null, params);
-                win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
-                win.resizeTo(width, height);
-            }
-        }, {
-            id: 'adjust_schedule',
-            text: 'Adjust associated schedules',
-            onClick: function (id, param) {
-                //                console.log(param);
-                UiUtils.ModalHelper.showModal("Rescheduling tasks");
-                gantt.adjustDependentTasks(param.taskId, function () {
-                    UiUtils.ModalHelper.closeModal();
-                });
-            }
-        }, {
-            id: 'partial_refresh',
-            text: 'Partial refresh',
-            onClick: function (id, param) {
-                gantt.refreshTask(param.taskId, function () {
-                });
-            }
-        }]
+                id: 'open_task',
+                text: 'Open in new window',
+                onClick: function (id, param) {
+                    var url = param.taskId || param.linkId;
+                    var width = 1280;
+                    var height = 720;
+                    var params = [
+                        'width=' + width,
+                        'height=' + height,
+                        'fullscreen=yes' // only works in IE, but here for completeness
+                    ].join(',');
+                    var win = open(Settings.getBaseUrl() + url, null, params);
+                    win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+                    win.resizeTo(width, height);
+                }
+            }, {
+                id: 'adjust_schedule',
+                text: 'Adjust associated schedules',
+                onClick: function (id, param) {
+                    //                console.log(param);
+                    UiUtils.ModalHelper.showModal("Rescheduling tasks");
+                    gantt.adjustDependentTasks(param.taskId, function () {
+                        UiUtils.ModalHelper.closeModal();
+                    });
+                }
+            }, {
+                id: 'partial_refresh',
+                text: 'Partial refresh',
+                onClick: function (id, param) {
+                    gantt.refreshTask(param.taskId, function () {
+                    });
+                }
+            }]
     });
     //    gantt.onDblClicked = function(taskId) {
     //        var url = taskId;

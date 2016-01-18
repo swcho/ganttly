@@ -191,7 +191,7 @@ module UiUtils {
     var KGroupKeyIdentifiers: {[type: number]: (aAllMaps: CbUtils.TAllMaps, aItem: Cb.TItem) => string} = {};
     KGroupKeyIdentifiers[CbUtils.TGroupType.ByUser] = function(aAllMaps: CbUtils.TAllMaps, aItem: Cb.TItem) {
         var ret = KUnknownIdentifier;
-        var task = <Cb.TTask>aItem
+        var task = <Cb.TTask>aItem;
         if (task.assignedTo) {
             ret = task.assignedTo[0].uri;
             if (task.assignedTo.length != 1) {
@@ -774,24 +774,26 @@ module UiUtils {
                 aOnChange(id);
             };
 
-            Cb.user.getByUri(aInitialId, function(err, user) {
-                if (err || !user) {
-                    getUserPage('', function(items) {
-                        cbUser.setItems(items);
-                        cbUser.openSelect();
-                    });
-                } else {
-                    var userName = getUserName(user);
-                    cbUser.setItems([{
-                        id: user.uri,
-                        text: userName
-                    }]);
+            if (aInitialId) {
+                Cb.user.getByUri(aInitialId, function(err, user) {
+                    if (err || !user) {
+                        getUserPage('', function(items) {
+                            cbUser.setItems(items);
+                            cbUser.openSelect();
+                        });
+                    } else {
+                        var userName = getUserName(user);
+                        cbUser.setItems([{
+                            id: user.uri,
+                            text: userName
+                        }]);
 
-                    document.title = userName + ' - simply gently ganttly';
+                        document.title = userName + ' - simply gently ganttly';
 
-                    cbUser.selectItemById(user.uri);
-                }
-            });
+                        cbUser.selectItemById(user.uri);
+                    }
+                });
+            }
 
             aContext.addComponent(cbUser);
         }
@@ -1196,6 +1198,24 @@ module UiUtils {
             this.onTaskClosed = (id) => {
                 delete this._openedTaskMap[id];
                 localStorage.setItem('openedTaskMap', JSON.stringify(this._openedTaskMap));
+            };
+            this.onLinkAdd = (id, item) => {
+                console.log(id, item);
+                CbUtils.cache.createAssociation(item.target, item.source, (err, data) => {
+                    console.log('createAssocResp', err, data);
+                });
+            };
+            this.onLinkUpdate = (id, item) => {
+                console.log(id, item);
+                CbUtils.cache.updateAssociation(item, (err, data) => {
+                    console.log('updateAssocResp', err, data);
+                });
+            };
+            this.onLinkDelete = (id, item) => {
+                console.log(id, item);
+                CbUtils.cache.deleteAssociation(id, (err, data) => {
+                    console.log('deleteAssocResp', id, err, data);
+                });
             };
 
             this.setToolTipProvider(function(start,end,task){
