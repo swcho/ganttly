@@ -33,6 +33,7 @@
     "jquery-xml2json": "~0.0.8",
     "scheduler": "~4.2.0",
     "dateformat": "~0.4.1",
-    "http-js": "~0.0.1"
+    "http-js": "~0.0.1",
+    "lodash": "~4.1.0"
   }
 }

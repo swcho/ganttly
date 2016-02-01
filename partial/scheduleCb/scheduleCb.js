@@ -34,50 +34,49 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
         return false;
     }
     var formItems = [{
-        type: "settings",
-        position: "label-top"
-    }, {
-        type: 'block',
-        list: [{
-            name: 'start_date',
-            type: "calendar",
-            label: "Start Date",
-            //            skin:"dhx_skyblue",
-            //            enableTime:true,
-            dateFormat: "%Y-%m-%d",
-            //            value: dateFormat("%Y-%m-%d", schState.min_date),
-            eventHandlers: {
-                onChange: function (value, state) {
-                    var schState = scheduler.getState();
-                    if (schState.min_date !== value) {
-                        updateRange(value, schState.max_date);
+            type: "settings", position: "label-top"
+        }, {
+            type: 'block',
+            list: [{
+                    name: 'start_date',
+                    type: "calendar",
+                    label: "Start Date",
+                    //            skin:"dhx_skyblue",
+                    //            enableTime:true,
+                    dateFormat: "%Y-%m-%d",
+                    //            value: dateFormat("%Y-%m-%d", schState.min_date),
+                    eventHandlers: {
+                        onChange: function (value, state) {
+                            var schState = scheduler.getState();
+                            if (schState.min_date !== value) {
+                                updateRange(value, schState.max_date);
+                            }
+                        }
                     }
-                }
-            }
-        }]
-    }, {
-        type: "newcolumn"
-    }, {
-        type: 'block',
-        list: [{
-            name: 'end_date',
-            type: "calendar",
-            label: "End Date",
-            offesetLeft: 10,
-            inputLeft: 10,
-            //            skin:"dhx_skyblue",
-            dateFormat: "%Y-%m-%d",
-            //            value: dateFormat("%Y-%m-%d", schState.max_date),
-            eventHandlers: {
-                onChange: function (value, state) {
-                    var schState = scheduler.getState();
-                    if (schState.max_date !== value) {
-                        updateRange(schState.min_date, value);
+                }]
+        }, {
+            type: "newcolumn"
+        }, {
+            type: 'block',
+            list: [{
+                    name: 'end_date',
+                    type: "calendar",
+                    label: "End Date",
+                    offesetLeft: 10,
+                    inputLeft: 10,
+                    //            skin:"dhx_skyblue",
+                    dateFormat: "%Y-%m-%d",
+                    //            value: dateFormat("%Y-%m-%d", schState.max_date),
+                    eventHandlers: {
+                        onChange: function (value, state) {
+                            var schState = scheduler.getState();
+                            if (schState.max_date !== value) {
+                                updateRange(schState.min_date, value);
+                            }
+                        }
                     }
-                }
-            }
-        }]
-    }];
+                }]
+        }];
     $scope.formItems = formItems;
     $codeBeamer.getTasks({
         projectUri: paramProject
@@ -146,7 +145,7 @@ angular.module('ganttly').controller('ScheduleCbCtrl', function ($scope, $state,
             var params = [
                 'width=' + width,
                 'height=' + height,
-                'fullscreen=yes'
+                'fullscreen=yes' // only works in IE, but here for completeness
             ].join(',');
             var win = open(Settings.getBaseUrl() + url, null, params);
             win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);

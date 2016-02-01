@@ -1,4 +1,5 @@
 
+/// <reference path='../typings/tsd.d.ts'/>
 /// <reference path="../directive/dhxGantt/dhxGantt.ts"/>
 /// <reference path="Settings.ts"/>
 /// <reference path="CodeBeamer.ts"/>
@@ -131,7 +132,7 @@ module UiUtils {
                 dhxTask.color = default_color[cbTask.status.name];
             }
         } else {
-            dhxTask.color = 'white';
+            dhxTask.color = 'black';
         }
 
         var warnings = [];
@@ -282,7 +283,7 @@ module UiUtils {
 
 
         if (debug_duplication) {
-            var mapTask = {}
+            var mapTask = {};
             aTasks.forEach(function(t) {
                 if (mapTask[t.uri]) {
                     debugger;
@@ -1206,10 +1207,10 @@ module UiUtils {
                 });
             };
             this.onLinkUpdate = (id, item) => {
-                console.log(id, item);
-                CbUtils.cache.updateAssociation(item, (err, data) => {
-                    console.log('updateAssocResp', err, data);
-                });
+                console.error(id, item);
+                //CbUtils.cache.updateAssociation(item, (err, data) => {
+                //    console.log('updateAssocResp', err, data);
+                //});
             };
             this.onLinkDelete = (id, item) => {
                 console.log(id, item);

@@ -63,69 +63,67 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
         $scope.$apply();
     });
     $scope.cbScaleItems = [{
-        id: 'Day',
-        text: '일'
-    }, {
-        id: 'Week',
-        text: '주'
-    }, {
-        id: 'Month',
-        text: '월'
-    }, {
-        id: 'Year',
-        text: '년'
-    }];
+            id: 'Day',
+            text: '일'
+        }, {
+            id: 'Week',
+            text: '주'
+        }, {
+            id: 'Month',
+            text: '월'
+        }, {
+            id: 'Year',
+            text: '년'
+        }];
     $scope.scale = 'Week';
     $scope.tasks = {
-        data: [
-        ],
-        links: [
-        ]
+        data: [],
+        links: []
     };
     var options = [];
     if (projectUri) {
         options = [{
-            name: 'by_user',
-            type: 'checkbox',
-            label: 'By user',
-            checked: groupByUser,
-            eventHandlers: {
-                onChange: function (value, state) {
-                    if (state === groupByUser) {
-                        return;
+                name: 'by_user',
+                type: 'checkbox',
+                label: 'By user',
+                checked: groupByUser,
+                eventHandlers: {
+                    onChange: function (value, state) {
+                        if (state === groupByUser) {
+                            return;
+                        }
+                        console.log('****** by_user');
+                        $state.go('ganttCbProject', {
+                            project: projectUri,
+                            groupByUser: state ? 'true' : 'false'
+                        }, {
+                            inherit: false
+                        });
                     }
-                    console.log('****** by_user');
-                    $state.go('ganttCbProject', {
-                        project: projectUri,
-                        groupByUser: state ? 'true' : 'false'
-                    }, {
-                        inherit: false
-                    });
                 }
-            }
-        }];
+            }];
     }
     if (userUri) {
         options = [{
-            name: 'by_project',
-            type: 'checkbox',
-            label: 'By project',
-            checked: groupByProject,
-            eventHandlers: {
-                onChange: function (value, state) {
-                    if (state === groupByProject) {
-                        return;
+                name: 'by_project',
+                type: 'checkbox',
+                label: 'By project',
+                checked: groupByProject,
+                eventHandlers: {
+                    onChange: function (value, state) {
+                        if (state === groupByProject) {
+                            return;
+                        }
+                        console.log('****** by_project');
+                        $state.go('ganttCbProject', {
+                            user: userUri,
+                            groupByProject: state ? 'true' : 'false'
+                        }, {
+                            inherit: false
+                        });
                     }
-                    console.log('****** by_project');
-                    $state.go('ganttCbProject', {
-                        user: userUri,
-                        groupByProject: state ? 'true' : 'false'
-                    }, {
-                        inherit: false
-                    });
                 }
-            }
-        }];
+            }];
     }
     $scope.options = options;
     $scope.setUser = function (uri) {
@@ -272,7 +270,11 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
             for (key in wins) {
                 winInfo = wins[key];
                 if (!winInfo.win.closed) {
-                    if (!winInfo.geo || winInfo.geo.x !== winInfo.win.screenX || winInfo.geo.y !== winInfo.win.screenY || winInfo.geo.width !== winInfo.win.outerWidth || winInfo.geo.height !== winInfo.win.outerHeight) {
+                    if (!winInfo.geo ||
+                        winInfo.geo.x !== winInfo.win.screenX ||
+                        winInfo.geo.y !== winInfo.win.screenY ||
+                        winInfo.geo.width !== winInfo.win.outerWidth ||
+                        winInfo.geo.height !== winInfo.win.outerHeight) {
                         winInfo.geo = {
                             x: winInfo.win.screenX,
                             y: winInfo.win.screenY,
@@ -312,7 +314,7 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                     var params = [
                         'width=' + width,
                         'height=' + height,
-                        'fullscreen=yes'
+                        'fullscreen=yes' // only works in IE, but here for completeness
                     ].join(',');
                     var win = open(aUrl, null, params);
                     win.moveTo(x, y);
@@ -508,67 +510,67 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
      */
     var contextMenu = {
         menuItems: [{
-            id: 'open_task',
-            text: '새창에서 열기',
-            cb: function (param) {
-                var url = param.taskId || param.linkId;
-                var width = 1280;
-                var height = 720;
-                var params = [
-                    'width=' + width,
-                    'height=' + height,
-                    'fullscreen=yes'
-                ].join(',');
-                var win = open(Settings.getBaseUrl() + url, null, params);
-                win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
-                win.resizeTo(width, height);
-            }
-        }, {
-            id: 'adjust_schedule',
-            text: '연관 작업 일정 조정',
-            cb: function (param) {
-                //                console.log(param);
-                var task = gantt.getTask(param.taskId);
-                showModal("Rescheduling tasks");
-                doDependsTasks(task, function () {
-                    closeModal();
-                }, function (precedentTask, task, aCb) {
-                    task.start_date = precedentTask.end_date;
-                    var adjusted_task = get_holiday_awared_task(task, "move");
-                    $codeBeamer.updateTask(adjusted_task, function (err, resp) {
-                        if (!err) {
-                            var task_from_cb = covertCbTaskToDhxTask(resp, task.parent);
-                            task.start_date = task_from_cb.start_date;
-                            task.estimatedMillis = task_from_cb.estimatedMillis;
-                            task.progress = task_from_cb.progress;
-                            task.end_date = task_from_cb.end_date;
-                            gantt.refreshTask(task.id);
-                        }
-                        aCb(err);
-                    });
-                });
-            }
-        }, {
-            id: 'open_user_view',
-            text: '사용자 작업 보기',
-            cb: function (param) {
-                //                var task = gantt.getTask(param.taskId);
-                //                console.log(task);
-                //                console.log(location);
-                if (param.taskId.indexOf('/user') === 0) {
+                id: 'open_task',
+                text: '새창에서 열기',
+                cb: function (param) {
+                    var url = param.taskId || param.linkId;
                     var width = 1280;
                     var height = 720;
                     var params = [
                         'width=' + width,
                         'height=' + height,
-                        'fullscreen=yes'
+                        'fullscreen=yes' // only works in IE, but here for completeness
                     ].join(',');
-                    var win = open(location['origin'] + location.pathname + '/#/ganttCbProject?user=' + param.taskId, null, params);
+                    var win = open(Settings.getBaseUrl() + url, null, params);
                     win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
                     win.resizeTo(width, height);
                 }
-            }
-        }]
+            }, {
+                id: 'adjust_schedule',
+                text: '연관 작업 일정 조정',
+                cb: function (param) {
+                    //                console.log(param);
+                    var task = gantt.getTask(param.taskId);
+                    showModal("Rescheduling tasks");
+                    doDependsTasks(task, function () {
+                        closeModal();
+                    }, function (precedentTask, task, aCb) {
+                        task.start_date = precedentTask.end_date;
+                        var adjusted_task = get_holiday_awared_task(task, "move");
+                        $codeBeamer.updateTask(adjusted_task, function (err, resp) {
+                            if (!err) {
+                                var task_from_cb = covertCbTaskToDhxTask(resp, task.parent);
+                                task.start_date = task_from_cb.start_date;
+                                task.estimatedMillis = task_from_cb.estimatedMillis;
+                                task.progress = task_from_cb.progress;
+                                task.end_date = task_from_cb.end_date;
+                                gantt.refreshTask(task.id);
+                            }
+                            aCb(err);
+                        });
+                    });
+                }
+            }, {
+                id: 'open_user_view',
+                text: '사용자 작업 보기',
+                cb: function (param) {
+                    //                var task = gantt.getTask(param.taskId);
+                    //                console.log(task);
+                    //                console.log(location);
+                    if (param.taskId.indexOf('/user') === 0) {
+                        var width = 1280;
+                        var height = 720;
+                        var params = [
+                            'width=' + width,
+                            'height=' + height,
+                            'fullscreen=yes' // only works in IE, but here for completeness
+                        ].join(',');
+                        var win = open(location['origin'] + location.pathname + '/#/ganttCbProject?user=' + param.taskId, null, params);
+                        win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+                        win.resizeTo(width, height);
+                    }
+                }
+            }]
     };
     $scope.contextMenu = contextMenu;
     //    $codeBeamer.getUserList({
@@ -606,12 +608,12 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 return;
             }
             $scope.cbUserItems = [{
-                id: 'reset',
-                text: '모두'
-            }, {
-                id: resp.uri,
-                text: resp.name
-            }];
+                    id: 'reset',
+                    text: '모두'
+                }, {
+                    id: resp.uri,
+                    text: resp.name
+                }];
             $scope.cbUserSelected = resp.uri;
             //            $scope.$apply();
         });
@@ -623,9 +625,9 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
                 return;
             }
             $scope.cbProjectItems = [{
-                id: resp.uri,
-                text: resp.name
-            }];
+                    id: resp.uri,
+                    text: resp.name
+                }];
             $scope.cbProjectSelected = resp.uri;
             //            $scope.$apply();
         });

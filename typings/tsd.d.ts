@@ -6,3 +6,4 @@
 /// <reference path="dhtmlxscheduler/dhtmlxscheduler.d.ts" />
 /// <reference path="rest/rest.d.ts" />
 /// <reference path="when/when.d.ts" />
+/// <reference path="lodash/lodash.d.ts" />

@@ -216,7 +216,7 @@ module Cb {
         descFormat?: string;
     }
 
-    export interface TAssociationNew extends TItem {
+    export interface TAssociationNew {
         from: string; // uri
         to: string; // uri
         type?: any; // uri
@@ -506,7 +506,7 @@ module Cb {
             }, aCb);
         }
 
-        createAssociation(aItem: TAssociationNew, aCb:(err) => void) {
+        createAssociation(aItem: Cb.TAssociationNew, aCb:(err) => void) {
             aItem.type = aItem.type || "/association/type/1";
             aItem.propagatingSuspects = aItem.propagatingSuspects || false;
             if (!aItem.description) {
@@ -538,7 +538,6 @@ module Cb {
 }
 
 module CbUtils {
-    import TAssociation = cb.TAssociation;
     function capitaliseFirstLetter(string)
     {
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -1614,7 +1613,7 @@ if (verify) {
             }, aCb);
         }
 
-        updateAssociation(aItem: TAssociation, aCb) {
+        updateAssociation(aItem: Cb.TAssociation, aCb) {
             Cb.association.updateAssociation(aItem, aCb);
         }
 

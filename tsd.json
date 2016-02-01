@@ -28,6 +28,9 @@
     },
     "when/when.d.ts": {
       "commit": "a12472597c94a159811c61d41419d55400e6055a"
+    },
+    "lodash/lodash.d.ts": {
+      "commit": "3d2f9971a107e2eee2de3ec5318f5c54071e16ed"
     }
   }
 }

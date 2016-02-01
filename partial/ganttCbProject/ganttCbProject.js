@@ -69,15 +69,15 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
      * Navigation button
      */
     var frmNavi = new DhxExt.CForm(document.getElementById('idNavi'), [{
-        name: 'bt_navi_today',
-        type: 'button',
-        value: 'Today',
-        eventHandlers: {
-            onButtonClick: function () {
-                DhxGanttExt.setDateCentered(new Date());
+            name: 'bt_navi_today',
+            type: 'button',
+            value: 'Today',
+            eventHandlers: {
+                onButtonClick: function () {
+                    DhxGanttExt.setDateCentered(new Date());
+                }
             }
-        }
-    }]);
+        }]);
     context.addComponent(frmNavi);
     /**
      *
@@ -86,45 +86,45 @@ angular.module('ganttly').controller('GanttCbProjectCtrl', function ($scope, $st
     context.addComponent(gantt);
     gantt.setContextMenu({
         menuItems: [{
-            id: 'open_task',
-            text: 'Open item',
-            onClick: function (id, param) {
-                var url = param.taskId || param.linkId;
-                var width = 1280;
-                var height = 720;
-                var params = [
-                    'width=' + width,
-                    'height=' + height,
-                    'fullscreen=yes'
-                ].join(',');
-                var win = open(Settings.getBaseUrl() + url, null, params);
-                win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
-                win.resizeTo(width, height);
-            }
-        }, {
-            id: 'open_by_user',
-            text: 'Edit in user view',
-            onClick: function (id, param) {
-                var task = gantt._gantt.getTask(param.taskId);
-                if (task._userIdList && task._userIdList.length) {
-                    $state.go('ganttCbUser', {
-                        user: task._userIdList[0],
-                        sort: 'sort_end_date_asc',
-                        groupings: 'grp_release'
-                    }, {
-                        inherit: false
-                    });
+                id: 'open_task',
+                text: 'Open item',
+                onClick: function (id, param) {
+                    var url = param.taskId || param.linkId;
+                    var width = 1280;
+                    var height = 720;
+                    var params = [
+                        'width=' + width,
+                        'height=' + height,
+                        'fullscreen=yes' // only works in IE, but here for completeness
+                    ].join(',');
+                    var win = open(Settings.getBaseUrl() + url, null, params);
+                    win.moveTo((screen.width - width) / 2, (screen.height - height) / 2);
+                    win.resizeTo(width, height);
                 }
-            }
-        }, {
-            id: 'debug_task',
-            text: 'Debug Task',
-            onClick: function (id, param) {
-                var task = gantt._gantt.getTask(param.taskId);
-                console.log(task);
-                debugger;
-            }
-        }]
+            }, {
+                id: 'open_by_user',
+                text: 'Edit in user view',
+                onClick: function (id, param) {
+                    var task = gantt._gantt.getTask(param.taskId);
+                    if (task._userIdList && task._userIdList.length) {
+                        $state.go('ganttCbUser', {
+                            user: task._userIdList[0],
+                            sort: 'sort_end_date_asc',
+                            groupings: 'grp_release'
+                        }, {
+                            inherit: false
+                        });
+                    }
+                }
+            }, {
+                id: 'debug_task',
+                text: 'Debug Task',
+                onClick: function (id, param) {
+                    var task = gantt._gantt.getTask(param.taskId);
+                    console.log(task);
+                    debugger;
+                }
+            }]
     });
     if (!paramProject) {
         try {

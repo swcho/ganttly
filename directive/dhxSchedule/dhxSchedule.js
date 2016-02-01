@@ -16,7 +16,10 @@ angular.module('ganttly').directive('dhxSchedule', function ($calendar) {
             scheduler.config.xml_date = "%Y-%m-%d %H:%i";
             var format = scheduler.date.date_to_str("%Y-%m-%d %H:%i");
             scheduler.templates.tooltip_text = function (start, end, event) {
-                return "<b>Summary:</b> " + event.comment + "<br/>" + "<b>Event:</b> " + event.text + "<br/>" + "<b>Start date:</b> " + format(start) + "<br/>" + "<b>End date:</b> " + format(end);
+                return "<b>Summary:</b> " + event.comment + "<br/>" +
+                    "<b>Event:</b> " + event.text + "<br/>" +
+                    "<b>Start date:</b> " + format(start) + "<br/>" +
+                    "<b>End date:</b> " + format(end);
             };
             scheduler.templates.event_class = function (start, end, ev) {
                 return "";
