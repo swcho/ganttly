@@ -1081,20 +1081,36 @@ module CbUtils {
         });
 
         s.push(function(done) {
-            getTasksByTrackers(aUserUri, trackers, function(err, tlist, purilist) {
-                tasks = tlist;
-                projectUriList = purilist;
+            Cb.tracker.getItems(aUserUri, null, function(err, items) {
+                tasks = items;
+                var mapProject = {};
                 var mapRelease = {};
-                tasks.forEach(function(t) {
+                items.forEach(function(t) {
+                    mapProject[t.tracker.project.uri] = null;
                     if (t.release) {
                         t.release.forEach(function(r) {
                             mapRelease[r.uri] = null;
                         });
                     }
                 });
+                projectUriList = Object.keys(mapProject);
                 releaseUriList = Object.keys(mapRelease);
                 done(err);
             });
+            // getTasksByTrackers(aUserUri, trackers, function(err, tlist, purilist) {
+            //     tasks = tlist;
+            //     projectUriList = purilist;
+            //     var mapRelease = {};
+            //     tasks.forEach(function(t) {
+            //         if (t.release) {
+            //             t.release.forEach(function(r) {
+            //                 mapRelease[r.uri] = null;
+            //             });
+            //         }
+            //     });
+            //     releaseUriList = Object.keys(mapRelease);
+            //     done(err);
+            // });
         });
 
         var associations: Cb.TAssociation[];

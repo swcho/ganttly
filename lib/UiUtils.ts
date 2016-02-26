@@ -204,7 +204,11 @@ module UiUtils {
     };
     KGroupKeyIdentifiers[CbUtils.TGroupType.ByProject] = function(aAllMaps: CbUtils.TAllMaps, aItem: Cb.TItem) {
         var task = <Cb.TTask>aItem;
-        return aItem._projectUri || aAllMaps.trackerMap[task.tracker.uri]['_projectUri'] || aAllMaps.trackerMap[task.tracker.uri].project.uri;
+        var ret = aItem._projectUri || task.tracker.project.uri || aAllMaps.trackerMap[task.tracker.uri]['_projectUri'] || aAllMaps.trackerMap[task.tracker.uri].project.uri;
+        if (!aAllMaps.projectMap[ret]) {
+            console.error(task);
+        }
+        return ret;
     };
     KGroupKeyIdentifiers[CbUtils.TGroupType.BySprint] = function(aAllMaps: CbUtils.TAllMaps, aItem: Cb.TItem) {
         var ret = KUnknownIdentifier;
@@ -483,7 +487,6 @@ module UiUtils {
             } else {
                 return aCompare ? aCompare(varB, varA) : varB - varA;
             }
-            return 0;
         }
     }
 
