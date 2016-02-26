@@ -464,7 +464,7 @@ module Cb {
 
         deleteItem(aItemUri: string, aCb: (err) => void) {
             throw "DELETE " + aItemUri;
-            send('DELETE', aItemUri, null, aCb);
+            // send('DELETE', aItemUri, null, aCb);
         }
     }
 
@@ -1105,6 +1105,22 @@ module CbUtils {
             });
         });
 
+        var cmdbUriList = [];
+        s.push(function(done) {
+            getItems(releaseUriList, function(err, rlist) {
+                releases = rlist;
+                var mapCmdb = {};
+                var mapProject = {};
+                releases.forEach(function(r) {
+                    mapCmdb[r.tracker.uri] = null;
+                    mapProject[r.tracker['project'].uri] = null;
+                });
+                cmdbUriList = Object.keys(mapCmdb);
+                projectUriList = _.union(projectUriList, _.keys(mapProject));
+                done(err);
+            });
+        });
+
         s.push(function(done) {
             getItems(projectUriList, function(err, plist) {
                 projects = <Cb.TProject[]><any>plist;
@@ -1112,20 +1128,8 @@ module CbUtils {
             });
         });
 
-        var cmdbUriList = [];
         s.push(function(done) {
-            getItems(releaseUriList, function(err, rlist) {
-                releases = rlist;
-                var mapCmdb = {};
-                releases.forEach(function(r) {
-                    mapCmdb[r.tracker.uri] = null;
-                });
-                cmdbUriList = Object.keys(mapCmdb);
-                done(err);
-            });
-        });
-
-        s.push(function(done) {
+            // _.uniq
             getItems(cmdbUriList, function(err, clist) {
                 cmdbList = <Cb.TCmdb[]><any>clist;
                 done(err);

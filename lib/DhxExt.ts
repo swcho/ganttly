@@ -442,13 +442,10 @@ module DhxExt {
                 switch (link.type) {
                     case types.finish_to_start:
                         return "finish_to_start";
-                        break;
                     case types.start_to_start:
                         return "start_to_start";
-                        break;
                     case types.finish_to_finish:
                         return "finish_to_finish";
-                        break;
                 }
             };
 
